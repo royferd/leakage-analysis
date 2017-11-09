@@ -12,8 +12,13 @@ close all
 %  is compatible with the new bipolar power supply. There is a 7th column
 %  that defines the polarity of Vmon. Also updating the pressure
 %  conversion for the new all-range model.
+% 11-09-2017 updated to be compatible with bipolar and unipolar EDM ramp
+%  simulations. Tested that code is consistent with code used for 7/18 and
+%  7/05 simulations. CHUNK can now correctly parse HI (negative) and LO
+%  (positive) voltages. Voltage polarity is properly propagated for both
+%  polarities. Different sample rates are now configurable by user. 
 
-file_struct = dir('*hv.txt');
+file_struct = dir('*hv*.txt');
 num_files = length(file_struct); 
 
 num_cols = 0;
@@ -44,9 +49,18 @@ end
 %data = dlmread('2017-02-01-163817-hv-sample-set-data.txt');
 %numpoints = length(data);
 
-power_supply = 0; % 0 = unipolar Acopian, 1 = bipolar AK
-pressure_gauge = 0; % 0 = ion gauge, 1 = all-range gauge
+power_supply = 0; % 0 = unipolar Acopian 
+%                   1 = bipolar AK (installed and tested 8-18-2017)
+
+pressure_gauge = 0; % 0 = ion gauge 
+%                     1 = all-range gauge (installed 7-18-2017)
+
 sample_size = 10; % # samples taken per measurement
+
+sample_rate = 0 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
+                  % 1 = data saved every 0.01 min (8192 samples / 16 kHz)
+
+
 gap_size = zeros(num_files,1);
 %gap_size(1) = .19; %gap size in cm
 %gap_size(2) = .15; 
@@ -72,6 +86,7 @@ vmon_weight_raw = zeros(num_files,num_rows,1);
 vmon_weight = zeros(num_files,num_rows,1);
 vmon_avg_wt = zeros(num_files,num_rows,1);
 vmon_avg_wt_raw = zeros(num_files,num_rows,1);
+vmon_avg_wt_raw_mag = zeros(num_files,num_rows,1);
 
 imon_avg = zeros(num_files,num_rows,1);
 imon_avg_raw = zeros(num_files,num_rows,1);
@@ -98,6 +113,8 @@ field_avg = zeros(num_files,num_rows,1);
 ohm_avg = zeros(num_files,num_rows,1);
 ohm_avg_raw = zeros(num_files,num_rows,1);
 
+polarity_sign = ones(num_files,num_rows);
+
 %linear fit arrays
 wxsq = zeros(num_files, num_rows, 1);
 wxy = zeros(num_files, num_rows, 1); 
@@ -119,10 +136,16 @@ fitline = zeros(num_files, 2, num_rows*20);
 %residual array
 residual = zeros(num_files,num_rows,1);
 
-
-
-
 numpoints = zeros(num_files,1);
+
+%I add an extra 0.01 minutes
+
+if sample_rate == 0
+    sampling_time = 0.03;
+elseif sample_rate == 1;
+    sampling_time = 0.02;
+end
+
 if power_supply == 0
     disp('Using -30 kV Acopian power supply')
     for i = 1:num_files
@@ -150,7 +173,7 @@ if power_supply == 0
             pressure_avg_stdev_raw(i,j) = data(i,j,12);
             lcm1_weight_raw(i,j) = abs(1/(lcm1_avg_stdev_raw(i,j)^2));
             ohm_avg_raw(i,j) = vmon_avg(i,j)/imon_avg(i,j)*1e3; % Mohm
-            vmon_avg_wt_raw(i,j) = vmon_avg_raw_mag(i,j)*vmon_weight_raw(i,j);
+            vmon_avg_wt_raw_mag(i,j) = vmon_avg_raw_mag(i,j)*vmon_weight_raw(i,j);
             imon_avg_wt_raw(i,j) = imon_avg_raw(i,j)*imon_weight_raw(i,j);
             field_avg_raw(i,j) = vmon_avg_raw_mag(i,j)/gap_size(i); % (raw vmon / cm)
         end
@@ -182,13 +205,12 @@ elseif power_supply == 1
             pressure_avg_stdev_raw(i,j) = data(i,j,14);
             lcm1_weight_raw(i,j) = abs(1/(lcm1_avg_stdev_raw(i,j)^2));
             ohm_avg_raw(i,j) = vmon_avg(i,j)/imon_avg(i,j)*1e3; % Mohm
-            vmon_avg_wt_raw(i,j) = vmon_avg_raw_mag(i,j)*vmon_weight_raw(i,j);
+            vmon_avg_wt_raw_mag(i,j) = vmon_avg_raw_mag(i,j)*vmon_weight_raw(i,j);
             imon_avg_wt_raw(i,j) = imon_avg_raw(i,j)*imon_weight_raw(i,j);
             field_avg_raw(i,j) = vmon_avg_raw_mag(i,j)/gap_size(i); % (raw vmon / cm)
         end
     end
 end
-polarity_sign = zeros(num_files,num_rows);
 
 for i = 1:num_files
     for j =1:numpoints(i)
@@ -206,24 +228,20 @@ if power_supply == 0
     imon_avg_scale = 1e3; % (uA)
     lcm1_avg_scale = (-2)*1e4; %(pA)
     ohm_avg_scale = 1e3; % Mohm
-    for i = 1:num_files
-        for j= 1:numpoints
-            vmon_avg_raw(i,j) = vmon_avg_raw_mag(i,j)*polarity_sign(i,j);
-        end
-    end
-
 elseif power_supply == 1
     disp('Using +/-30 kV Applied Kilovolts analog output scaling factors')
     vmon_avg_scale = 30/10; % (kV)
     imon_avg_scale = 250/10; %(uA)
     lcm1_avg_scale = (-2)*1e4; %(pA)
     ohm_avg_scale = 1e3; % Mohm
-    for i = 1:num_files
-        for j= 1:numpoints
-            vmon_avg_raw(i,j) = vmon_avg_raw_mag(i,j)*polarity_sign(i,j);
-        end
-    end
 end
+
+% for i = 1:num_files
+%     for j= 1:numpoints
+%         vmon_avg_raw(i,j) = vmon_avg_raw_mag(i,j)*polarity_sign(i,j);
+%         vmon_avg_wt_raw(i,j) = vmon_avg_wt_raw_mag(i,j)*polarity_sign(i,j);
+%     end
+% end
 
 if pressure_gauge == 0
     disp('Using ion gauge scaling factors')
@@ -246,6 +264,8 @@ end
 
 for i = 1:num_files
     for j = 1:numpoints(i)
+        vmon_avg_raw(i,j) = vmon_avg_raw_mag(i,j)*polarity_sign(i,j);
+        vmon_avg_wt_raw(i,j) = vmon_avg_wt_raw_mag(i,j)*polarity_sign(i,j);
         vmon_avg(i,j) = vmon_avg_raw(i,j)*vmon_avg_scale;
         vmon_avg_mag(i,j) = vmon_avg_raw_mag(i,j)*vmon_avg_scale;
         vmon_avg_stdev(i,j) = vmon_avg_stdev_raw(i,j)*vmon_avg_scale;
@@ -261,7 +281,7 @@ for i = 1:num_files
         
         ohm_avg(i,j) = vmon_avg(i,j)/imon_avg(i,j)*ohm_avg_scale;
         vmon_avg_wt(i,j) = vmon_avg_wt_raw(i,j)*vmon_avg_scale;
-        imon_avg_wt(i,j) = vmon_avg_wt_raw(i,j)*vmon_avg_scale;
+        imon_avg_wt(i,j) = imon_avg_wt_raw(i,j)*imon_avg_scale;
         field_avg(i,j) = field_avg_raw(i,j)*vmon_avg_scale; %(kV/cm)
     end
 end
@@ -435,21 +455,21 @@ ramp_low_voltage = zeros(num_files,1);
 ramp_high_devition = zeros(num_files,1);
 ramp_low_deviation = zeros(num_files,1);
 
+% avg around 0. To separate HI/LO values from 0 values, ignore voltages
+% within pm 1 kV of vmon_avg_avg
+
 for i = 1:num_files    
     vmon_avg_avg(i) = mean(vmon_avg(i,start_point(i):end_point(i)));
-    hi_vals = find(vmon_avg(i,:) > vmon_avg_avg(i));
-    lo_vals = find(vmon_avg(i,:) < vmon_avg_avg(i));
+    hi_vals = find(vmon_avg(i,:) < vmon_avg_avg(i) - 5);
+    lo_vals = find(vmon_avg(i,:) > vmon_avg_avg(i) + 5);
     ramp_high_deviation(i) = std(vmon_avg(i,hi_vals),vmon_weight(i,hi_vals));
     ramp_low_deviation(i) = std(vmon_avg(i,lo_vals),vmon_weight(i,lo_vals));
     ramp_high_voltage(i) = sum(vmon_avg_wt(i,hi_vals))/sum(vmon_weight_raw(i,hi_vals));
     ramp_low_voltage(i) = sum(vmon_avg_wt(i,lo_vals))/sum(vmon_weight_raw(i,lo_vals));    
 end
 
+%ramp_deviation = 0.05;
 
-sampling_time = 0.03 ; %data saved every .02 min ( 1.1 s)
-%ramp_high_voltage = 24.95;
-%ramp_low_voltage = -0.07;
-ramp_deviation = 0.05;
 vmon_avg_ramp_up_raw = zeros(num_files,num_rows,1);
 vmon_avg_ramp_down_raw = zeros(num_files,num_rows,1);
 time_ramp_up = zeros(num_files,num_rows,1);
@@ -492,7 +512,7 @@ for i = 1:num_files
     count_up_chunks(i) = 0;
     count_down_chunks(i) = 0;
     for j = start_point(i):numpoints(i)           
-        if abs(vmon_avg(i,j) - ramp_high_voltage(i)) < 3*ramp_high_deviation(i) && vmon_avg(i,j) > ramp_high_voltage(i) - ramp_high_deviation(i)
+        if abs(vmon_avg(i,j) - ramp_high_voltage(i)) < 3*ramp_high_deviation(i) && vmon_avg(i,j) < ramp_high_voltage(i) + ramp_high_deviation(i)
             num_ramp_up_points(i) = num_ramp_up_points(i) + 1;
             vmon_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_avg_raw(i,j);
             vmon_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_weight_raw(i,j);
@@ -505,7 +525,7 @@ for i = 1:num_files
                 up_chunk_array_pass(i,1, count_up_chunks(i)) = count_up_chunks(i);
                 up_chunk_array_pass(i,2, count_up_chunks(i)) = up_array_count(i) - 1;
             end
-        elseif abs(vmon_avg(i,j) - ramp_low_voltage(i)) < 3*ramp_low_deviation(i) && vmon_avg(i,j) < ramp_low_voltage(i) + ramp_low_deviation(i)
+        elseif abs(vmon_avg(i,j) - ramp_low_voltage(i)) < 3*ramp_low_deviation(i) && vmon_avg(i,j) > ramp_low_voltage(i) - ramp_low_deviation(i)
             num_ramp_down_points(i) = num_ramp_down_points(i) + 1;
             vmon_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_avg_raw(i,j);
             vmon_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_weight_raw(i,j);
@@ -1167,13 +1187,13 @@ for i = 1:num_files
 %    ax.TickDir = 'out'; % make ticks point out
 
 %%%%%%%% grid of leakage current v. ps voltage %%%%%%%%%%%%%%%%%%%%%%%%%%
-     plot(vmon_avg(i,start_point(i):end_point(i)) - vmon_avg_offset(i),...
-         (lcm1_avg(i,start_point(i):end_point(i)) - lcm1_avg_offset(i))*1e-3,...
-        'o','Color', cmap(i+1,:),'MarkerSize', 2, 'LineWidth', 2.0); %nA
-%     %axis(plot_bounds)
-     pbaspect([1.33 1 1])
-     ax = gca; % current axes
-     ax.TickDir = 'out'; % make ticks point out
+%      plot(vmon_avg(i,start_point(i):end_point(i)) - vmon_avg_offset(i),...
+%          (lcm1_avg(i,start_point(i):end_point(i)) - lcm1_avg_offset(i))*1e-3,...
+%         'o','Color', cmap(i+1,:),'MarkerSize', 2, 'LineWidth', 2.0); %nA
+% %     %axis(plot_bounds)
+%      pbaspect([1.33 1 1])
+%      ax = gca; % current axes
+%      ax.TickDir = 'out'; % make ticks point out
 
 
 %%%%%%%%%% grid of leakage current stdev v. ps voltage %%%%%%%%%%%%%%%%%%%%
@@ -1251,150 +1271,150 @@ for i = 1:num_files
 
 
 
-% % %%%%%%%%%% ramp data plot of mean up chunk voltage v chunk # %%%%%%%
+% %%%%%%%%%% ramp data plot of mean up chunk voltage v chunk # %%%%%%%
+    figure1 = figure('Units','normalized')
+    plot([1:1:num_up_chunks(i)], vmon_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - vmon_avg_offset(i),...
+    'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
+    %errorbar([1:1:num_up_chunk_rows(i), vmon_avg_ramp_up_avg_chunk, vmon_avg_ramp_up_stdev_chunk,'o');
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('hvps HI ramp means','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('high voltage (-kV)','FontSize',32)
+    annotation(figure1,'textbox',...
+    outside_plot,'String',{['avg HI (-kV):'],...
+    [sprintf('%.3f',vmon_avg_ramp_up_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
 
-%     plot([1:1:num_up_chunks(i)], vmon_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - vmon_avg_offset(i),...
-%     'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
-%     %errorbar([1:1:num_up_chunk_rows(i), vmon_avg_ramp_up_avg_chunk, vmon_avg_ramp_up_stdev_chunk,'o');
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('hvps HI ramp means','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('high voltage (-kV)','FontSize',32)
-%     annotation(figure1,'textbox',...
-%     outside_plot,'String',{['avg HI (-kV):'],...
-%     [sprintf('%.3f',vmon_avg_ramp_up_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
 
-% 
-%%%%%%%%%%%% ramp data plot of mean down chunk voltage v chunk # %%%%%%%%%%
-%     figure2 = figure('Units','normalized')
-%     plot([ 1:1:num_down_chunks(i) ], vmon_avg_ramp_down_avg_chunk(i,1:num_down_chunks(i)) - vmon_avg_offset(i),...
-%     'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
-%     %errorbar([1:1:num_up_chunk_rows(i), lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('hvps LO ramp means','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('high voltage (-kV)','FontSize',32)
-%     annotation(figure2,'textbox',...
-%     outside_plot,'String',{['avg LO (-kV):'],...
-%     [sprintf('%.3f',vmon_avg_ramp_down_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_down_stdev(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
+%%%%%%%%%%% ramp data plot of mean down chunk voltage v chunk # %%%%%%%%%%
+    figure2 = figure('Units','normalized')
+    plot([ 1:1:num_down_chunks(i) ], vmon_avg_ramp_down_avg_chunk(i,1:num_down_chunks(i)) - vmon_avg_offset(i),...
+    'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
+    %errorbar([1:1:num_up_chunk_rows(i), lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('hvps LO ramp means','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('high voltage (-kV)','FontSize',32)
+    annotation(figure2,'textbox',...
+    outside_plot,'String',{['avg LO (-kV):'],...
+    [sprintf('%.3f',vmon_avg_ramp_down_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_down_stdev(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
 
-% 
-%%%%%%%%%% ramp data plot of stdev hi/lo chunk ps voltage v chunk # %%%%%%%
-%     figure3 = figure('Units','normalized')
-%     plot(([1:1:num_up_chunks(i)] - 0.5)*2, vmon_avg_ramp_up_stdev_chunk(i,1:num_up_chunks(i)),...
-%     'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0); hold on;
-%     plot([ 1:1:num_down_chunks(i) ]*2, vmon_avg_ramp_down_stdev_chunk(i,1:num_down_chunks(i)),...
-%     'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
-%    %errorbar([1:1:num_up_chunk_rows(i), lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
-%     l = legend('show'); l.String = [{'HI'},{'LO'}]; l.FontSize = 32; l.Location = 'northeast outside';
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('hvps ramp stdevs','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('high voltage (-kV)','FontSize',32)
-%     annotation(figure3,'textbox',...
-%     outside_plot,'String',{['avg HI (kV):'],...
-%     [sprintf('%.3f',vmon_avg_ramp_up_stdev_avg_chunk(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev_stdev_chunk(i))],...
-%     ['avg LO (kV):'],...
-%     [sprintf('%.3f',vmon_avg_ramp_down_stdev_avg_chunk(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev_stdev_chunk(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
-% 
-% %%%%%%%%%% ramp data plot of mean down chunk leakage current v chunk # %%%%%%%
-%     figure4= figure('Units','normalized')
-%     plot([ 1:1:num_down_chunks(i) ], lcm1_avg_ramp_down_avg_chunk(i,1:num_down_chunks(i)) - lcm1_avg_offset(i),...
-%     'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
-%     %errorbar([1:1:num_up_chunk_rows(i), lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('lcm1 LO ramp means','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('leakage current (pA)','FontSize',32)
-%     annotation(figure4,'textbox',...
-%     outside_plot,'String',{['avg LO (pA):'],...
-%     [sprintf('%.1f',lcm1_avg_ramp_down_avg(i) - lcm1_avg_offset(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_down_stdev(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
-% 
-% %%%%%%%%%% ramp data plot of mean up chunk leakage current v chunk # %%%%%%%
-%     figure5= figure('Units','normalized')
-%     plot([1:1:num_up_chunks(i)], lcm1_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - lcm1_avg_offset(i),...
-%     'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
-%     %errorbar([[1:1:num_up_chunk_rows(i)], lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('lcm1 HI ramp means','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('leakage current (pA)','FontSize',32)
-%     annotation(figure5,'textbox',...
-%     outside_plot,'String',{['avg HI (pA):'],...
-%     [sprintf('%.1f',lcm1_avg_ramp_up_avg(i) - lcm1_avg_offset(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_up_stdev(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
-% 
-% %%%%%%%%%% ramp data plot of stdev hi/lo chunk leakage current v chunk # %%%%%%%
-%     figure6= figure('Units','normalized')
-%     plot(([1:1:num_up_chunks(i)] - 0.5)*2, lcm1_avg_ramp_up_stdev_chunk(i,1:num_up_chunks(i)),...
-%     'x','Color', cmap(2,:),'MarkerSize', 8, 'LineWidth', 1.5); hold on;
-%     plot([ 1:1:num_down_chunks(i) ]*2, lcm1_avg_ramp_down_stdev_chunk(i,1:num_down_chunks(i)),...
-%     'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 1.5);
-%     %errorbar([[1:1:num_up_chunk_rows(i)], lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
-%     l = legend('show'); l.String = [{'HI'},{'LO'}]; l.FontSize = 32; l.Location = 'northeast outside';
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('lcm1 ramp stdevs','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('leakage current (pA)','FontSize',32)
-%     annotation(figure6,'textbox',...
-%     outside_plot,'String',{['avg HI (pA):'],...
-%     [sprintf('%.1f',lcm1_avg_ramp_up_stdev_avg_chunk(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_up_stdev_stdev_chunk(i))],...
-%     ['avg LO (pA):'],...
-%     [sprintf('%.1f',lcm1_avg_ramp_down_stdev_avg_chunk(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_down_stdev_stdev_chunk(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
+
+%%%%%%%%% ramp data plot of stdev hi/lo chunk ps voltage v chunk # %%%%%%%
+    figure3 = figure('Units','normalized')
+    plot(([1:1:num_up_chunks(i)] - 0.5)*2, vmon_avg_ramp_up_stdev_chunk(i,1:num_up_chunks(i)),...
+    'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0); hold on;
+    plot([ 1:1:num_down_chunks(i) ]*2, vmon_avg_ramp_down_stdev_chunk(i,1:num_down_chunks(i)),...
+    'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
+   %errorbar([1:1:num_up_chunk_rows(i), lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
+    l = legend('show'); l.String = [{'HI'},{'LO'}]; l.FontSize = 32; l.Location = 'northeast outside';
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('hvps ramp stdevs','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('high voltage (-kV)','FontSize',32)
+    annotation(figure3,'textbox',...
+    outside_plot,'String',{['avg HI (kV):'],...
+    [sprintf('%.3f',vmon_avg_ramp_up_stdev_avg_chunk(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev_stdev_chunk(i))],...
+    ['avg LO (kV):'],...
+    [sprintf('%.3f',vmon_avg_ramp_down_stdev_avg_chunk(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev_stdev_chunk(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
+
+%%%%%%%%%% ramp data plot of mean down chunk leakage current v chunk # %%%%%%%
+    figure4= figure('Units','normalized')
+    plot([ 1:1:num_down_chunks(i) ], lcm1_avg_ramp_down_avg_chunk(i,1:num_down_chunks(i)) - lcm1_avg_offset(i),...
+    'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
+    %errorbar([1:1:num_up_chunk_rows(i), lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('lcm1 LO ramp means','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('leakage current (pA)','FontSize',32)
+    annotation(figure4,'textbox',...
+    outside_plot,'String',{['avg LO (pA):'],...
+    [sprintf('%.1f',lcm1_avg_ramp_down_avg(i) - lcm1_avg_offset(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_down_stdev(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
+
+%%%%%%%%%% ramp data plot of mean up chunk leakage current v chunk # %%%%%%%
+    figure5= figure('Units','normalized')
+    plot([1:1:num_up_chunks(i)], lcm1_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - lcm1_avg_offset(i),...
+    'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
+    %errorbar([[1:1:num_up_chunk_rows(i)], lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('lcm1 HI ramp means','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('leakage current (pA)','FontSize',32)
+    annotation(figure5,'textbox',...
+    outside_plot,'String',{['avg HI (pA):'],...
+    [sprintf('%.1f',lcm1_avg_ramp_up_avg(i) - lcm1_avg_offset(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_up_stdev(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
+
+%%%%%%%%%% ramp data plot of stdev hi/lo chunk leakage current v chunk # %%%%%%%
+    figure6= figure('Units','normalized')
+    plot(([1:1:num_up_chunks(i)] - 0.5)*2, lcm1_avg_ramp_up_stdev_chunk(i,1:num_up_chunks(i)),...
+    'x','Color', cmap(2,:),'MarkerSize', 8, 'LineWidth', 1.5); hold on;
+    plot([ 1:1:num_down_chunks(i) ]*2, lcm1_avg_ramp_down_stdev_chunk(i,1:num_down_chunks(i)),...
+    'o','Color', 'blue','MarkerSize', 8, 'LineWidth', 1.5);
+    %errorbar([[1:1:num_up_chunk_rows(i)], lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
+    l = legend('show'); l.String = [{'HI'},{'LO'}]; l.FontSize = 32; l.Location = 'northeast outside';
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('lcm1 ramp stdevs','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('leakage current (pA)','FontSize',32)
+    annotation(figure6,'textbox',...
+    outside_plot,'String',{['avg HI (pA):'],...
+    [sprintf('%.1f',lcm1_avg_ramp_up_stdev_avg_chunk(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_up_stdev_stdev_chunk(i))],...
+    ['avg LO (pA):'],...
+    [sprintf('%.1f',lcm1_avg_ramp_down_stdev_avg_chunk(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_down_stdev_stdev_chunk(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
 
 % %%%%%%% test chunk counting algorithm psvoltage v time %%%%%%%%%%%%%%%%%%%
-% %    subplot(num_files,1,num_files + 1 - i)
-%    plot(time(i,start_offset(i):end_offset(i)), vmon_avg(i,start_offset(i):end_offset(i)) - vmon_avg_offset(i),...
-%    'o','Color', cmap(1+i,:),'MarkerSize', 6, 'LineWidth', 1.0); hold on;
-% %    plot(time_ramp_up(i,1:num_ramp_up_points), vmon_avg_ramp_up(i,1:num_ramp_up_points) - vmon_avg_offset(i),...
-% %    '^','Color', 'blue','MarkerSize', 7, 'LineWidth', 2.0); hold on;
-%    for j = 1:num_up_chunks(i)
-%        chunk_begin = up_chunk_array(i,2,j) +1;
-%        chunk_end = up_chunk_array(i,2,j+1);
-%        plot(time_ramp_up(i,chunk_begin:chunk_end), vmon_avg_ramp_up(i,chunk_begin:chunk_end) - vmon_avg_offset(i),...
-%        'x','Color', 'green','MarkerSize', 6, 'LineWidth', 2.0);
-%    end
-%    for j = 1:num_down_chunks(i)
-%        chunk_begin = down_chunk_array(i,2,j) +1;
-%        chunk_end = down_chunk_array(i,2,j+1);
-%        plot(time_ramp_down(i,chunk_begin:chunk_end), vmon_avg_ramp_down(i,chunk_begin:chunk_end) - vmon_avg_offset(i),...
-%       'x','Color', 'blue','MarkerSize', 6, 'LineWidth', 2.0);
-%    end
-%    %axis(plot_bounds)
-%    pbaspect([1.33 1 1])
-%    ax = gca; % current axes
-% %    ax.XDir = 'reverse'; % voltage decreases left to right
-%     ax.FontSize = 32;
-%    ax.TickDir = 'out'; % make ticks point out
+%    subplot(num_files,1,num_files + 1 - i)
+   plot(time(i,start_offset(i):end_offset(i)), vmon_avg(i,start_offset(i):end_offset(i)) - vmon_avg_offset(i),...
+   'o','Color', cmap(1+i,:),'MarkerSize', 6, 'LineWidth', 1.0); hold on;
+%    plot(time_ramp_up(i,1:num_ramp_up_points), vmon_avg_ramp_up(i,1:num_ramp_up_points) - vmon_avg_offset(i),...
+%    '^','Color', 'blue','MarkerSize', 7, 'LineWidth', 2.0); hold on;
+   for j = 1:num_up_chunks(i)
+       chunk_begin = up_chunk_array(i,2,j) +1;
+       chunk_end = up_chunk_array(i,2,j+1);
+       plot(time_ramp_up(i,chunk_begin:chunk_end), vmon_avg_ramp_up(i,chunk_begin:chunk_end) - vmon_avg_offset(i),...
+       'x','Color', 'green','MarkerSize', 6, 'LineWidth', 2.0);
+   end
+   for j = 1:num_down_chunks(i)
+       chunk_begin = down_chunk_array(i,2,j) +1;
+       chunk_end = down_chunk_array(i,2,j+1);
+       plot(time_ramp_down(i,chunk_begin:chunk_end), vmon_avg_ramp_down(i,chunk_begin:chunk_end) - vmon_avg_offset(i),...
+      'x','Color', 'blue','MarkerSize', 6, 'LineWidth', 2.0);
+   end
+   %axis(plot_bounds)
+   pbaspect([1.33 1 1])
+   ax = gca; % current axes
+%    ax.XDir = 'reverse'; % voltage decreases left to right
+    ax.FontSize = 32;
+   ax.TickDir = 'out'; % make ticks point out
 
 %%%%%%%%%%%%%% ramp data plot of lcm1 v time %%%%%%%%%%%%%%%%%%%%%%%%%
 %   subplot(num_files,1,num_files + 1 - i)
@@ -1484,9 +1504,9 @@ end
 %subplot(num_files,1,1)
 %title(title_string,'FontSize',40)
 
-title(title_string,'FontSize',40)
-xlabel(x_label,'FontSize',32)
-ylabel(y_label,'FontSize',32)
+% title(title_string,'FontSize',40)
+% xlabel(x_label,'FontSize',32)
+% ylabel(y_label,'FontSize',32)
 %l = legend('show'); l.String = legend_titles; l.FontSize = 32; l.Location = 'northeast outside';
 %ax = gca; % current axes
 %ax.XDir = 'reverse' % voltage decreases left to right
