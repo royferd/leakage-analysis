@@ -17,6 +17,81 @@ close all
 %  7/05 simulations. CHUNK can now correctly parse HI (negative) and LO
 %  (positive) voltages. Voltage polarity is properly propagated for both
 %  polarities. Different sample rates are now configurable by user. 
+% 11-19-2017 changing adding module to plot current from 11/13 leakage
+% current precision test. README:
+% date: 11-13-2017 (Monday afternoon)
+% on shift: Roy Ready, Daniel Coulter
+% README author: Roy Ready, Daniel Coulter
+% Logbook #8 pg. 145-146
+% 
+% files:	2017-11-13-151308-hv-sample-set-data-1.txt
+% 		2017-11-13-151330-hv-1.txt
+% 		2017-11-13-151330-hv-avg-FFT-rootHz-1.txt
+% 		2017-11-13-165144-hv-sample-set-data-1.txt
+% 		2017-11-13-165214-hv-1.txt
+% 		2017-11-13-165214-hv-avg-FFT-rootHz-1.txt
+% 
+% summary: Today we were testing the sensitivity of our leakage current 
+%  measurements. We performed two tests, one with the current source directly 
+%  connected to the picoammeter, and one with the current source connected to a 
+%  mock setup of our leakage current circuit (current source -> Kapton -> feedthru 
+%  -> HV cable -> protxn circuit -> picoammeter). We adjusted the current on the 
+%  current source and measured the leakage current for both setups. We used the 
+%  following values: 
+% 
+%  picoammeter: 200 nA fixed range, both channels
+%  current source: 210 nA range for all measurements
+% 
+%  meas. no.	current source (nA)
+%  1			 000.00
+%  2			-200.00
+%  3			-131.07
+%  4			-065.54
+%  5			-032.77
+%  6			-016.38
+%  7			-008.19
+%  8			-004.10
+%  9			-002.05
+%  10			-001.02
+%  11			-000.51
+%  12			-000.26
+%  13			-000.13
+%  14			-000.06
+%  15			-000.03
+%  16			-000.02
+%  17			-000.01
+%  18			 000.00
+%  19			+000.01
+%  20			+000.02
+%  21			+000.03
+%  22			+000.06
+%  23			+000.13
+%  24			+000.26
+%  25			+000.51
+%  26			+001.02
+%  27			+002.05
+%  28			+004.10
+%  29			+008.19
+%  30			+016.38
+%  31			+032.77
+%  32			+065.54
+%  33			+131.07
+%  34			+200.00
+%  35			 000.00
+% 
+% 
+%  For the mock setup we could not get the background leakage current below 150 pA, 
+%  likely due to vibrations from the roughing pump. We tried placing the mock setup 
+%  on the cart and above the coffin with various types of padding (books, foam) to 
+%  isolate the signal, but neither was significantly better than the other. In the 
+%  end, we decided to put the mock setup on the cart, with foam and kimwipes to 
+%  cushion the components. 
+% 
+% comments:
+%  * significant vibration at the feedthru-cable interface, possibly due to the 2
+%    devices not being bolted in as they normally would be on the vacuum chamber
+%  * today's labors have convinced me that we need rubber vibration-damping mats
+%    for the HV cart and server rack wheels. 
 
 file_struct = dir('*hv*.txt');
 num_files = length(file_struct); 
@@ -286,6 +361,81 @@ for i = 1:num_files
     end
 end
 
+current_source_avg = zeros(num_files,35); %(in pA)
+current_source_avg_stdev = zeros(num_files,35); %(in pA)
+for i =1:num_files
+    current_source_avg(i,1) = 000.00;
+    current_source_avg(i,2) = -200.00;
+    current_source_avg(i,3) = -131.07;
+    current_source_avg(i,4) = -065.54;
+    current_source_avg(i,5) = -032.77;
+    current_source_avg(i,6) = -016.38;
+    current_source_avg(i,7) = -008.19;
+    current_source_avg(i,8) = -004.10;
+    current_source_avg(i,9) = -002.05;
+    current_source_avg(i,10) = -001.02;
+    current_source_avg(i,11) = -000.51;
+    current_source_avg(i,12) = -000.26;
+    current_source_avg(i,13) = -000.13;
+    current_source_avg(i,14) = -000.06;
+    current_source_avg(i,15) = -000.03;
+    current_source_avg(i,16) = -000.02;
+    current_source_avg(i,17) = -000.01;
+    current_source_avg(i,18) = 000.00;
+    current_source_avg(i,19) = +000.01;
+    current_source_avg(i,20) = +000.02;
+    current_source_avg(i,21) = +000.03;
+    current_source_avg(i,22) = +000.06;
+    current_source_avg(i,23) = +000.13;
+    current_source_avg(i,24) = +000.26;
+    current_source_avg(i,25) = +000.51;
+    current_source_avg(i,26) = +001.02;
+    current_source_avg(i,27) = +002.05;
+    current_source_avg(i,28) = +004.10;
+    current_source_avg(i,29) = +008.19;
+    current_source_avg(i,30) = +016.38;
+    current_source_avg(i,31) = +032.77;
+    current_source_avg(i,32) = +065.54;
+    current_source_avg(i,33) = +131.07;
+    current_source_avg(i,34) = +200.00;
+    current_source_avg(i,35) = 000.00;
+
+    current_source_avg_stdev(i,1) = 000.00*0.003 + 0.1;
+    current_source_avg_stdev(i,2) = 200.00*0.003 + 0.1;
+    current_source_avg_stdev(i,3) = 131.07*0.003 + 0.1;
+    current_source_avg_stdev(i,4) = 065.54*0.003 + 0.1;
+    current_source_avg_stdev(i,5) = 032.77*0.003 + 0.1;
+    current_source_avg_stdev(i,6) = 016.38*0.003 + 0.1;
+    current_source_avg_stdev(i,7) = 008.19*0.003 + 0.1;
+    current_source_avg_stdev(i,8) = 004.10*0.003 + 0.1;
+    current_source_avg_stdev(i,9) = 002.05*0.003 + 0.1;
+    current_source_avg_stdev(i,10) = 001.02*0.003 + 0.1;
+    current_source_avg_stdev(i,11) = 000.51*0.003 + 0.1;
+    current_source_avg_stdev(i,12) = 000.26*0.003 + 0.1;
+    current_source_avg_stdev(i,13) = 000.13*0.003 + 0.1;
+    current_source_avg_stdev(i,14) = 000.06*0.003 + 0.1;
+    current_source_avg_stdev(i,15) = 000.03*0.003 + 0.1;
+    current_source_avg_stdev(i,16) = 000.02*0.003 + 0.1;
+    current_source_avg_stdev(i,17) = 000.01*0.003 + 0.1;
+    current_source_avg_stdev(i,18) = 000.00*0.003 + 0.1;
+    current_source_avg_stdev(i,19) = +000.01*0.003 + 0.1;
+    current_source_avg_stdev(i,20) = +000.02*0.003 + 0.1;
+    current_source_avg_stdev(i,21) = +000.03*0.003 + 0.1;
+    current_source_avg_stdev(i,22) = +000.06*0.003 + 0.1;
+    current_source_avg_stdev(i,23) = +000.13*0.003 + 0.1;
+    current_source_avg_stdev(i,24) = +000.26*0.003 + 0.1;
+    current_source_avg_stdev(i,25) = +000.51*0.003 + 0.1;
+    current_source_avg_stdev(i,26) = +001.02*0.003 + 0.1;
+    current_source_avg_stdev(i,27) = +002.05*0.003 + 0.1;
+    current_source_avg_stdev(i,28) = +004.10*0.003 + 0.1;
+    current_source_avg_stdev(i,29) = +008.19*0.003 + 0.1;
+    current_source_avg_stdev(i,30) = +016.38*0.003 + 0.1;
+    current_source_avg_stdev(i,31) = +032.77*0.003 + 0.1;
+    current_source_avg_stdev(i,32) = +065.54*0.003 + 0.1;
+    current_source_avg_stdev(i,33) = +131.07*0.003 + 0.1;
+    current_source_avg_stdev(i,34) = +200.00*0.003 + 0.1;
+    current_source_avg_stdev(i,35) = 000.00*0.003 + 0.1;
+end
 start_point = ones(num_files,1);
 end_point = zeros(num_files,1);
 start_offset = zeros(num_files,2,1);
@@ -357,7 +507,9 @@ imon_weight_offset_raw_start = zeros(num_files,1);
 imon_weight_offset_raw_end = zeros(num_files,1);
 
 lcm1_avg_offset_raw = zeros(num_files,1);
+lcm1_acc_test_offset_raw = zeros(num_files,1);
 lcm1_avg_offset = zeros(num_files,1);
+lcm1_acc_test_offset = zeros(num_files,1);
 lcm1_avg_offset_raw_start_wt = zeros(num_files,offset_length);
 lcm1_avg_offset_raw_start = zeros(num_files,1);
 lcm1_avg_offset_raw_end_wt = zeros(num_files,offset_length);
@@ -429,7 +581,13 @@ for i =1:num_files
     field_avg_offset(i) = vmon_avg_offset(i) / gap_size(i);
     
     lcm1_avg_offset_raw(i) = lcm1_avg_offset_raw_wt_sum(i)/lcm1_weight_offset_sum(i);
+    lcm1_acc_test_offset_raw(i) = ((lcm1_avg_raw(i,1)*lcm1_weight_raw(i,1)+...
+        lcm1_avg_raw(i,18)*lcm1_weight_raw(i,18)+...
+        lcm1_avg_raw(i,35)*lcm1_weight_raw(i,35))/(lcm1_weight_raw(i,1)+...
+        lcm1_weight_raw(i,18)+lcm1_weight_raw(i,35)));
+    
     lcm1_avg_offset(i) = lcm1_avg_offset_raw(i)*lcm1_avg_scale;
+    lcm1_acc_test_offset(i) = lcm1_acc_test_offset_raw(i)*lcm1_avg_scale;
 end
 
 
@@ -1481,8 +1639,25 @@ for i = 1:num_files
 %    ax.FontSize = 16;
 %    ax.TickDir = 'out'; % make ticks point out
 
+
 end
 
+%%%%%%%% grid of leakage current v. meas. test # %%%%%%%%%%%%%%%%%%%%%%
+figure1 = figure('Units','normalized')
+errorbar((1:1:35),...         
+     current_source_avg(1,:),current_source_avg_stdev(1,:),...
+    's','Color', 'blue','MarkerSize', 12, 'LineWidth', 1.0); hold on; %nA
+errorbar((1:1:35),...
+     (lcm1_avg(1,:) - lcm1_acc_test_offset(1))*1e-3,lcm1_avg_stdev(1,:)*1e-3,...
+    'g^','MarkerSize', 8, 'LineWidth', 1.0); hold on; %nA
+ errorbar((1:1:35),...
+     (lcm1_avg(2,:) - lcm1_acc_test_offset(2))*1e-3,lcm1_avg_stdev(2,:)*1e-3,...
+    'rx','MarkerSize', 8, 'LineWidth', 1.0); hold on; %nA
+
+%     %axis(plot_bounds)
+ pbaspect([1.33 1 1])
+ ax = gca; % current axes
+ ax.TickDir = 'out'; % make ticks point out
 
 %%%%%%%%%%%%%%%%%%%%%%% gaussian fit of ramp data %%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1504,10 +1679,13 @@ end
 %subplot(num_files,1,1)
 %title(title_string,'FontSize',40)
 
-% title(title_string,'FontSize',40)
-% xlabel(x_label,'FontSize',32)
-% ylabel(y_label,'FontSize',32)
-%l = legend('show'); l.String = legend_titles; l.FontSize = 32; l.Location = 'northeast outside';
+title(title_string,'FontSize',40)
+xlabel(x_label,'FontSize',32)
+ylabel(y_label,'FontSize',32)
+l = legend('show'); 
+%l.String = legend_titles; 
+l.FontSize = 32; 
+l.Location = 'northeast outside';
 %ax = gca; % current axes
 %ax.XDir = 'reverse' % voltage decreases left to right
 %ax.FontSize = 32;
@@ -1522,5 +1700,5 @@ end
 %%%%                                                             %%%%%%%%%%
 
 %pbaspect([1.33 1 1])
-%annotation(figure1,'textbox',...
-%    outside_plot,'String',str,'FontSize',32,'BackgroundColor',[1 1 1]);
+annotation(figure1,'textbox',...
+   outside_plot,'String',str,'FontSize',32,'BackgroundColor',[1 1 1]);
