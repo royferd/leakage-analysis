@@ -1172,6 +1172,7 @@ b = zeros(num_files,2);
 leakage_residual = zeros(num_files,num_rows,2);
 fit_line_x = zeros(num_files,2);
 fit_line_y = zeros(num_files,2);
+trim = 9; %artificially zoom in on the points in the ~ 100 pA range
 
 for i =1:num_files
     fit_params(i,:) = array_linfit(current_source_avg(i,:),lcm1_avg_raw(i,:),lcm1_avg_stdev_raw(i,:),numpoints(i));
@@ -1180,8 +1181,8 @@ for i =1:num_files
     a(i,2) = fit_params(i,2)*abs(lcm1_avg_scale)*1e-3;
     b(i,1) = fit_params(i,3)*lcm1_avg_scale*1e-3;
     b(i,2) = fit_params(i,4)*abs(lcm1_avg_scale)*1e-3;
-    fit_line_x(i,1) = floor(min(current_source_avg(i,:)));
-    fit_line_x(i,2) = floor(max(current_source_avg(i,:)))+1;
+    fit_line_x(i,1) = 1.06*current_source_avg(i,1+trim);
+    fit_line_x(i,2) = 1.06*current_source_avg(i,end-trim);
     fit_line_y(i,1) = a(i,1)+b(i,1)*fit_line_x(i,1);
     fit_line_y(i,2) = a(i,1)+b(i,1)*fit_line_x(i,2);
     for j = 1:numpoints(i)
@@ -1274,10 +1275,10 @@ y_label = 'residual (pA)';
 legend_titles = [filenames];
 xtick_numbers = [ 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75];
 ytick_numbers = [-125 -100 -75 -50 -25 0 25 50 75 100 125];
-xmin = 0.0;
-xmax = 80;
-ymin = -15;
-ymax = 25;
+xmin = -100.0;
+xmax = +100.0;
+ymin = -100.0;
+ymax = +100.0;
 plot_bounds = [xmin xmax ymin ymax];
 
 
@@ -1778,31 +1779,59 @@ end
 %  ax.TickDir = 'out'; % make ticks point out
  
 %  %%%%%%% plot leakage sensitivity fit lines %%%%%%%%%%%%%%%%%%%%%%
-% figure1 = figure('Units','normalized')
-% plot(fit_line_x(1,:),...
-%      fit_line_y(1,:),...
-%     'k-', 'LineWidth', 1.0); hold on; %nA
-% errorbar(current_source_avg(1,:),...         
-%      lcm1_avg(1,:)*1e-3,lcm1_avg_stdev(1,:)*1e-3,...
-%     'o','Color', 'blue','MarkerSize', 10, 'LineWidth', 1.); hold on; %nA
-%     %axis(plot_bounds)
-%  pbaspect([1.33 1 1])
-%  ax = gca; % current axes
-%  ax.TickDir = 'out'; % make ticks point out
- 
-  %%%%%%%% plot leakage sensitivity fit line residual %%%%%%%%%%%%%%%%%%%%%
-%convert to pA
+trim = 8;
+
 figure1 = figure('Units','normalized')
+
+str1 = 'y_{fit}(pA) = a + bI_{src}';
+str2 = 'leakage offset (pA): ';
+str3 = sprintf('%.0f',a(1,1)*1e3);
+str4 = ' \pm ';
+str5 = sprintf('%.0f',a(1,2)*1e3);
+str6 = 'slope: ';
+str7 = sprintf('%.3f',b(1,1));
+str8 = ' \pm ';
+str9 = sprintf('%.3f',b(1,2));
+str = {[ str1], [str2 str3 str4 str5],[str6 str7 str8 str9]};
+
 plot(fit_line_x(1,:)*1e3,...
-     [0 0]*1e3,...
-    'k--', 'LineWidth', 2.0); hold on; %nA
-errorbar(current_source_avg(1,:)*1e3,...         
-     leakage_residual(1,1:numpoints(1),1)*1e3,lcm1_avg_stdev(1,:),...
-    'o','Color', 'blue','MarkerSize', 12, 'LineWidth', 1.5); hold on; %nA
-%     %axis(plot_bounds)
+     (fit_line_y(1,:)-a(1,1))*1e3,...
+    'k-', 'LineWidth', 1.0); hold on; %pA
+errorbar(current_source_avg(1,2+trim:end-trim-1)*1e3,...         
+     lcm1_avg(1,2+trim:end-trim-1)-a(1,1)*1e3,lcm1_avg_stdev(1,2+trim:end-trim-1),...
+    'o','Color', 'blue','MarkerSize', 12, 'LineWidth', 1.5); hold on; %pA
+%axis(plot_bounds)
  pbaspect([1.33 1 1])
  ax = gca; % current axes
  ax.TickDir = 'out'; % make ticks point out
+ 
+ title(title_string,'FontSize',40)
+xlabel(x_label,'FontSize',32)
+ylabel(y_label,'FontSize',32)
+% l = legend('show'); 
+ 
+ annotation(figure1,'textbox',...
+   outside_plot,'String',str,'FontSize',32,'BackgroundColor',[1 1 1]);
+ 
+  %%%%%%%% plot leakage sensitivity fit line residual %%%%%%%%%%%%%%%%%%%%%
+%convert to pA
+figure2 = figure('Units','normalized')
+
+plot(fit_line_x(1,:)*1e3,...
+     [0 0]*1e3,...
+    'k--', 'LineWidth', 2.0); hold on; %nA
+errorbar(current_source_avg(1,2+trim:end-trim-1)*1e3,...         
+     leakage_residual(1,2+trim:end-trim-1,1)*1e3,lcm1_avg_stdev(1,2+trim:end-trim-1),...
+    'o','Color', 'blue','MarkerSize', 12, 'LineWidth', 1.5); hold on; %nA
+%axis(plot_bounds)
+ pbaspect([1.33 1 1])
+ ax = gca; % current axes
+ ax.TickDir = 'out'; % make ticks point out
+ 
+ title(title_string,'FontSize',40)
+xlabel(x_label,'FontSize',32)
+ylabel(y_label,'FontSize',32)
+% l = legend('show'); 
 
 %%%%%%%%%%%%%%%%%%%%%%% gaussian fit of ramp data %%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1824,10 +1853,10 @@ errorbar(current_source_avg(1,:)*1e3,...
 %subplot(num_files,1,1)
 %title(title_string,'FontSize',40)
 
-title(title_string,'FontSize',40)
-xlabel(x_label,'FontSize',32)
-ylabel(y_label,'FontSize',32)
-l = legend('show'); 
+% title(title_string,'FontSize',40)
+% xlabel(x_label,'FontSize',32)
+% ylabel(y_label,'FontSize',32)
+% l = legend('show'); 
 %l.String = legend_titles; 
 l.FontSize = 32; 
 l.Location = 'northeast outside';
@@ -1845,5 +1874,5 @@ l.Location = 'northeast outside';
 %%%%                                                             %%%%%%%%%%
 
 %pbaspect([1.33 1 1])
-annotation(figure1,'textbox',...
-   outside_plot,'String',str,'FontSize',32,'BackgroundColor',[1 1 1]);
+% annotation(figure1,'textbox',...
+%    outside_plot,'String',str,'FontSize',32,'BackgroundColor',[1 1 1]);
