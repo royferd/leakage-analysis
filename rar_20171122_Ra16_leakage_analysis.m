@@ -20,7 +20,7 @@ close all
 % 11-19-2017 changing adding module to plot current from 11/13 leakage
 % current precision test. 
 
-power_supply = 2; % 0 = unipolar Acopian 
+power_supply = 1; % 0 = unipolar Acopian 
 %                   1 = bipolar AK (installed and tested 8-18-2017)
 %                   2 = Ra EDM Spellman power supply for 2016 run
 
@@ -34,7 +34,7 @@ sample_rate = 1 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
 leakage_sensitivity_test = 0; % 0 = not a sensitivity test
                               % 1 = leakage sensitivity test
 
-file_struct = dir('*trunc*.txt');
+file_struct = dir('*hv-1.txt');
 num_files = length(file_struct); 
 
 num_cols = 0;
@@ -140,7 +140,9 @@ imon_avg_wt = zeros(num_files,num_rows,1);
 imon_avg_wt_raw = zeros(num_files,num_rows,1);
 
 lcm1_avg = zeros(num_files,num_rows,1);
+lcm1_avg_log = zeros(num_files,num_rows,1);
 lcm1_avg_raw = zeros(num_files,num_rows,1);
+lcm1_avg_raw_log = zeros(num_files,num_rows,1);
 lcm1_avg_stdev = zeros(num_files,num_rows,1);
 lcm1_avg_stdev_raw = zeros(num_files,num_rows,1);
 pressure_avg_raw = zeros(num_files,num_rows,1);
@@ -329,6 +331,8 @@ elseif pressure_gauge == 1
     end
 end
 
+
+
 for i = 1:num_files
     for j = 1:numpoints(i)
         vmon_avg_raw(i,j) = vmon_avg_raw_mag(i,j)*polarity_sign(i,j);
@@ -343,6 +347,7 @@ for i = 1:num_files
         imon_weight(i,j) = (vmon_avg_stdev(i,j))^-2;
         
         lcm1_avg(i,j) = lcm1_avg_raw(i,j)*lcm1_avg_scale;
+        lcm1_avg_log(i,j) = lcm1_avg_log(i,j)*lcm1_avg_scale;
         lcm1_avg_stdev(i,j) = lcm1_avg_stdev_raw(i,j)*abs(lcm1_avg_scale);
         lcm1_weight(i,j) = 1/(lcm1_avg_stdev(i,j)^2);
         
@@ -352,6 +357,8 @@ for i = 1:num_files
         field_avg(i,j) = field_avg_raw(i,j)*vmon_avg_scale; %(kV/cm)
     end
 end
+
+
 
 current_source_avg = zeros(num_files,35); %(in pA)
 current_source_avg_stdev = zeros(num_files,35); %(in pA)
@@ -467,8 +474,10 @@ imon_weight_offset_raw_start = zeros(num_files,1);
 imon_weight_offset_raw_end = zeros(num_files,1);
 
 lcm1_avg_offset_raw = zeros(num_files,1);
+lcm1_avg_offset_raw_log = zeros(num_files,1);
 lcm1_acc_test_offset_raw = zeros(num_files,1);
 lcm1_avg_offset = zeros(num_files,1);
+lcm1_avg_offset_log = zeros(num_files,1);
 lcm1_acc_test_offset = zeros(num_files,1);
 lcm1_avg_offset_raw_start_wt = zeros(num_files,offset_length);
 lcm1_avg_offset_raw_start = zeros(num_files,1);
@@ -548,6 +557,36 @@ for i =1:num_files
     
     lcm1_avg_offset(i) = lcm1_avg_offset_raw(i)*lcm1_avg_scale;
     lcm1_acc_test_offset(i) = lcm1_acc_test_offset_raw(i)*lcm1_avg_scale;
+end
+
+
+% calculate natural logs of leakage current. For negative leakage, put sign 
+% in front of the log of the magnitude of the leakage.
+
+% if lcm1_avg_scale < 0
+% 
+%     lcm1_avg_scale_log = -log(lcm1_avg_scale);
+% 
+% else
+%     
+%     lcm1_avg_scale_log = log(lcm1_avg_scale);
+%     
+% end
+
+for i = 1:num_files
+    
+    for j = 1:numpoints(i)
+        
+        if lcm1_avg(i,j) - lcm1_avg_offset(i) < 0
+            lcm1_avg_log(i,j) = -log10(abs(lcm1_avg(i,j) - lcm1_avg_offset(i)));
+        else
+            lcm1_avg_log(i,j) = log10(lcm1_avg(i,j) - lcm1_avg_offset(i));
+        end
+        
+        
+%        lcm1_avg_log(i,j) = lcm1_avg_raw_log(i,j) + lcm1_avg_scale_log;
+        
+    end
 end
 
 
@@ -1122,26 +1161,52 @@ red_step = round(0.75/(num_files + 1),4);
 for i = 1:num_files+1
     sat = 1 + red_step*(i - num_files - 1);
     val = 1 + red_step*(i - num_files - 1)/3.;
-    red_list_hsv(i,1) = 0;
+    red_list_hsv(i,1) = redhsv(1);
     red_list_hsv(i,2) = sat;
     red_list_hsv(i,3) = val;
     red_list_rgb(i,:,:) = hsv2rgb(red_list_hsv(i,:,:));
 end
-cmap = colormap(red_list_rgb);
 
-grnhsv = [0.33 1 1];     % green HSV
+bluehsv = [0.667 1 1];     % blue HSV
+blue_list_hsv = zeros(num_files + 1,3);
+blue_list_rgb = zeros(num_files + 1,3);
+blue_step = round(0.75/(num_files + 1),4);
+for i = 1:num_files+1
+    sat = 1 + blue_step*(i - num_files - 1);
+    val = 1 + blue_step*(i - num_files - 1)/3.;
+    blue_list_hsv(i,1) = bluehsv(1);
+    blue_list_hsv(i,2) = sat;
+    blue_list_hsv(i,3) = val;
+    blue_list_rgb(i,:,:) = hsv2rgb(blue_list_hsv(i,:,:));
+end
+
+grnhsv = [0.333 1 1];     % green HSV
 grn_list_hsv = zeros(num_files + 1,3);
 grn_list_rgb = zeros(num_files + 1,3);
 grn_step = round(0.75/(num_files + 1),4);
 for i = 1:num_files+1
     sat = 1 + grn_step*(i - num_files - 1);
     val = 1 + grn_step*(i - num_files - 1)/3.;
-    grn_list_hsv(i,1) = 0;
+    grn_list_hsv(i,1) = grnhsv(1);
     grn_list_hsv(i,2) = sat;
     grn_list_hsv(i,3) = val;
     grn_list_rgb(i,:,:) = hsv2rgb(grn_list_hsv(i,:,:));
 end
-cmap = colormap(red_list_rgb);
+
+num_colors = 3*length(redhsv(:,1));
+join_list_rgb = zeros(num_colors,3);
+
+
+for i =1:num_files + 1
+    join_list_rgb(i,:,:) = red_list_rgb(i,:,:);
+    join_list_rgb(i+num_files + 1,:,:) = grn_list_rgb(i,:,:);
+    join_list_rgb(i+2*num_files+2,:,:) = blue_list_rgb(i,:,:);
+    
+end
+
+
+cmap = colormap(join_list_rgb);
+
 
 
 
@@ -1152,11 +1217,15 @@ y_label = 'residual (pA)';
 legend_titles = [filenames];
 xtick_numbers = [ 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75];
 ytick_numbers = [-125 -100 -75 -50 -25 0 25 50 75 100 125];
-xmin = -100.0;
-xmax = +100.0;
-ymin = -100.0;
-ymax = +100.0;
+xmin = 0.0;
+xmax = +60.0;
+ymin = -5.5;
+ymax = +5.5;
 plot_bounds = [xmin xmax ymin ymax];
+
+ymin_right = -30;
+ymax_right = 30;
+plot_bounds_right = [xmin xmax ymin_right ymax_right];
 
 
 % y = 0 line
@@ -1315,7 +1384,10 @@ ylabel(y_label,'FontSize',32)
 % l = legend('show'); l.String = [{'ramp up'}, {'ramp down'}]; l.FontSize = 32; l.Location = 'northeast outside';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+fig = figure;
+left_color = cmap(num_files+1,:);
+right_color = cmap(num_files+1+2*num_files+2,:);
+% set(fig,'defaultAxesColorOrder',[left_color; right_color]);
 for i = 1:num_files
     
 %    figure1 =figure('Units','normalized')
@@ -1362,19 +1434,76 @@ for i = 1:num_files
 %    ax.TickDir = 'out'; % make ticks point out
 
 
-%%%%%%%%%%%% %grid of leakage current v. time %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%% %grid of leakage current v. time %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% 
+%    subplot(num_files,1,num_files + 1 - i)
+%    yyaxis left
+%       plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+%        vmon_avg(i,start_point(i):end_point(i))-vmon_avg_offset(i),...
+%        '-','Color', cmap(i+1+2*num_files+2,:),'MarkerSize', 3,...
+%        'LineWidth', 2.0);
+%    axis(plot_bounds)
+% 
+%    yyaxis right
+%    plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+%        lcm1_avg(i,start_point(i):end_point(i))-lcm1_avg_offset(i),...
+%        '-','Color', cmap(i+1,:),'MarkerSize', 3,...
+%        'LineWidth', 2.0);
+% %   ylim([ymin_right ymax_right])
+%    pbaspect([7 1 1])
+%    ax = gca; % current axes
+%    text(...
+%        'Position',[xmax ymax_right],...
+%        'String',legend_titles(i),...
+%        'HorizontalAlignment','right','VerticalAlignment','top',...
+%        'FontSize',14);
+%    ax.TickDir = 'out'; % make ticks point out
+
+%%%%%%% %grid of log leakage current & viktage v. time  %%%%%%%%%%%%%%%%%%%
 
 
-%   subplot(num_files,1,num_files + 1 - i)
-   plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
-       lcm1_avg(i,start_point(i):end_point(i))-lcm1_avg_offset(i),...
-       '-','Color', cmap(i+1,:),'MarkerSize', 3, 'LineWidth', 2.0);
-%   axis(plot_bounds)
-   pbaspect([1.33 1 1])
-   ax = gca; % current axes
-%   text('Position',[xmax ymax],'String',legend_titles(i),...
-%       'HorizontalAlignment','right','VerticalAlignment','top','FontSize',14);
-   ax.TickDir = 'out'; % make ticks point out
+    subplot(num_files,1,num_files + 1 - i)
+
+% [ax,h1,h2]=plotyy(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+%     lcm1_avg_log(i,start_point(i):end_point(i)),...
+%     time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+%      vmon_avg(i,start_point(i):end_point(i))-vmon_avg_offset(i));
+% hl=legend('y','z','Location','Best');
+% %set(hl,'FontSize',8)
+% %title('y and z','FontSize',10)
+% %xlabel('x','FontSize',8);
+% %set(ax,'FontSize',10);
+% set(h1,'color','r')
+% set(h2,'color','g')
+     ax = gca; % current axes
+
+    text(...
+       'Position',[xmax ymax_right],...
+       'String',legend_titles(i),...
+       'HorizontalAlignment','right','VerticalAlignment','top',...
+       'FontSize',14);
+    ax.TickDir = 'out'; % make ticks point out
+
+    yyaxis left
+
+
+    plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+       lcm1_avg_log(i,start_point(i):end_point(i)),...
+       '-','Color', cmap(i+1,:),'MarkerSize', 3,...
+       'LineWidth', 2.0);
+    axis(plot_bounds)
+
+    yyaxis right
+    plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+       vmon_avg(i,start_point(i):end_point(i))-vmon_avg_offset(i),...
+       '-','Color', cmap(i+1+2*num_files+2,:),'MarkerSize', 3,...
+       'LineWidth', 2.0);
+    ylim([ymin_right ymax_right])
+
+
+
+    pbaspect([7 1 1])
 
 
 
