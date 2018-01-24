@@ -20,6 +20,7 @@ close all
 % 11-19-2017 changing adding module to plot current from 11/13 leakage
 % current precision test. 
 
+set(0, 'DefaultFigureRenderer', 'Painters');
 power_supply = 1; % 0 = unipolar Acopian 
 %                   1 = bipolar AK (installed and tested 8-18-2017)
 %                   2 = Ra EDM Spellman power supply for 2016 run
@@ -140,9 +141,9 @@ imon_avg_wt = zeros(num_files,num_rows,1);
 imon_avg_wt_raw = zeros(num_files,num_rows,1);
 
 lcm1_avg = zeros(num_files,num_rows,1);
-lcm1_avg_log = zeros(num_files,num_rows,1);
+lcm1_avg_log_neg = zeros(num_files,num_rows,2);
+lcm1_avg_log_pos = zeros(num_files,num_rows,2);
 lcm1_avg_raw = zeros(num_files,num_rows,1);
-lcm1_avg_raw_log = zeros(num_files,num_rows,1);
 lcm1_avg_stdev = zeros(num_files,num_rows,1);
 lcm1_avg_stdev_raw = zeros(num_files,num_rows,1);
 pressure_avg_raw = zeros(num_files,num_rows,1);
@@ -347,7 +348,7 @@ for i = 1:num_files
         imon_weight(i,j) = (vmon_avg_stdev(i,j))^-2;
         
         lcm1_avg(i,j) = lcm1_avg_raw(i,j)*lcm1_avg_scale;
-        lcm1_avg_log(i,j) = lcm1_avg_log(i,j)*lcm1_avg_scale;
+%        lcm1_avg_log(i,j) = lcm1_avg_log(i,j)*lcm1_avg_scale;
         lcm1_avg_stdev(i,j) = lcm1_avg_stdev_raw(i,j)*abs(lcm1_avg_scale);
         lcm1_weight(i,j) = 1/(lcm1_avg_stdev(i,j)^2);
         
@@ -421,7 +422,7 @@ for i = 1:num_files
     for j = (offset_length+1):numpoints(i)
 % look for 100 V bump indicating the HV switch is on. Note: PS resistance 
 % fluctuates wildly under 1.1 kV
-       if  abs(vmon_avg(i,j)) > 0.1 && numpoints(i)>1000;
+       if  abs(vmon_avg(i,j)) > 0.1 && numpoints(i)>1000
            start_point(i) = j;  % supply is turned on
            start_offset(i,1,1) = j - offset_length;
            start_offset(i,2,1) = j - 1;
@@ -560,7 +561,7 @@ for i =1:num_files
 end
 
 
-% calculate natural logs of leakage current. For negative leakage, put sign 
+% calculate log10s of leakage current. For negative leakage, put sign 
 % in front of the log of the magnitude of the leakage.
 
 % if lcm1_avg_scale < 0
@@ -578,17 +579,29 @@ for i = 1:num_files
     for j = 1:numpoints(i)
         
         if lcm1_avg(i,j) - lcm1_avg_offset(i) < 0
-            lcm1_avg_log(i,j) = -log10(abs(lcm1_avg(i,j) - lcm1_avg_offset(i)));
+            lcm1_avg_log_neg(i,j,1) = time(i,j);            
+            lcm1_avg_log_neg(i,j,2) = log10(abs(lcm1_avg(i,j) - lcm1_avg_offset(i)));
         else
-            lcm1_avg_log(i,j) = log10(lcm1_avg(i,j) - lcm1_avg_offset(i));
+            lcm1_avg_log_pos(i,j,1) = time(i,j);
+            lcm1_avg_log_pos(i,j,2) = log10(lcm1_avg(i,j) - lcm1_avg_offset(i));
         end
         
+    end
+    
+    for j = 1:numpoints(i)
         
-%        lcm1_avg_log(i,j) = lcm1_avg_raw_log(i,j) + lcm1_avg_scale_log;
+        if lcm1_avg_log_neg(i,j,2) < 1
+            lcm1_avg_log_neg(i,j,1) = NaN;
+            lcm1_avg_log_neg(i,j,2) = NaN;
+        end
+        
+        if lcm1_avg_log_pos(i,j,2) < 1
+            lcm1_avg_log_pos(i,j,1) = NaN;
+            lcm1_avg_log_pos(i,j,2) = NaN;
+        end
         
     end
 end
-
 
 field_max = zeros(num_files,1);
 leakage_max = zeros(num_files,1);
@@ -1211,6 +1224,8 @@ cmap = colormap(join_list_rgb);
 
 
 %titles and shit
+
+approximate_time_points = 4800;
 title_string = 'leakage current comparison plot';
 x_label = 'PS voltage (-kV)';
 y_label = 'residual (pA)';
@@ -1218,8 +1233,8 @@ legend_titles = [filenames];
 xtick_numbers = [ 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75];
 ytick_numbers = [-125 -100 -75 -50 -25 0 25 50 75 100 125];
 xmin = 0.0;
-xmax = +60.0;
-ymin = -5.5;
+xmax = +40.0;
+ymin = +0.5;
 ymax = +5.5;
 plot_bounds = [xmin xmax ymin ymax];
 
@@ -1384,7 +1399,7 @@ ylabel(y_label,'FontSize',32)
 % l = legend('show'); l.String = [{'ramp up'}, {'ramp down'}]; l.FontSize = 32; l.Location = 'northeast outside';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-fig = figure;
+
 left_color = cmap(num_files+1,:);
 right_color = cmap(num_files+1+2*num_files+2,:);
 % set(fig,'defaultAxesColorOrder',[left_color; right_color]);
@@ -1464,19 +1479,8 @@ for i = 1:num_files
 
 
     subplot(num_files,1,num_files + 1 - i)
-
-% [ax,h1,h2]=plotyy(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
-%     lcm1_avg_log(i,start_point(i):end_point(i)),...
-%     time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
-%      vmon_avg(i,start_point(i):end_point(i))-vmon_avg_offset(i));
-% hl=legend('y','z','Location','Best');
-% %set(hl,'FontSize',8)
-% %title('y and z','FontSize',10)
-% %xlabel('x','FontSize',8);
-% %set(ax,'FontSize',10);
-% set(h1,'color','r')
-% set(h2,'color','g')
-     ax = gca; % current axes
+%    figure
+    ax = gca; % current axes
 
     text(...
        'Position',[xmax ymax_right],...
@@ -1487,16 +1491,21 @@ for i = 1:num_files
 
     yyaxis left
 
+       plot(lcm1_avg_log_pos(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
+       lcm1_avg_log_pos(i,start_point(i):approximate_time_points,2),...
+       'x','Color', cmap(i+1+num_files+1,:),'MarkerSize', 4,...
+       'LineWidth', 1.0); hold on;
 
-    plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
-       lcm1_avg_log(i,start_point(i):end_point(i)),...
-       '-','Color', cmap(i+1,:),'MarkerSize', 3,...
-       'LineWidth', 2.0);
-    axis(plot_bounds)
+    plot(lcm1_avg_log_neg(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
+       lcm1_avg_log_neg(i,start_point(i):approximate_time_points,2),...
+       'o','Color', cmap(i+1,:),'MarkerSize', 4,...
+       'LineWidth', 1.0);   
+   
+   axis(plot_bounds)
 
     yyaxis right
-    plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
-       vmon_avg(i,start_point(i):end_point(i))-vmon_avg_offset(i),...
+    plot(time(i,start_point(i):approximate_time_points) - time(i,start_point(i)),...
+       vmon_avg(i,start_point(i):approximate_time_points)-vmon_avg_offset(i),...
        '-','Color', cmap(i+1+2*num_files+2,:),'MarkerSize', 3,...
        'LineWidth', 2.0);
     ylim([ymin_right ymax_right])
