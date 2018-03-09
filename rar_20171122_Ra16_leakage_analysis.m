@@ -1453,6 +1453,8 @@ for i = 1:num_files
 % 
 % 
 %    subplot(num_files,1,num_files + 1 - i)
+
+%%note: this won't run in versions previous to 2016a, use plotyy instead
 %    yyaxis left
 %       plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
 %        vmon_avg(i,start_point(i):end_point(i))-vmon_avg_offset(i),...
@@ -1460,6 +1462,7 @@ for i = 1:num_files
 %        'LineWidth', 2.0);
 %    axis(plot_bounds)
 % 
+%%note: this won't run in versions previous to 2016a, use plotyy instead
 %    yyaxis right
 %    plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
 %        lcm1_avg(i,start_point(i):end_point(i))-lcm1_avg_offset(i),...
@@ -1475,44 +1478,46 @@ for i = 1:num_files
 %        'FontSize',14);
 %    ax.TickDir = 'out'; % make ticks point out
 
-%%%%%%% %grid of log leakage current & viktage v. time  %%%%%%%%%%%%%%%%%%%
-
-
-    subplot(num_files,1,num_files + 1 - i)
-%    figure
-    ax = gca; % current axes
-
-    text(...
-       'Position',[xmax ymax_right],...
-       'String',legend_titles(i),...
-       'HorizontalAlignment','right','VerticalAlignment','top',...
-       'FontSize',14);
-    ax.TickDir = 'out'; % make ticks point out
-
-    yyaxis left
-
-       plot(lcm1_avg_log_pos(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
-       lcm1_avg_log_pos(i,start_point(i):approximate_time_points,2),...
-       'x','Color', cmap(i+1+num_files+1,:),'MarkerSize', 4,...
-       'LineWidth', 1.0); hold on;
-
-    plot(lcm1_avg_log_neg(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
-       lcm1_avg_log_neg(i,start_point(i):approximate_time_points,2),...
-       'o','Color', cmap(i+1,:),'MarkerSize', 4,...
-       'LineWidth', 1.0);   
-   
-   axis(plot_bounds)
-
-    yyaxis right
-    plot(time(i,start_point(i):approximate_time_points) - time(i,start_point(i)),...
-       vmon_avg(i,start_point(i):approximate_time_points)-vmon_avg_offset(i),...
-       '-','Color', cmap(i+1+2*num_files+2,:),'MarkerSize', 3,...
-       'LineWidth', 2.0);
-    ylim([ymin_right ymax_right])
-
-
-
-    pbaspect([7 1 1])
+%%%%%%% %grid of log leakage current & voltage v. time  %%%%%%%%%%%%%%%%%%%
+% 
+% 
+%     subplot(num_files,1,num_files + 1 - i)
+% %    figure
+%     ax = gca; % current axes
+% 
+%     text(...
+%        'Position',[xmax ymax_right],...
+%        'String',legend_titles(i),...
+%        'HorizontalAlignment','right','VerticalAlignment','top',...
+%        'FontSize',14);
+%     ax.TickDir = 'out'; % make ticks point out
+% 
+%     %note: this won't run in versions previous to 2016a, use plotyy instead
+%     yyaxis left
+% 
+%        plot(lcm1_avg_log_pos(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
+%        lcm1_avg_log_pos(i,start_point(i):approximate_time_points,2),...
+%        'x','Color', cmap(i+1+num_files+1,:),'MarkerSize', 4,...
+%        'LineWidth', 1.0); hold on;
+% 
+%     plot(lcm1_avg_log_neg(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
+%        lcm1_avg_log_neg(i,start_point(i):approximate_time_points,2),...
+%        'o','Color', cmap(i+1,:),'MarkerSize', 4,...
+%        'LineWidth', 1.0);   
+%    
+%    axis(plot_bounds)
+% 
+%    %note: this won't run in versions previous to 2016a, use plotyy instead
+%     yyaxis right
+%     plot(time(i,start_point(i):approximate_time_points) - time(i,start_point(i)),...
+%        vmon_avg(i,start_point(i):approximate_time_points)-vmon_avg_offset(i),...
+%        '-','Color', cmap(i+1+2*num_files+2,:),'MarkerSize', 3,...
+%        'LineWidth', 2.0);
+%     ylim([ymin_right ymax_right])
+% 
+% 
+% 
+%     pbaspect([7 1 1])
 
 
 
@@ -1553,6 +1558,10 @@ for i = 1:num_files
 
 %%%%%%%%%%%%%% ramp data plot of psvoltage v time %%%%%%%%%%%%%%%%%%%%%%%%%
 %    subplot(num_files,1,num_files + 1 - i)
+%    
+%    %note: for 2017-10-23-175202-hv-1.txt, time_ramp_up and vmon_avg_ramp_up
+%    %have different lengths... possible bugs
+%    
 %    plot(time_ramp_up(i,:), vmon_avg_ramp_up(i,:) - vmon_avg_offset(i),...
 %    'o','Color', cmap(1+i,:),'MarkerSize', 8, 'LineWidth', 2.0);
 %    %axis(plot_bounds)
@@ -1564,23 +1573,23 @@ for i = 1:num_files
 
 
 % %%%%%%%%%% ramp data plot of mean up chunk voltage v chunk # %%%%%%%
-%     figure1 = figure('Units','normalized')
-%     plot([1:1:num_up_chunks(i)], vmon_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - vmon_avg_offset(i),...
-%     'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
-%     %errorbar([1:1:num_up_chunk_rows(i), vmon_avg_ramp_up_avg_chunk, vmon_avg_ramp_up_stdev_chunk,'o');
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('hvps HI ramp means','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('high voltage (-kV)','FontSize',32)
-%     annotation(figure1,'textbox',...
-%     outside_plot,'String',{['avg HI (-kV):'],...
-%     [sprintf('%.3f',vmon_avg_ramp_up_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
-% 
+    figure1 = figure('Units','normalized')
+    plot([1:1:num_up_chunks(i)], vmon_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - vmon_avg_offset(i),...
+    'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
+    %errorbar([1:1:num_up_chunk_rows(i), vmon_avg_ramp_up_avg_chunk, vmon_avg_ramp_up_stdev_chunk,'o');
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('hvps HI ramp means','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('high voltage (-kV)','FontSize',32)
+    annotation(figure1,'textbox',...
+    outside_plot,'String',{['avg HI (-kV):'],...
+    [sprintf('%.3f',vmon_avg_ramp_up_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
+
 % 
 % %%%%%%%%%%% ramp data plot of mean down chunk voltage v chunk # %%%%%%%%%%
 %     figure2 = figure('Units','normalized')
