@@ -20,7 +20,8 @@ close all
 % 11-19-2017 changing adding module to plot current from 11/13 leakage
 % current precision test. 
 
-power_supply = 2; % 0 = unipolar Acopian 
+set(0, 'DefaultFigureRenderer', 'Painters');
+power_supply = 1; % 0 = unipolar Acopian 
 %                   1 = bipolar AK (installed and tested 8-18-2017)
 %                   2 = Ra EDM Spellman power supply for 2016 run
 
@@ -34,7 +35,7 @@ sample_rate = 1 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
 leakage_sensitivity_test = 0; % 0 = not a sensitivity test
                               % 1 = leakage sensitivity test
 
-file_struct = dir('*combined.txt');
+file_struct = dir('*hv-1.txt');
 num_files = length(file_struct); 
 
 num_cols = 0;
@@ -64,43 +65,33 @@ if power_supply == 0 || power_supply == 1
     end
     
 elseif power_supply == 2
-    
-    sizeset = [4 Inf];
-    formatSpec = '{%f, %f, %f, %f}\n';
 
     for i = 1:num_files
-        fileID = fopen(file_struct(i).name,'r');
-        set = fscanf(fileID, formatSpec, sizeset);
-        set = set';
-        
-        if length(set(:,1)) > num_rows
-            num_rows = length(set(:,1));
+        table = readtable(file_struct(i).name,'Delimiter',',','ReadVariableNames',false);
+        if height(table) > num_rows
+            num_rows = height(table);
         end
-        if length(set(1,:)) > num_cols
-            num_cols = length(set(1,:));
+        if width(table) > num_cols
+            num_cols = width(table);
         end
-
         filenames{i} = file_struct(i).name(1:10);
-        fclose(fileID);
     end
-    
     
     data = zeros(num_files,num_rows,num_cols); 
     
     
     for i = 1:num_files
-        fileID = fopen(file_struct(i).name,'r');
-        set = fscanf(fileID, formatSpec, sizeset);
-        set = set';
-        
-        for j = 1:length(set(:,1))
-            data(i,j,1) = set(j,1);
-            data(i,j,2) = set(j,2);
-            data(i,j,3) = set(j,3);
-            data(i,j,4) = set(j,4);
-            
-        end
-    fclose(fileID);
+        table = readtable(file_struct(i).name,'Delimiter',',','ReadVariableNames',false);
+        for j = 1:height(table)
+            cell_split1 = strsplit(table{j,1}{1},'{');            
+            set_pass1 = str2num(cell_split1{2});
+            cell_split2 = strsplit(table{j,4}{1},'}');
+            set_pass2 = str2num(cell_split2{1});
+            data(i,j,1) = set_pass1;
+            data(i,j,2) = table{j,2};
+            data(i,j,3) = table{j,3};
+            data(i,j,4) = set_pass2;
+        end        
     end    
 end
         
@@ -150,6 +141,8 @@ imon_avg_wt = zeros(num_files,num_rows,1);
 imon_avg_wt_raw = zeros(num_files,num_rows,1);
 
 lcm1_avg = zeros(num_files,num_rows,1);
+lcm1_avg_log_neg = zeros(num_files,num_rows,2);
+lcm1_avg_log_pos = zeros(num_files,num_rows,2);
 lcm1_avg_raw = zeros(num_files,num_rows,1);
 lcm1_avg_stdev = zeros(num_files,num_rows,1);
 lcm1_avg_stdev_raw = zeros(num_files,num_rows,1);
@@ -339,6 +332,8 @@ elseif pressure_gauge == 1
     end
 end
 
+
+
 for i = 1:num_files
     for j = 1:numpoints(i)
         vmon_avg_raw(i,j) = vmon_avg_raw_mag(i,j)*polarity_sign(i,j);
@@ -353,6 +348,7 @@ for i = 1:num_files
         imon_weight(i,j) = (vmon_avg_stdev(i,j))^-2;
         
         lcm1_avg(i,j) = lcm1_avg_raw(i,j)*lcm1_avg_scale;
+%        lcm1_avg_log(i,j) = lcm1_avg_log(i,j)*lcm1_avg_scale;
         lcm1_avg_stdev(i,j) = lcm1_avg_stdev_raw(i,j)*abs(lcm1_avg_scale);
         lcm1_weight(i,j) = 1/(lcm1_avg_stdev(i,j)^2);
         
@@ -362,6 +358,8 @@ for i = 1:num_files
         field_avg(i,j) = field_avg_raw(i,j)*vmon_avg_scale; %(kV/cm)
     end
 end
+
+
 
 current_source_avg = zeros(num_files,35); %(in pA)
 current_source_avg_stdev = zeros(num_files,35); %(in pA)
@@ -424,7 +422,7 @@ for i = 1:num_files
     for j = (offset_length+1):numpoints(i)
 % look for 100 V bump indicating the HV switch is on. Note: PS resistance 
 % fluctuates wildly under 1.1 kV
-       if  abs(vmon_avg(i,j)) > 0.1 && numpoints(i)>1000;
+       if  abs(vmon_avg(i,j)) > 0.1 && numpoints(i)>1000
            start_point(i) = j;  % supply is turned on
            start_offset(i,1,1) = j - offset_length;
            start_offset(i,2,1) = j - 1;
@@ -477,8 +475,10 @@ imon_weight_offset_raw_start = zeros(num_files,1);
 imon_weight_offset_raw_end = zeros(num_files,1);
 
 lcm1_avg_offset_raw = zeros(num_files,1);
+lcm1_avg_offset_raw_log = zeros(num_files,1);
 lcm1_acc_test_offset_raw = zeros(num_files,1);
 lcm1_avg_offset = zeros(num_files,1);
+lcm1_avg_offset_log = zeros(num_files,1);
 lcm1_acc_test_offset = zeros(num_files,1);
 lcm1_avg_offset_raw_start_wt = zeros(num_files,offset_length);
 lcm1_avg_offset_raw_start = zeros(num_files,1);
@@ -561,6 +561,48 @@ for i =1:num_files
 end
 
 
+% calculate log10s of leakage current. For negative leakage, put sign 
+% in front of the log of the magnitude of the leakage.
+
+% if lcm1_avg_scale < 0
+% 
+%     lcm1_avg_scale_log = -log(lcm1_avg_scale);
+% 
+% else
+%     
+%     lcm1_avg_scale_log = log(lcm1_avg_scale);
+%     
+% end
+
+for i = 1:num_files
+    
+    for j = 1:numpoints(i)
+        
+        if lcm1_avg(i,j) - lcm1_avg_offset(i) < 0
+            lcm1_avg_log_neg(i,j,1) = time(i,j);            
+            lcm1_avg_log_neg(i,j,2) = log10(abs(lcm1_avg(i,j) - lcm1_avg_offset(i)));
+        else
+            lcm1_avg_log_pos(i,j,1) = time(i,j);
+            lcm1_avg_log_pos(i,j,2) = log10(lcm1_avg(i,j) - lcm1_avg_offset(i));
+        end
+        
+    end
+    
+    for j = 1:numpoints(i)
+        
+        if lcm1_avg_log_neg(i,j,2) < 1
+            lcm1_avg_log_neg(i,j,1) = NaN;
+            lcm1_avg_log_neg(i,j,2) = NaN;
+        end
+        
+        if lcm1_avg_log_pos(i,j,2) < 1
+            lcm1_avg_log_pos(i,j,1) = NaN;
+            lcm1_avg_log_pos(i,j,2) = NaN;
+        end
+        
+    end
+end
+
 field_max = zeros(num_files,1);
 leakage_max = zeros(num_files,1);
 voltage_max = zeros(num_files,1);
@@ -636,72 +678,35 @@ num_ramp_down_points = ones(num_files,1);
 count_up_chunks = zeros(num_files,1);
 count_down_chunks = zeros(num_files,1);
 
-
-if power_supply == 0 || 1
-    for i = 1:num_files
-        count_up_chunks(i) = 0;
-        count_down_chunks(i) = 0;
-        for j = start_point(i):numpoints(i)           
-            if abs(vmon_avg(i,j) - ramp_high_voltage(i)) < 3*ramp_high_deviation(i) && vmon_avg(i,j) < ramp_high_voltage(i) + ramp_high_deviation(i)
-                num_ramp_up_points(i) = num_ramp_up_points(i) + 1;
-                vmon_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_avg_raw(i,j);
-                vmon_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_weight_raw(i,j);
-                lcm1_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_avg_raw(i,j);
-                lcm1_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_weight_raw(i,j);
-                time_ramp_up_pass(i,num_ramp_up_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
-                up_array_count(i) = up_array_count(i)+1;
-                if time_ramp_up_pass(i,num_ramp_up_points(i)) - time_ramp_up_pass(i,num_ramp_up_points(i)-1) > sampling_time                
-                    count_up_chunks(i) = count_up_chunks(i) + 1;
-                    up_chunk_array_pass(i,1, count_up_chunks(i)) = count_up_chunks(i);
-                    up_chunk_array_pass(i,2, count_up_chunks(i)) = up_array_count(i) - 1;
-                end
-            elseif abs(vmon_avg(i,j) - ramp_low_voltage(i)) < 3*ramp_low_deviation(i) && vmon_avg(i,j) > ramp_low_voltage(i) - ramp_low_deviation(i)
-                num_ramp_down_points(i) = num_ramp_down_points(i) + 1;
-                vmon_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_avg_raw(i,j);
-                vmon_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_weight_raw(i,j);
-                lcm1_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_avg_raw(i,j);
-                lcm1_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_weight_raw(i,j);
-                time_ramp_down_pass(i,num_ramp_down_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
-                down_array_count(i) = down_array_count(i) + 1;
-                if time_ramp_down_pass(i,num_ramp_down_points(i)) - time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time                
-                    count_down_chunks(i) = count_down_chunks(i) + 1;
-                    down_chunk_array_pass(i,1, count_down_chunks(i)) = count_down_chunks(i);
-                    down_chunk_array_pass(i,2, count_down_chunks(i)) = down_array_count(i)-1;
-                end
+for i = 1:num_files
+    count_up_chunks(i) = 0;
+    count_down_chunks(i) = 0;
+    for j = start_point(i):numpoints(i)           
+        if abs(vmon_avg(i,j) - ramp_high_voltage(i)) < 3*ramp_high_deviation(i) && vmon_avg(i,j) < ramp_high_voltage(i) + ramp_high_deviation(i)
+            num_ramp_up_points(i) = num_ramp_up_points(i) + 1;
+            vmon_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_avg_raw(i,j);
+            vmon_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_weight_raw(i,j);
+            lcm1_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_avg_raw(i,j);
+            lcm1_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_weight_raw(i,j);
+            time_ramp_up_pass(i,num_ramp_up_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+            up_array_count(i) = up_array_count(i)+1;
+            if time_ramp_up_pass(i,num_ramp_up_points(i)) - time_ramp_up_pass(i,num_ramp_up_points(i)-1) > sampling_time                
+                count_up_chunks(i) = count_up_chunks(i) + 1;
+                up_chunk_array_pass(i,1, count_up_chunks(i)) = count_up_chunks(i);
+                up_chunk_array_pass(i,2, count_up_chunks(i)) = up_array_count(i) - 1;
             end
-        end
-    end
-else
-    for i = 1:num_files
-        count_up_chunks(i) = 0;
-        count_down_chunks(i) = 0;
-        for j = start_point(i):numpoints(i)           
-            if abs(vmon_avg(i,j) - ramp_high_voltage(i)) < 3*ramp_high_deviation(i) && vmon_avg(i,j) < ramp_high_voltage(i) + ramp_high_deviation(i)
-                num_ramp_up_points(i) = num_ramp_up_points(i) + 1;
-                vmon_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_avg_raw(i,j);
-                vmon_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = vmon_weight_raw(i,j);
-                lcm1_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_avg_raw(i,j);
-                lcm1_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_weight_raw(i,j);
-                time_ramp_up_pass(i,num_ramp_up_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
-                up_array_count(i) = up_array_count(i)+1;
-                if time_ramp_up_pass(i,num_ramp_up_points(i)) - time_ramp_up_pass(i,num_ramp_up_points(i)-1) > sampling_time                
-                    count_up_chunks(i) = count_up_chunks(i) + 1;
-                    up_chunk_array_pass(i,1, count_up_chunks(i)) = count_up_chunks(i);
-                    up_chunk_array_pass(i,2, count_up_chunks(i)) = up_array_count(i) - 1;
-                end
-            elseif abs(vmon_avg(i,j) - ramp_low_voltage(i)) < 3*ramp_low_deviation(i) && vmon_avg(i,j) > ramp_low_voltage(i) - ramp_low_deviation(i)
-                num_ramp_down_points(i) = num_ramp_down_points(i) + 1;
-                vmon_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_avg_raw(i,j);
-                vmon_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_weight_raw(i,j);
-                lcm1_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_avg_raw(i,j);
-                lcm1_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_weight_raw(i,j);
-                time_ramp_down_pass(i,num_ramp_down_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
-                down_array_count(i) = down_array_count(i) + 1;
-                if time_ramp_down_pass(i,num_ramp_down_points(i)) - time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time                
-                    count_down_chunks(i) = count_down_chunks(i) + 1;
-                    down_chunk_array_pass(i,1, count_down_chunks(i)) = count_down_chunks(i);
-                    down_chunk_array_pass(i,2, count_down_chunks(i)) = down_array_count(i)-1;
-                end
+        elseif abs(vmon_avg(i,j) - ramp_low_voltage(i)) < 3*ramp_low_deviation(i) && vmon_avg(i,j) > ramp_low_voltage(i) - ramp_low_deviation(i)
+            num_ramp_down_points(i) = num_ramp_down_points(i) + 1;
+            vmon_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_avg_raw(i,j);
+            vmon_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_weight_raw(i,j);
+            lcm1_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_avg_raw(i,j);
+            lcm1_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_weight_raw(i,j);
+            time_ramp_down_pass(i,num_ramp_down_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+            down_array_count(i) = down_array_count(i) + 1;
+            if time_ramp_down_pass(i,num_ramp_down_points(i)) - time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time                
+                count_down_chunks(i) = count_down_chunks(i) + 1;
+                down_chunk_array_pass(i,1, count_down_chunks(i)) = count_down_chunks(i);
+                down_chunk_array_pass(i,2, count_down_chunks(i)) = down_array_count(i)-1;
             end
         end
     end
@@ -1169,41 +1174,73 @@ red_step = round(0.75/(num_files + 1),4);
 for i = 1:num_files+1
     sat = 1 + red_step*(i - num_files - 1);
     val = 1 + red_step*(i - num_files - 1)/3.;
-    red_list_hsv(i,1) = 0;
+    red_list_hsv(i,1) = redhsv(1);
     red_list_hsv(i,2) = sat;
     red_list_hsv(i,3) = val;
     red_list_rgb(i,:,:) = hsv2rgb(red_list_hsv(i,:,:));
 end
-cmap = colormap(red_list_rgb);
 
-grnhsv = [0.33 1 1];     % green HSV
+bluehsv = [0.667 1 1];     % blue HSV
+blue_list_hsv = zeros(num_files + 1,3);
+blue_list_rgb = zeros(num_files + 1,3);
+blue_step = round(0.75/(num_files + 1),4);
+for i = 1:num_files+1
+    sat = 1 + blue_step*(i - num_files - 1);
+    val = 1 + blue_step*(i - num_files - 1)/3.;
+    blue_list_hsv(i,1) = bluehsv(1);
+    blue_list_hsv(i,2) = sat;
+    blue_list_hsv(i,3) = val;
+    blue_list_rgb(i,:,:) = hsv2rgb(blue_list_hsv(i,:,:));
+end
+
+grnhsv = [0.333 1 1];     % green HSV
 grn_list_hsv = zeros(num_files + 1,3);
 grn_list_rgb = zeros(num_files + 1,3);
 grn_step = round(0.75/(num_files + 1),4);
 for i = 1:num_files+1
     sat = 1 + grn_step*(i - num_files - 1);
     val = 1 + grn_step*(i - num_files - 1)/3.;
-    grn_list_hsv(i,1) = 0;
+    grn_list_hsv(i,1) = grnhsv(1);
     grn_list_hsv(i,2) = sat;
     grn_list_hsv(i,3) = val;
     grn_list_rgb(i,:,:) = hsv2rgb(grn_list_hsv(i,:,:));
 end
-cmap = colormap(red_list_rgb);
+
+num_colors = 3*length(redhsv(:,1));
+join_list_rgb = zeros(num_colors,3);
+
+
+for i =1:num_files + 1
+    join_list_rgb(i,:,:) = red_list_rgb(i,:,:);
+    join_list_rgb(i+num_files + 1,:,:) = grn_list_rgb(i,:,:);
+    join_list_rgb(i+2*num_files+2,:,:) = blue_list_rgb(i,:,:);
+    
+end
+
+
+cmap = colormap(join_list_rgb);
+
 
 
 
 %titles and shit
+
+approximate_time_points = 4800;
 title_string = 'leakage current comparison plot';
 x_label = 'PS voltage (-kV)';
 y_label = 'residual (pA)';
 legend_titles = [filenames];
 xtick_numbers = [ 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75];
 ytick_numbers = [-125 -100 -75 -50 -25 0 25 50 75 100 125];
-xmin = -100.0;
-xmax = +100.0;
-ymin = -100.0;
-ymax = +100.0;
+xmin = 0.0;
+xmax = +40.0;
+ymin = +0.5;
+ymax = +5.5;
 plot_bounds = [xmin xmax ymin ymax];
+
+ymin_right = -30;
+ymax_right = 30;
+plot_bounds_right = [xmin xmax ymin_right ymax_right];
 
 
 % y = 0 line
@@ -1363,6 +1400,9 @@ ylabel(y_label,'FontSize',32)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+left_color = cmap(num_files+1,:);
+right_color = cmap(num_files+1+2*num_files+2,:);
+% set(fig,'defaultAxesColorOrder',[left_color; right_color]);
 for i = 1:num_files
     
 %    figure1 =figure('Units','normalized')
@@ -1409,19 +1449,75 @@ for i = 1:num_files
 %    ax.TickDir = 'out'; % make ticks point out
 
 
-%%%%%%%%%%%% %grid of leakage current v. time %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%% %grid of leakage current v. time %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% 
+%    subplot(num_files,1,num_files + 1 - i)
 
+%%note: this won't run in versions previous to 2016a, use plotyy instead
+%    yyaxis left
+%       plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+%        vmon_avg(i,start_point(i):end_point(i))-vmon_avg_offset(i),...
+%        '-','Color', cmap(i+1+2*num_files+2,:),'MarkerSize', 3,...
+%        'LineWidth', 2.0);
+%    axis(plot_bounds)
+% 
+%%note: this won't run in versions previous to 2016a, use plotyy instead
+%    yyaxis right
+%    plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
+%        lcm1_avg(i,start_point(i):end_point(i))-lcm1_avg_offset(i),...
+%        '-','Color', cmap(i+1,:),'MarkerSize', 3,...
+%        'LineWidth', 2.0);
+% %   ylim([ymin_right ymax_right])
+%    pbaspect([7 1 1])
+%    ax = gca; % current axes
+%    text(...
+%        'Position',[xmax ymax_right],...
+%        'String',legend_titles(i),...
+%        'HorizontalAlignment','right','VerticalAlignment','top',...
+%        'FontSize',14);
+%    ax.TickDir = 'out'; % make ticks point out
 
-%   subplot(num_files,1,num_files + 1 - i)
-   plot(time(i,start_point(i):end_point(i)) - time(i,start_point(i)),...
-       lcm1_avg(i,start_point(i):end_point(i))-lcm1_avg_offset(i),...
-       '-','Color', cmap(i+1,:),'MarkerSize', 3, 'LineWidth', 2.0);
-%   axis(plot_bounds)
-   pbaspect([1.33 1 1])
-   ax = gca; % current axes
-%   text('Position',[xmax ymax],'String',legend_titles(i),...
-%       'HorizontalAlignment','right','VerticalAlignment','top','FontSize',14);
-   ax.TickDir = 'out'; % make ticks point out
+%%%%%%% %grid of log leakage current & voltage v. time  %%%%%%%%%%%%%%%%%%%
+% 
+% 
+%     subplot(num_files,1,num_files + 1 - i)
+% %    figure
+%     ax = gca; % current axes
+% 
+%     text(...
+%        'Position',[xmax ymax_right],...
+%        'String',legend_titles(i),...
+%        'HorizontalAlignment','right','VerticalAlignment','top',...
+%        'FontSize',14);
+%     ax.TickDir = 'out'; % make ticks point out
+% 
+%     %note: this won't run in versions previous to 2016a, use plotyy instead
+%     yyaxis left
+% 
+%        plot(lcm1_avg_log_pos(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
+%        lcm1_avg_log_pos(i,start_point(i):approximate_time_points,2),...
+%        'x','Color', cmap(i+1+num_files+1,:),'MarkerSize', 4,...
+%        'LineWidth', 1.0); hold on;
+% 
+%     plot(lcm1_avg_log_neg(i,start_point(i):approximate_time_points,1) - time(i,start_point(i)),...
+%        lcm1_avg_log_neg(i,start_point(i):approximate_time_points,2),...
+%        'o','Color', cmap(i+1,:),'MarkerSize', 4,...
+%        'LineWidth', 1.0);   
+%    
+%    axis(plot_bounds)
+% 
+%    %note: this won't run in versions previous to 2016a, use plotyy instead
+%     yyaxis right
+%     plot(time(i,start_point(i):approximate_time_points) - time(i,start_point(i)),...
+%        vmon_avg(i,start_point(i):approximate_time_points)-vmon_avg_offset(i),...
+%        '-','Color', cmap(i+1+2*num_files+2,:),'MarkerSize', 3,...
+%        'LineWidth', 2.0);
+%     ylim([ymin_right ymax_right])
+% 
+% 
+% 
+%     pbaspect([7 1 1])
 
 
 
@@ -1462,6 +1558,10 @@ for i = 1:num_files
 
 %%%%%%%%%%%%%% ramp data plot of psvoltage v time %%%%%%%%%%%%%%%%%%%%%%%%%
 %    subplot(num_files,1,num_files + 1 - i)
+%    
+%    %note: for 2017-10-23-175202-hv-1.txt, time_ramp_up and vmon_avg_ramp_up
+%    %have different lengths... possible bugs
+%    
 %    plot(time_ramp_up(i,:), vmon_avg_ramp_up(i,:) - vmon_avg_offset(i),...
 %    'o','Color', cmap(1+i,:),'MarkerSize', 8, 'LineWidth', 2.0);
 %    %axis(plot_bounds)
@@ -1473,23 +1573,23 @@ for i = 1:num_files
 
 
 % %%%%%%%%%% ramp data plot of mean up chunk voltage v chunk # %%%%%%%
-%     figure1 = figure('Units','normalized')
-%     plot([1:1:num_up_chunks(i)], vmon_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - vmon_avg_offset(i),...
-%     'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
-%     %errorbar([1:1:num_up_chunk_rows(i), vmon_avg_ramp_up_avg_chunk, vmon_avg_ramp_up_stdev_chunk,'o');
-% %    axis(plot_bounds)
-%     pbaspect([1.33 1 1])
-%     ax = gca; % current axes
-%     ax.FontSize = 32;
-%     ax.TickDir = 'out'; % make ticks point out
-%     title('hvps HI ramp means','FontSize',40)
-%     xlabel('chunk #','FontSize',32)
-%     ylabel('high voltage (-kV)','FontSize',32)
-%     annotation(figure1,'textbox',...
-%     outside_plot,'String',{['avg HI (-kV):'],...
-%     [sprintf('%.3f',vmon_avg_ramp_up_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev(i))]},...
-%     'FontSize',32,'BackgroundColor',[1 1 1]);
-% 
+    figure1 = figure('Units','normalized')
+    plot([1:1:num_up_chunks(i)], vmon_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - vmon_avg_offset(i),...
+    'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
+    %errorbar([1:1:num_up_chunk_rows(i), vmon_avg_ramp_up_avg_chunk, vmon_avg_ramp_up_stdev_chunk,'o');
+%    axis(plot_bounds)
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.FontSize = 32;
+    ax.TickDir = 'out'; % make ticks point out
+    title('hvps HI ramp means','FontSize',40)
+    xlabel('chunk #','FontSize',32)
+    ylabel('high voltage (-kV)','FontSize',32)
+    annotation(figure1,'textbox',...
+    outside_plot,'String',{['avg HI (-kV):'],...
+    [sprintf('%.3f',vmon_avg_ramp_up_avg(i) - vmon_avg_offset(i)) ' \pm ' sprintf('%.3f',vmon_avg_ramp_up_stdev(i))]},...
+    'FontSize',32,'BackgroundColor',[1 1 1]);
+
 % 
 % %%%%%%%%%%% ramp data plot of mean down chunk voltage v chunk # %%%%%%%%%%
 %     figure2 = figure('Units','normalized')
@@ -1551,23 +1651,23 @@ for i = 1:num_files
 %     [sprintf('%.1f',lcm1_avg_ramp_down_avg(i) - lcm1_avg_offset(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_down_stdev(i))]},...
 %     'FontSize',32,'BackgroundColor',[1 1 1]);
 % 
-%%%%%%%%%% ramp data plot of mean up chunk leakage current v chunk # %%%%%%%
-    figure5= figure('Units','normalized')
-    plot([1:1:num_up_chunks(i)], lcm1_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - lcm1_avg_offset(i),...
-    'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
-    %errorbar([[1:1:num_up_chunk_rows(i)], lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
-%    axis(plot_bounds)
-    pbaspect([1.33 1 1])
-    ax = gca; % current axes
-    ax.FontSize = 32;
-    ax.TickDir = 'out'; % make ticks point out
-    title('lcm1 HI ramp means','FontSize',40)
-    xlabel('chunk #','FontSize',32)
-    ylabel('leakage current (pA)','FontSize',32)
-    annotation(figure5,'textbox',...
-    outside_plot,'String',{['avg HI (pA):'],...
-    [sprintf('%.1f',lcm1_avg_ramp_up_avg(i) - lcm1_avg_offset(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_up_stdev(i))]},...
-    'FontSize',32,'BackgroundColor',[1 1 1]);
+% %%%%%%%%%% ramp data plot of mean up chunk leakage current v chunk # %%%%%%%
+%     figure5= figure('Units','normalized')
+%     plot([1:1:num_up_chunks(i)], lcm1_avg_ramp_up_avg_chunk(i,1:num_up_chunks(i)) - lcm1_avg_offset(i),...
+%     'x','Color', 'red','MarkerSize', 8, 'LineWidth', 2.0);
+%     %errorbar([[1:1:num_up_chunk_rows(i)], lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,'o');
+% %    axis(plot_bounds)
+%     pbaspect([1.33 1 1])
+%     ax = gca; % current axes
+%     ax.FontSize = 32;
+%     ax.TickDir = 'out'; % make ticks point out
+%     title('lcm1 HI ramp means','FontSize',40)
+%     xlabel('chunk #','FontSize',32)
+%     ylabel('leakage current (pA)','FontSize',32)
+%     annotation(figure5,'textbox',...
+%     outside_plot,'String',{['avg HI (pA):'],...
+%     [sprintf('%.1f',lcm1_avg_ramp_up_avg(i) - lcm1_avg_offset(i)) ' \pm ' sprintf('%.1f',lcm1_avg_ramp_up_stdev(i))]},...
+%     'FontSize',32,'BackgroundColor',[1 1 1]);
 % 
 % %%%%%%%%%% ramp data plot of stdev hi/lo chunk leakage current v chunk # %%%%%%%
 %     figure6= figure('Units','normalized')
