@@ -210,7 +210,7 @@ numpoints = zeros(num_files,1);
 
 if sample_rate == 0
     sampling_time = 0.03;
-elseif sample_rate == 1;
+elseif sample_rate == 1
     sampling_time = 0.02;
 elseif sample_rate == 2
     sampling_time = 0.001;
@@ -285,7 +285,7 @@ elseif power_supply == 1
     time(i,:) = (time_raw(i,:) - time_raw(i,1))/60.0; %min
     end
 elseif power_supply == 2
-    display('Using Ra EDM Spellman power supply')
+    disp('Using Ra EDM Spellman power supply')
     for i = 1:num_files
         numpoints(i) = num_rows;
 
@@ -309,7 +309,7 @@ end
 
 for i = 1:num_files
     for j =1:numpoints(i)
-        if polarity_avg_raw(i,j) > 1.5;
+        if polarity_avg_raw(i,j) > 1.5
             polarity_sign(i,j) = -1;
         else polarity_sign(i,j) = +1;
         end
@@ -466,7 +466,7 @@ if (power_supply == 0) || (power_supply == 1)
            if  (numpoints(i) - j > 0 && vmon_avg_mag(i,numpoints(i)-j) ... 
                    < 0.1 && abs(lcm1_avg(i,numpoints(i)-j)) < 2*1e3 && ... 
                    time(i,numpoints(i))  - time(i,numpoints(i)-j) < 10 && ... 
-                   numpoints(i) > 1000);
+                   numpoints(i) > 1000)
                end_point(i) = numpoints(i) - j;
                end_offset(i,1,1) = end_point(i) - offset_length;
                end_offset(i,2,1) = end_point(i) - 1;
@@ -492,7 +492,7 @@ elseif power_supply == 2
            if  (numpoints(i) - j > 0 && vmon_avg_mag(i,numpoints(i)-j) ... 
                    < 0.1 && abs(lcm1_avg(i,numpoints(i)-j)) < 2*1e3 && ... 
                    time(i,numpoints(i))  - time(i,numpoints(i)-j) < 10 && ... 
-                   numpoints(i) > 1000);
+                   numpoints(i) > 1000)
                end_point(i) = numpoints(i) - j;
                end_offset(i,1,1) = end_point(i) - offset_length;
                end_offset(i,2,1) = end_point(i) - 1;
@@ -715,53 +715,18 @@ end
 
 %ramp_deviation = 0.05;
 
-vmon_avg_ramp_up_raw = zeros(num_files,num_rows,1);
-vmon_avg_ramp_up = zeros(num_files,num_rows,1);
-
-vmon_avg_ramp_down_raw = zeros(num_files,num_rows,1);
-vmon_avg_ramp_down = zeros(num_files,num_rows,1);
-
-vmon_avg_trash_raw = zeros(num_files,num_rows,1);
-vmon_avg_trash = zeros(num_files,num_rows,1);
-
-time_ramp_up = zeros(num_files,num_rows,1);
-time_ramp_down = zeros(num_files,num_rows,1);
-time_trash = zeros(num_files,num_rows,1);
-
 vmon_avg_ramp_up_raw_pass = zeros(num_files,num_rows,1);
 vmon_weight_avg_ramp_up_raw_pass = zeros(num_files,num_rows,1);
-vmon_weight_avg_ramp_up_raw = zeros(num_files,num_rows,1);
-vmon_weight_avg_ramp_up = zeros(num_files,num_rows,1);
 
 vmon_avg_ramp_down_raw_pass = zeros(num_files,num_rows,1);
 vmon_weight_avg_ramp_down_raw_pass = zeros(num_files,num_rows,1);
-vmon_weight_avg_ramp_down_raw = zeros(num_files,num_rows,1);
-vmon_weight_avg_ramp_down = zeros(num_files,num_rows,1);
 
 vmon_avg_trash_raw_pass = zeros(num_files,num_rows,1);
 vmon_weight_avg_trash_raw_pass = zeros(num_files,num_rows,1);
-vmon_weight_avg_trash_raw = zeros(num_files,num_rows,1);
-vmon_weight_avg_trash = zeros(num_files,num_rows,1);
 
 time_ramp_up_pass = zeros(num_files,num_rows,1);
 time_ramp_down_pass = zeros(num_files,num_rows,1);
 time_trash_pass = zeros(num_files,num_rows,1);
-
-lcm1_avg_ramp_up_raw = zeros(num_files,num_rows,1);
-lcm1_avg_ramp_up = zeros(num_files,num_rows,1);
-lcm1_avg_ramp_up_raw_wt = zeros(num_files,num_rows,1);
-
-lcm1_avg_ramp_down_raw = zeros(num_files,num_rows,1);
-lcm1_avg_ramp_down = zeros(num_files,num_rows,1);
-lcm1_avg_ramp_down_raw_wt = zeros(num_files,num_rows,1);
-
-lcm1_avg_trash_raw = zeros(num_files,num_rows,1);
-lcm1_avg_trash = zeros(num_files,num_rows,1);
-lcm1_avg_trash_raw_wt = zeros(num_files,num_rows,1);
-lcm1_discharge_pos_pass = zeros(num_files,2,1);
-lcm1_discharge_neg_pass = zeros(num_files,2,1);
-lcm1_charge_pos_pass = zeros(num_files,2,1);
-lcm1_charge_neg_pass = zeros(num_files,2,1);
 
 lcm1_avg_ramp_up_raw_pass = zeros(num_files,num_rows,1);
 lcm1_avg_ramp_down_raw_pass = zeros(num_files,num_rows,1);
@@ -771,29 +736,13 @@ lcm1_weight_avg_ramp_up_raw_pass = zeros(num_files,num_rows,1);
 lcm1_weight_avg_ramp_down_raw_pass = zeros(num_files,num_rows,1);
 lcm1_weight_avg_trash_raw_pass = zeros(num_files,num_rows,1);
 
-% 3/11/2018 inv_weight is just stdev. I fucked up variable names so I have to use
-%this nomenclature to avoid a lot of work I don't want to do right now.
 
-lcm1_weight_avg_ramp_up_raw = zeros(num_files,num_rows,1);
-lcm1_inv_weight_avg_ramp_up = zeros(num_files,num_rows,1);
-
-lcm1_weight_avg_ramp_down_raw = zeros(num_files,num_rows,1);
-lcm1_inv_weight_avg_ramp_down = zeros(num_files,num_rows,1);
-
-lcm1_weight_avg_trash_raw = zeros(num_files,num_rows,1);
-lcm1_inv_weight_avg_trash = zeros(num_files,num_rows,1);
 
 %store chunk # and index
-up_chunk_array = zeros(num_files,2,num_rows);
+
 up_chunk_array_pass = zeros(num_files,2,num_rows); 
-
-down_chunk_array = zeros(num_files,2,num_rows);
 down_chunk_array_pass = zeros(num_files,2,num_rows);
-
-trash_chunk_array = zeros(num_files,2,num_rows);
 trash_chunk_array_pass = zeros(num_files,2,num_rows);
-
-
 
 up_array_count = zeros(num_files,1);
 down_array_count = zeros(num_files,1);
@@ -975,6 +924,61 @@ for i =1:num_files
         num_trash_chunk_rows = num_trash_chunks(i);
     end
 end
+
+up_chunk_array = zeros(num_files,2,num_up_chunks);
+down_chunk_array = zeros(num_files,2,num_down_chunks);
+trash_chunk_array = zeros(num_files,2,num_trash_chunks);
+
+time_ramp_up = zeros(num_files,num_ramp_up_points,1);
+time_ramp_down = zeros(num_files,num_ramp_down_points,1);
+time_trash = zeros(num_files,num_trash_points,1);
+
+lcm1_avg_ramp_up_raw = zeros(num_files,num_ramp_up_points,1);
+lcm1_avg_ramp_up = zeros(num_files,num_ramp_up_points,1);
+lcm1_avg_ramp_up_raw_wt = zeros(num_files,num_ramp_up_points,1);
+
+lcm1_avg_ramp_down_raw = zeros(num_files,num_ramp_down_points,1);
+lcm1_avg_ramp_down = zeros(num_files,num_ramp_down_points,1);
+lcm1_avg_ramp_down_raw_wt = zeros(num_files,num_ramp_down_points,1);
+
+lcm1_avg_trash_raw = zeros(num_files,num_trash_points,1);
+lcm1_avg_trash = zeros(num_files,num_trash_points,1);
+lcm1_avg_trash_raw_wt = zeros(num_files,num_trash_points,1);
+
+vmon_weight_avg_ramp_up_raw = zeros(num_files,num_ramp_up_points,1);
+vmon_weight_avg_ramp_up = zeros(num_files,num_ramp_up_points,1);
+
+vmon_weight_avg_ramp_down_raw = zeros(num_files,num_ramp_down_points,1);
+vmon_weight_avg_ramp_down = zeros(num_files,num_ramp_down_points,1);
+
+vmon_weight_avg_trash_raw = zeros(num_files,num_trash_points,1);
+vmon_weight_avg_trash = zeros(num_files,num_trash_points,1);
+
+vmon_avg_ramp_up_raw = zeros(num_files,num_ramp_up_points,1);
+vmon_avg_ramp_up = zeros(num_files,num_ramp_up_points,1);
+
+vmon_avg_ramp_down_raw = zeros(num_files,num_ramp_down_points,1);
+vmon_avg_ramp_down = zeros(num_files,num_ramp_down_points,1);
+
+vmon_avg_trash_raw = zeros(num_files,num_trash_points,1);
+vmon_avg_trash = zeros(num_files,num_trash_points,1);
+
+lcm1_discharge_pos_pass = zeros(num_files,3,1);
+lcm1_discharge_neg_pass = zeros(num_files,3,1);
+lcm1_charge_pos_pass = zeros(num_files,3,1);
+lcm1_charge_neg_pass = zeros(num_files,3,1);
+
+% 3/11/2018 inv_weight is just stdev. I fucked up variable names so I have to use
+%this nomenclature to avoid a lot of work I don't want to do right now.
+
+lcm1_weight_avg_ramp_up_raw = zeros(num_files,num_ramp_up_points,1);
+lcm1_inv_weight_avg_ramp_up = zeros(num_files,num_ramp_up_points,1);
+
+lcm1_weight_avg_ramp_down_raw = zeros(num_files,num_ramp_down_points,1);
+lcm1_inv_weight_avg_ramp_down = zeros(num_files,num_ramp_down_points,1);
+
+lcm1_weight_avg_trash_raw = zeros(num_files,num_trash_points,1);
+lcm1_inv_weight_avg_trash = zeros(num_files,num_trash_points,1);
     
 % radius of points to sample for steady-state average and stdev
 lcm1_avg_trash_steady_avg = zeros(num_files,num_trash_chunks);
@@ -1108,30 +1112,40 @@ for i =1:num_files
     end   
 end
 
-%create vectors containing avg and stdev data for + V -> 0, -V -> 0, 0 ->
-%+V, and 0 -> -V
+%create vectors containing time, leakage avg, and leakage stdev data 
+%for + V -> 0, -V -> 0, 0 -> +V, and 0 -> -V
 for i = 1:num_files
     for j = 1:num_trash_chunks
         if discharge_index(i,j,1) == 0
-            lcm1_discharge_pos_pass(i,1,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
-            lcm1_discharge_pos_pass(i,2,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_pos_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_pos_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_pos_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
         elseif discharge_index(i,j,1) == 1
-            lcm1_discharge_neg_pass(i,1,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
-            lcm1_discharge_neg_pass(i,2,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_neg_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_neg_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_neg_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
         end
         
         if charge_index(i,j,1) == 0
-            lcm1_charge_pos_pass(i,1,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            lcm1_charge_pos_pass(i,2,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_pos_pass(i,2,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_pos_pass(i,3,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_pos_pass(i,1,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            
         
         elseif charge_index(i,j,1) == 1
-            lcm1_charge_neg_pass(i,1,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            lcm1_charge_neg_pass(i,2,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) =lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_neg_pass(i,2,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_neg_pass(i,3,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) =lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_neg_pass(i,1,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
             
         end
     end
 end
 
+%get rid of those pesky zeros in front
+lcm1_discharge_pos = lcm1_discharge_pos_pass(:,:,2:end);
+lcm1_discharge_neg = lcm1_discharge_neg_pass(:,:,2:end);
+lcm1_charge_pos = lcm1_charge_pos_pass(:,:,2:end);
+lcm1_charge_neg = lcm1_charge_neg_pass(:,:,2:end);
 
 
 %Use function 'chunkify' to average each chunk dataset into a point.
