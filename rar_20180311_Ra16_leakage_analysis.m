@@ -748,6 +748,7 @@ up_array_count = zeros(num_files,1);
 down_array_count = zeros(num_files,1);
 trash_array_count = zeros(num_files,1);
 
+%I start them at one out of necessity and subtract one after the sorting
 num_ramp_up_points = ones(num_files,1);
 num_ramp_down_points = ones(num_files,1);
 num_trash_points = ones(num_files,1);
@@ -843,71 +844,19 @@ elseif power_supply == 2
                     trash_chunk_array_pass(i,2, count_trash_chunks(i)) = trash_array_count(i)-1;
                 end
             end
-%             elseif lcm1_avg(i,j) - lcm1_avg_offset(i) > -6*1e3
-%                 num_ramp_down_points(i) = num_ramp_down_points(i) + 1;
-%                 vmon_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_avg_raw(i,j);
-%                 vmon_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = vmon_weight_raw(i,j);
-%                 lcm1_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_avg_raw(i,j);
-%                 lcm1_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_weight_raw(i,j);
-%                 time_ramp_down_pass(i,num_ramp_down_points(i)) = time(i,j); 
-%                 down_array_count(i) = down_array_count(i) + 1;
-%                 if time_ramp_down_pass(i,num_ramp_down_points(i)) - time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time                
-%                     count_down_chunks(i) = count_down_chunks(i) + 1;
-%                     down_chunk_array_pass(i,1, count_down_chunks(i)) = count_down_chunks(i);
-%                     down_chunk_array_pass(i,2, count_down_chunks(i)) = down_array_count(i)-1;
-%                 end
-%             end
         end
     end
 end
 
-% index_up_chunk_data = zeros(num_files,1);
-% for i =1:num_files
-%     for j = 1:
-%     index_up_chunk_data(i,:) = index_up_chunk_data_pass(i,1:end);
-% end
-
-
+for i = 1:num_files
+    num_ramp_up_points(i) = num_ramp_up_points(i) - 1;
+    num_ramp_down_points(i) = num_ramp_down_points(i) -1;
+    num_trash_points(i) = num_trash_points(i) -1;
+end    
 
 num_up_chunks = zeros(num_files,1);
 num_down_chunks = zeros(num_files,1);
 num_trash_chunks = zeros(num_files,1);
-
-index_up_chunks = zeros(num_files,1);
-index_down_chunks = zeros(num_files,1);
-index_trash_chunks = zeros(num_files,1);
-
-%count the number of ramp up points and ramp down points for HI/LO sets
-%for i = 1:num_files
-%    for j = start_point(i):numpoints(i)
-%        if vmon_avg_ramp_up_raw_pass(i,j) == 0.0
-%            num_ramp_up_points(i) = j;
-%            break;
-%        end
-%    end
-%end
-
-%for i = 1:num_files
-%    for j = start_point(i):numpoints(i)
-%        if vmon_avg_ramp_down_raw_pass(i,j) == 0.0
-%            num_ramp_down_points(i) = j;
-%            break;
-%        end
-%    end
-%end
-
-
-for i = 1:num_files
-    %count up to 2nd to last up chunk
-    index_up_chunks(i) = count_up_chunks(i) - 1;
-    num_up_chunks(i) = index_up_chunks(i) - 1;
-    %count to 3rd to last down chunk
-    index_down_chunks(i) = count_down_chunks(i) - 3;
-    num_down_chunks(i) = index_down_chunks(i) - 1;
-    %count to 4th to last trash chunk
-    index_trash_chunks(i) = count_trash_chunks(i) - 6;
-    num_trash_chunks(i) = index_trash_chunks(i) - 1;
-end
 
 num_down_chunk_rows = 0;
 num_up_chunk_rows = 0;
@@ -1035,21 +984,30 @@ for i = 1:num_files
     
 end
 
+for i = 1:num_files
+    %count up to 2nd to last up chunk
+    num_up_chunks(i) = count_up_chunks(i) - 2;
+    %count to 3rd to last down chunk
+    num_down_chunks(i) = count_down_chunks(i) - 4;
+    %count to 4th to last trash chunk
+    num_trash_chunks(i) = count_down_chunks(i) -7;
+end
+
 for i =1:num_files
     %start at 2nd up chunk
-    for j =1:index_up_chunks(i)
+    for j =1:count_up_chunks(i) -1
         up_chunk_array(i,1,j) = up_chunk_array_pass(i,1,j+1);
         up_chunk_array(i,2,j) = up_chunk_array_pass(i,2,j+1);
     end
 
     %start at 2nd down chunk
-    for j =1:index_down_chunks(i)
+    for j =1:count_down_chunks(i) - 3
         down_chunk_array(i,1,j) = down_chunk_array_pass(i,1,j+2);
         down_chunk_array(i,2,j) = down_chunk_array_pass(i,2,j+2);
     end
 
     %start at 4th trash chunk
-    for j =1:index_trash_chunks(i)
+    for j =1:count_trash_chunks(i)-6
         trash_chunk_array(i,1,j) = trash_chunk_array_pass(i,1,j+4);
         trash_chunk_array(i,2,j) = trash_chunk_array_pass(i,2,j+4);
     end
@@ -1720,14 +1678,17 @@ for i = 1:num_files
    
    %%%%%%%%%%%%%% ramp data plot of ramp voltage v time %%%%%%%%%%%%%%%%%%
    figure
-   plot(time_trash(i,start_point(i):num_trash_points),...
-       vmon_avg_trash(i,start_point(i):num_trash_points) - vmon_avg_offset(i),...
+   plot(time(i,start_point(i):numpoints(i)),...
+       vmon_avg(i,start_point(i):numpoints(i)) - vmon_avg_offset(i),...
+       'x','Color', 'black','MarkerSize', 8, 'LineWidth', 2.0); hold on;
+   plot(time_trash(i,:),...
+       vmon_avg_trash(i,:) - vmon_avg_offset(i),...
        'o','Color', cmap(1+i+ 0*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(time_ramp_up(i,start_point(i):num_ramp_up_points), ...
-       vmon_avg_ramp_up(i,start_point(i):num_ramp_up_points) - vmon_avg_offset(i),...
+   plot(time_ramp_up(i,:), ...
+       vmon_avg_ramp_up(i,:) - vmon_avg_offset(i),...
        'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(time_ramp_down(i,start_point(i):num_ramp_down_points), ...
-       vmon_avg_ramp_down(i,start_point(i):num_ramp_down_points) - vmon_avg_offset(i),...
+   plot(time_ramp_down(i,:), ...
+       vmon_avg_ramp_down(i,:) - vmon_avg_offset(i),...
        'o','Color', cmap(1+i+2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
    %axis(plot_bounds)
    pbaspect([1.33 1 1])
