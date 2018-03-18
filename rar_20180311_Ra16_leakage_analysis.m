@@ -37,7 +37,10 @@ power_supply = 1; % 0 = unipolar Acopian
 pressure_gauge = 1; % 0 = ion gauge 
 %                     1 = all-range gauge (installed 7-18-2017)
 
-sample_size = 10; % # samples taken per measurement
+sample_size_setting = 1; % # samples taken per measurement
+                            % 0: Spinlab sample set, 10 samples by default
+                            % 1: fast data, 1 
+                            %sample = # samples / sampling frequency.
 
 sample_rate = 1 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
                   % 1 = data saved every 0.01 min (8192 samples / 16 kHz)
@@ -51,6 +54,12 @@ num_files = length(file_struct);
 num_cols = 0;
 num_rows = 0;
 filenames = cell(num_files,1);
+
+if sample_size_setting == 0
+    sample_size = 10;
+else 
+    sample_size = 1;
+end
                   
 if power_supply == 0 || power_supply == 1
 
@@ -235,11 +244,11 @@ if power_supply == 0
             lcm1_avg_raw(i,j) = data(i,j,5);
             pressure_avg_raw(i,j) = data(i,j,7);
             polarity_avg_raw(i,j) = 3.4;
-            vmon_avg_stdev_raw(i,j) = data(i,j,9)/sqrt(sample_size);
+            vmon_avg_stdev_raw(i,j) = data(i,j,9)/sqrt(sample_size_setting);
             vmon_weight_raw(i,j) = abs((vmon_avg_stdev_raw(i,j))^(-2));
-            imon_avg_stdev_raw(i,j) = data(i,j,10)/sqrt(sample_size);
+            imon_avg_stdev_raw(i,j) = data(i,j,10)/sqrt(sample_size_setting);
             imon_weight_raw(i,j) = abs((imon_avg_stdev_raw(i,j))^(-2));
-            lcm1_avg_stdev_raw(i,j) = data(i,j,11)/sqrt(sample_size);
+            lcm1_avg_stdev_raw(i,j) = data(i,j,11)/sqrt(sample_size_setting);
             pressure_avg_stdev_raw(i,j) = data(i,j,12);
             lcm1_weight_raw(i,j) = abs(1/(lcm1_avg_stdev_raw(i,j)^2));
             ohm_avg_raw(i,j) = vmon_avg(i,j)/imon_avg(i,j)*1e3; % Mohm
@@ -268,11 +277,11 @@ elseif power_supply == 1
             lcm1_avg_raw(i,j) = data(i,j,5);
             pressure_avg_raw(i,j) = data(i,j,7);
             polarity_avg_raw(i,j) = data(i,j,8); % ~20 mV Low (positive), ~ 3.4 V high (negative)
-            vmon_avg_stdev_raw(i,j) = data(i,j,10)/sqrt(sample_size); %don't think reduced sqrt is true for fast data
+            vmon_avg_stdev_raw(i,j) = data(i,j,10)/sqrt(sample_size_setting); %don't think reduced sqrt is true for fast data
             vmon_weight_raw(i,j) = abs((vmon_avg_stdev_raw(i,j))^(-2));
-            imon_avg_stdev_raw(i,j) = data(i,j,11)/sqrt(sample_size);
+            imon_avg_stdev_raw(i,j) = data(i,j,11)/sqrt(sample_size_setting);
             imon_weight_raw(i,j) = abs((imon_avg_stdev_raw(i,j))^(-2));
-            lcm1_avg_stdev_raw(i,j) = data(i,j,12)/sqrt(sample_size);
+            lcm1_avg_stdev_raw(i,j) = data(i,j,12)/sqrt(sample_size_setting);
             pressure_avg_stdev_raw(i,j) = data(i,j,14);
             lcm1_weight_raw(i,j) = abs(1/(lcm1_avg_stdev_raw(i,j)^2));
             lcm1_avg_wt_raw(i,j) = lcm1_avg_raw(i,j)*lcm1_weight_raw(i,j);
@@ -934,9 +943,13 @@ lcm1_inv_weight_avg_trash = zeros(num_files,num_trash_points,1);
 lcm1_avg_trash_steady_avg = zeros(num_files,num_trash_chunks);
 lcm1_avg_trash_steady_stdev = zeros(num_files,num_trash_chunks);
 steady_state_range = 10;
-%track index of discharge currents and charging currents in trash data
-discharge_index = zeros(num_files,num_trash_chunks,3);
-charge_index = zeros(num_files,num_trash_chunks,3);
+%track index of discharge currents and charging currents in trash data.
+%column 1: positive/negative (dis)charge
+%column 2: end point of previous chunk
+%column 3: end point of this chunk
+discharge_index_pass = zeros(num_files,num_trash_chunks,3);
+charge_index_pass = zeros(num_files,num_trash_chunks,3);
+
 
 
 for i = 1:num_files
@@ -1007,7 +1020,7 @@ for i =1:num_files
         up_chunk_array(i,2,j) = up_chunk_array_pass(i,2,j+1);
     end
     
-    for j = 1:num_trash_chunks
+    for j = 1:num_trash_chunks(i)
         chunk_begin = trash_chunk_array(i,2,j);
         chunk_end = trash_chunk_array(i,2,j+1);
         middle = round((chunk_end - chunk_begin)/2,0);
@@ -1018,58 +1031,87 @@ for i =1:num_files
     end
 
     %pick out the ramping currents. +V -> 0, 0 -> -V, -V -> 0, 0 -> +V.
-    for j = 1:num_trash_chunks
+    for j = 1:num_trash_chunks(i)
         %first point might be the start of the ramp, which could be a small
         %stdev. Increment by 1 so we know we're starting on a ramp point
         chunk_begin = trash_chunk_array(i,2,j)+1;
         chunk_end = trash_chunk_array(i,2,j+1);
-        for k = chunk_begin:chunk_end
+        middle = round((chunk_end - chunk_begin)/2,0);
+        for k = chunk_begin:chunk_begin+ middle
             if lcm1_inv_weight_avg_trash(i,k+1) < 2 * lcm1_avg_trash_steady_stdev(i,j)                
-                if lcm1_avg_trash(i,k+1) > lcm1_avg_trash(i,k+2)
+                if lcm1_avg_trash(i,chunk_begin) < lcm1_avg_trash_steady_avg(i,j) && abs(lcm1_avg_trash(i,chunk_begin)) > 3 * abs(lcm1_avg_trash_steady_avg(i,j))
                     %discharge from +V
-                    discharge_index(i,j,1) = 0;
-                elseif lcm1_avg_trash(i,k+1) < lcm1_avg_trash(i,k+2)
+                    discharge_index_pass(i,j,1) = 1;
+                elseif lcm1_avg_trash(i,chunk_begin) > lcm1_avg_trash_steady_avg(i,j) && abs(lcm1_avg_trash(i,chunk_begin)) > 3 * abs(lcm1_avg_trash_steady_avg(i,j))
                     %discharge from -V
-                    discharge_index(i,j,1) = 1;
+                    discharge_index_pass(i,j,1) = -1;
                 end
 
-                discharge_index(i,j,2) = chunk_begin;
-                discharge_index(i,j,3) = k+2;
+                discharge_index_pass(i,j,2) = chunk_begin;
+                discharge_index_pass(i,j,3) = k+2;
                 
-                break
-            end
+                break            
+            end                    
         end
+    % if the condition for the discharging current for a segment is not 
+    %met, I simply define the segment to start from chunk_begin and have
+    %thesame # of points as the previous segment
+    if discharge_index_pass(i,j,1) == 0
+            disp(j)
+            discharge_index_pass(i,j,1) = - discharge_index_pass(i,j-1,1);
+            discharge_index_pass(i,j,2) = chunk_begin;
+            discharge_index_pass(i,j,3) = chunk_begin + discharge_index_pass(i,j-1,3) - discharge_index_pass(i,j-1,2);
+    end
+    
     end
     
     for j = 1:num_trash_chunks
         chunk_begin = trash_chunk_array(i,2,j)+1;
         chunk_end = trash_chunk_array(i,2,j+1);
-        for k = chunk_begin:chunk_end                       
-            if lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin - k) < 2 * lcm1_avg_trash_steady_stdev(i,j)
-                end
-
-                if lcm1_avg_trash(i,chunk_end + chunk_begin - k) > lcm1_avg_trash(i,chunk_end + chunk_begin - k - 1)
+        middle = round((chunk_end - chunk_begin)/2,0);
+        for k = chunk_begin+ middle:chunk_end                       
+            if lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) < 2 * lcm1_avg_trash_steady_stdev(i,j)
+%                 if lcm1_avg_trash(i,chunk_end + middle - k) > lcm1_avg_trash(i,chunk_end + middle - k - 1)
+                if lcm1_avg_trash(i,chunk_end) >  lcm1_avg_trash_steady_avg(i,j) && abs(lcm1_avg_trash(i,chunk_end)) > 10*abs(lcm1_avg_trash_steady_avg(i,j))
                     % charging to +V
-                    charge_index(i,j,1) = 0;
-                elseif lcm1_avg_trash(i,chunk_end + chunk_begin - k) < lcm1_avg_trash(i,chunk_end + chunk_begin - k - 1)
+                    charge_index_pass(i,j,1) = 1;
+%                 elseif lcm1_avg_trash(i,chunk_end + middle - k) < lcm1_avg_trash(i,chunk_end + middle - k - 1)
+                elseif lcm1_avg_trash(i,chunk_end) <  lcm1_avg_trash_steady_avg(i,j)   && abs(lcm1_avg_trash(i,chunk_end)) > 10*abs(lcm1_avg_trash_steady_avg(i,j))                
                     % charging to -V
-                    charge_index(i,j,1) = 1;
+                    charge_index_pass(i,j,1) = -1;
                 end
 
-                charge_index(i,j,2) = chunk_end + chunk_begin - k -1;
-                charge_index(i,j,3) = chunk_end;
+                charge_index_pass(i,j,2) = chunk_end + chunk_begin + middle - k -1;
+                charge_index_pass(i,j,3) = chunk_end;                
                 
-                break               
-             
+                break                                        
+            end
         end
-    end   
+    % if the condition for detecting the charging current is not satisfied
+    % for a chunk, I simplly define the charging segment to be the same #
+    % of points as the previous segment
+    if charge_index_pass(i,j,1) == 0
+        disp(j)
+        charge_index_pass(i,j,1) = -charge_index_pass(i,j-1,1);
+        charge_index_pass(i,j,2) = chunk_end - (charge_index_pass(i,j-1,3) - charge_index_pass(i,j-1,2));
+        charge_index_pass(i,j,3) = chunk_end;
+    end
+    
+    end
 end
+
+%We want all but the first discharge_index and all but the last
+%charge_index
+charge_index = charge_index_pass(:,1:end-1,:);
+discharge_index = discharge_index_pass(:,2:end,:);
+
+
 
 %create vectors containing time, leakage avg, and leakage stdev data 
 %for + V -> 0, -V -> 0, 0 -> +V, and 0 -> -V
 for i = 1:num_files
-    for j = 1:num_trash_chunks
-        if discharge_index(i,j,1) == 0
+    for j = 1:num_trash_chunks -1
+        if discharge_index(i,j,1) == 1
 %             lcm1_discharge_pos_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
 %             lcm1_discharge_pos_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
 %             lcm1_discharge_pos_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
@@ -1078,7 +1120,7 @@ for i = 1:num_files
             lcm1_stdev_discharge_pos_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) =lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
             lcm1_discharge_pos_pass_time(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
         
-        elseif discharge_index(i,j,1) == 1
+        elseif discharge_index(i,j,1) == -1
 %             lcm1_discharge_neg_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
 %             lcm1_discharge_neg_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
 %             lcm1_discharge_neg_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
@@ -1089,7 +1131,7 @@ for i = 1:num_files
 
         end
         
-        if charge_index(i,j,1) == 0
+        if charge_index(i,j,1) == 1
 %             lcm1_charge_pos_pass(i,2,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
 %             lcm1_charge_pos_pass(i,3,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
 %             lcm1_charge_pos_pass(i,1,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
@@ -1098,7 +1140,7 @@ for i = 1:num_files
             lcm1_stdev_charge_pos_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) =lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
             lcm1_charge_pos_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
         
-        elseif charge_index(i,j,1) == 1
+        elseif charge_index(i,j,1) == -1
             lcm1_avg_charge_neg_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
             lcm1_stdev_charge_neg_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) =lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
             lcm1_charge_neg_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
@@ -1253,6 +1295,8 @@ for i =1:num_files
        end
     end
 end
+
+
 
 
 
@@ -1725,20 +1769,20 @@ for i = 1:num_files
        'x','Color', 'black','MarkerSize', 8, 'LineWidth', 2.0); hold on;
    plot(time_trash(i,trash_chunk_array(i,2,1)+1:trash_chunk_array(i,2,end)),...
        lcm1_avg_trash(i,trash_chunk_array(i,2,1)+1:trash_chunk_array(i,2,end)) - lcm1_avg_offset(i),...
-       'o','Color', cmap(1+i+ 0*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
+       's','Color', cmap(1+i+ 0*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
    plot(time_ramp_up(i,up_chunk_array(i,2,1)+1:up_chunk_array(i,2,end)), ...
        lcm1_avg_ramp_up(i,up_chunk_array(i,2,1)+1:up_chunk_array(i,2,end)) - lcm1_avg_offset(i),...
-       'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
+       '^','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
    plot(lcm1_charge_neg_time(i,:),lcm1_avg_charge_neg(i,:) - lcm1_avg_offset(i),...
        'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(lcm1_discharge_pos_time(i,:),lcm1_avg_discharge_pos(i,:) - lcm1_avg_offset(i),...
+   plot(lcm1_discharge_neg_time(i,:),lcm1_avg_discharge_neg(i,:) - lcm1_avg_offset(i),...
        'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
    plot(time_ramp_down(i,down_chunk_array(i,2,1)+1:down_chunk_array(i,2,end)), ...
        lcm1_avg_ramp_down(i,down_chunk_array(i,2,1)+1:down_chunk_array(i,2,end)) - lcm1_avg_offset(i),...
-       'o','Color', cmap(1+i+2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
+       '^','Color', cmap(1+i+2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
    plot(lcm1_charge_pos_time(i,:),lcm1_avg_charge_pos(i,:) - lcm1_avg_offset(i),...
        'o','Color', cmap(1+i+ 2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;   
-   plot(lcm1_discharge_neg_time(i,:),lcm1_avg_discharge_neg(i,:) - lcm1_avg_offset(i),...
+   plot(lcm1_discharge_pos_time(i,:),lcm1_avg_discharge_pos(i,:) - lcm1_avg_offset(i),...
        'o','Color', cmap(1+i+ 2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;    
 
    %axis(plot_bounds)
