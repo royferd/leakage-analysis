@@ -619,16 +619,6 @@ end
 % calculate log10s of leakage current. For negative leakage, put sign
 % in front of the log of the magnitude of the leakage.
 
-% if lcm1_avg_scale < 0
-% 
-%     lcm1_avg_scale_log = -log(lcm1_avg_scale);
-% 
-% else
-%     
-%     lcm1_avg_scale_log = log(lcm1_avg_scale);
-%     
-% end
-
 for i = 1:num_files
     
     for j = 1:numpoints(i)
@@ -738,7 +728,11 @@ lcm1_weight_avg_trash_raw_pass = zeros(num_files,num_rows,1);
 
 
 
-%store chunk # and index
+%Chunk array(file number, chunk number, chunk boundary element): For each 
+%'chunk,' I define a chunk number (first, second, etc) and the elements 
+%that mark the boundaries of each chunk. For example, the second chunk for
+%the first file is given as up_chunk_array(1,1,2). The boundaries of the
+%second chunk would be up_chunk_array(1,2,2) + 1 and up_chunk_array(1,2,3).
 
 up_chunk_array_pass = zeros(num_files,2,num_rows); 
 down_chunk_array_pass = zeros(num_files,2,num_rows);
@@ -858,20 +852,16 @@ num_up_chunks = zeros(num_files,1);
 num_down_chunks = zeros(num_files,1);
 num_trash_chunks = zeros(num_files,1);
 
-num_down_chunk_rows = 0;
-num_up_chunk_rows = 0;
-num_trash_chunk_rows = 0;
+for i = 1:num_files
+    %count to third to last trash chunk
+    num_trash_chunks(i) = count_trash_chunks(i) -4;
+    
+    %count to second to last down chunk
+    num_down_chunks(i) = count_down_chunks(i) - 2;
 
-for i =1:num_files
-    if num_up_chunks(i) > num_up_chunk_rows;
-        num_up_chunk_rows = num_up_chunks(i);
-    end
-    if num_down_chunks(i) > num_down_chunk_rows;
-        num_down_chunk_rows = num_down_chunks(i);
-    end
-    if num_trash_chunks(i) > num_trash_chunk_rows;
-        num_trash_chunk_rows = num_trash_chunks(i);
-    end
+    %count up to 2nd to last up chunk
+    num_up_chunks(i) = count_up_chunks(i) - 2;
+
 end
 
 up_chunk_array = zeros(num_files,2,num_up_chunks);
@@ -912,10 +902,21 @@ vmon_avg_ramp_down = zeros(num_files,num_ramp_down_points,1);
 vmon_avg_trash_raw = zeros(num_files,num_trash_points,1);
 vmon_avg_trash = zeros(num_files,num_trash_points,1);
 
-lcm1_discharge_pos_pass = zeros(num_files,3,1);
-lcm1_discharge_neg_pass = zeros(num_files,3,1);
-lcm1_charge_pos_pass = zeros(num_files,3,1);
-lcm1_charge_neg_pass = zeros(num_files,3,1);
+lcm1_avg_charge_neg_pass = zeros(num_files,1);
+lcm1_stdev_charge_neg_pass = zeros (num_files,1);
+lcm1_charge_neg_pass_time = zeros(num_files,1);
+
+lcm1_avg_charge_pos_pass = zeros(num_files,1);
+lcm1_stdev_charge_pos_pass = zeros (num_files,1);
+lcm1_charge_pos_pass_time = zeros(num_files,1);
+
+lcm1_avg_discharge_pos_pass = zeros(num_files,1);
+lcm1_stdev_discharge_pos_pass = zeros (num_files,1);
+lcm1_discharge_pos_pass_time = zeros(num_files,1);
+
+lcm1_avg_discharge_neg_pass = zeros(num_files,1);
+lcm1_stdev_discharge_neg_pass = zeros (num_files,1);
+lcm1_discharge_neg_pass_time = zeros(num_files,1);
 
 % 3/11/2018 inv_weight is just stdev. I fucked up variable names so I have to use
 %this nomenclature to avoid a lot of work I don't want to do right now.
@@ -984,32 +985,26 @@ for i = 1:num_files
     
 end
 
-for i = 1:num_files
-    %count up to 2nd to last up chunk
-    num_up_chunks(i) = count_up_chunks(i) - 2;
-    %count to 3rd to last down chunk
-    num_down_chunks(i) = count_down_chunks(i) - 4;
-    %count to 4th to last trash chunk
-    num_trash_chunks(i) = count_down_chunks(i) -7;
-end
-
 for i =1:num_files
+    
+    %start at third trash chunk
+    for j =1:num_trash_chunks(i) + 1
+        trash_chunk_array(i,1,j) = trash_chunk_array_pass(i,1,j+2);
+        trash_chunk_array(i,2,j) = trash_chunk_array_pass(i,2,j+2);
+    end
+    
+    %start at 2nd down chunk
+    for j =1:num_down_chunks(i) + 1
+%        if time_ramp_down(i,down_chunk_array_pass(i,2,j+1)) > time_trash(i,trash_chunk_array(1,2,1))
+        down_chunk_array(i,1,j) = down_chunk_array_pass(i,1,j+1);
+        down_chunk_array(i,2,j) = down_chunk_array_pass(i,2,j+1);
+%        end
+    end
+    
     %start at 2nd up chunk
-    for j =1:count_up_chunks(i) -1
+    for j =1:num_up_chunks(i) + 1
         up_chunk_array(i,1,j) = up_chunk_array_pass(i,1,j+1);
         up_chunk_array(i,2,j) = up_chunk_array_pass(i,2,j+1);
-    end
-
-    %start at 2nd down chunk
-    for j =1:count_down_chunks(i) - 3
-        down_chunk_array(i,1,j) = down_chunk_array_pass(i,1,j+2);
-        down_chunk_array(i,2,j) = down_chunk_array_pass(i,2,j+2);
-    end
-
-    %start at 4th trash chunk
-    for j =1:count_trash_chunks(i)-6
-        trash_chunk_array(i,1,j) = trash_chunk_array_pass(i,1,j+4);
-        trash_chunk_array(i,2,j) = trash_chunk_array_pass(i,2,j+4);
     end
     
     for j = 1:num_trash_chunks
@@ -1075,35 +1070,62 @@ end
 for i = 1:num_files
     for j = 1:num_trash_chunks
         if discharge_index(i,j,1) == 0
-            lcm1_discharge_pos_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
-            lcm1_discharge_pos_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
-            lcm1_discharge_pos_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+%             lcm1_discharge_pos_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+%             lcm1_discharge_pos_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+%             lcm1_discharge_pos_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+            lcm1_avg_discharge_pos_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_stdev_discharge_pos_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) =lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_pos_pass_time(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+        
         elseif discharge_index(i,j,1) == 1
-            lcm1_discharge_neg_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
-            lcm1_discharge_neg_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
-            lcm1_discharge_neg_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+%             lcm1_discharge_neg_pass(i,2,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+%             lcm1_discharge_neg_pass(i,3,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+%             lcm1_discharge_neg_pass(i,1,end - (discharge_index(i,j,3)-discharge_index(i,j,2)):end) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+            lcm1_avg_discharge_neg_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_stdev_discharge_neg_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) =lcm1_inv_weight_avg_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+            lcm1_discharge_neg_pass_time(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
         end
         
         if charge_index(i,j,1) == 0
-            lcm1_charge_pos_pass(i,2,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            lcm1_charge_pos_pass(i,3,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            lcm1_charge_pos_pass(i,1,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            
+%             lcm1_charge_pos_pass(i,2,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+%             lcm1_charge_pos_pass(i,3,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+%             lcm1_charge_pos_pass(i,1,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+             
+            lcm1_avg_charge_pos_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_stdev_charge_pos_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) =lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_pos_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
         
         elseif charge_index(i,j,1) == 1
-            lcm1_charge_neg_pass(i,2,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            lcm1_charge_neg_pass(i,3,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) =lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            lcm1_charge_neg_pass(i,1,end - (charge_index(i,j,3)-charge_index(i,j,2)):end) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
-            
+            lcm1_avg_charge_neg_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_stdev_charge_neg_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) =lcm1_inv_weight_avg_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+            lcm1_charge_neg_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
         end
     end
 end
 
 %get rid of those pesky zeros in front
-lcm1_discharge_pos = lcm1_discharge_pos_pass(:,:,2:end);
-lcm1_discharge_neg = lcm1_discharge_neg_pass(:,:,2:end);
-lcm1_charge_pos = lcm1_charge_pos_pass(:,:,2:end);
-lcm1_charge_neg = lcm1_charge_neg_pass(:,:,2:end);
+% lcm1_discharge_pos = lcm1_discharge_pos_pass(:,:,2:end);
+% lcm1_discharge_neg = lcm1_discharge_neg_pass(:,:,2:end);
+% lcm1_charge_pos = lcm1_charge_pos_pass(:,:,2:end);
+
+lcm1_avg_charge_neg = lcm1_avg_charge_neg_pass(:,2:end);
+lcm1_stdev_charge_neg = lcm1_stdev_charge_neg_pass(:,2:end);
+lcm1_charge_neg_time = lcm1_charge_neg_pass_time(:,2:end);
+
+lcm1_avg_charge_pos = lcm1_avg_charge_pos_pass(:,2:end);
+lcm1_stdev_charge_pos = lcm1_stdev_charge_pos_pass(:,2:end);
+lcm1_charge_pos_time = lcm1_charge_pos_pass_time(:,2:end);
+
+lcm1_avg_discharge_pos = lcm1_avg_discharge_pos_pass(:,2:end);
+lcm1_stdev_discharge_pos = lcm1_stdev_discharge_pos_pass(:,2:end);
+lcm1_discharge_pos_time = lcm1_discharge_pos_pass_time(:,2:end);
+
+lcm1_avg_discharge_neg = lcm1_avg_discharge_neg_pass(:,2:end);
+lcm1_stdev_discharge_neg = lcm1_stdev_discharge_neg_pass(:,2:end);
+lcm1_discharge_neg_time = lcm1_discharge_neg_pass_time(:,2:end);
 
 
 %Use function 'chunkify' to average each chunk dataset into a point.
@@ -1114,43 +1136,43 @@ lcm1_charge_neg = lcm1_charge_neg_pass(:,:,2:end);
 [vmon_avg_ramp_up_avg_chunk, vmon_avg_ramp_up_stdev_chunk,...
     vmon_avg_ramp_up_avg,vmon_avg_ramp_up_stdev,...
     vmon_avg_ramp_up_stdev_avg_chunk,vmon_avg_ramp_up_stdev_stdev_chunk] ...
-    = chunkify(num_files,num_up_chunks,num_up_chunk_rows,...
+    = chunkify(num_files,num_up_chunks,...
     num_ramp_up_points,up_chunk_array,vmon_avg_ramp_up_raw,...
     vmon_weight_avg_ramp_up_raw,vmon_avg_scale);
 
 [lcm1_avg_ramp_up_avg_chunk, lcm1_avg_ramp_up_stdev_chunk,...
     lcm1_avg_ramp_up_avg,lcm1_avg_ramp_up_stdev,...
     lcm1_avg_ramp_up_stdev_avg_chunk,lcm1_avg_ramp_up_stdev_stdev_chunk] ...
-    = chunkify(num_files,num_up_chunks,num_up_chunk_rows,...
+    = chunkify(num_files,num_up_chunks,...
     num_ramp_up_points,up_chunk_array,lcm1_avg_ramp_up_raw,...
     lcm1_weight_avg_ramp_up_raw,lcm1_avg_scale);
 
 [vmon_avg_ramp_down_avg_chunk, vmon_avg_ramp_down_stdev_chunk,...
     vmon_avg_ramp_down_avg,vmon_avg_ramp_down_stdev,...
     vmon_avg_ramp_down_stdev_avg_chunk,vmon_avg_ramp_down_stdev_stdev_chunk] ...
-    = chunkify(num_files,num_down_chunks,num_down_chunk_rows,...
+    = chunkify(num_files,num_down_chunks,...
     num_ramp_down_points,down_chunk_array,vmon_avg_ramp_down_raw,...
     vmon_weight_avg_ramp_down_raw,vmon_avg_scale);
 
 [lcm1_avg_ramp_down_avg_chunk, lcm1_avg_ramp_down_stdev_chunk,...
     lcm1_avg_ramp_down_avg,lcm1_avg_ramp_down_stdev,...
     lcm1_avg_ramp_down_stdev_avg_chunk,lcm1_avg_ramp_down_stdev_stdev_chunk] ...
-    = chunkify(num_files,num_down_chunks,num_down_chunk_rows,...
+    = chunkify(num_files,num_down_chunks,...
     num_ramp_down_points,down_chunk_array,lcm1_avg_ramp_down_raw,...
     lcm1_weight_avg_ramp_down_raw,lcm1_avg_scale);
 
 [vmon_avg_trash_avg_chunk, vmon_avg_trash_stdev_chunk,...
     vmon_avg_trash_avg,vmon_avg_trash_stdev,...
     vmon_avg_trash_stdev_avg_chunk,vmon_avg_trash_stdev_stdev_chunk] ...
-    = chunkify(num_files,num_up_chunks,num_up_chunk_rows,...
-    num_trash_points,up_chunk_array,vmon_avg_trash_raw,...
+    = chunkify(num_files,num_trash_chunks,...
+    num_trash_points,trash_chunk_array,vmon_avg_trash_raw,...
     vmon_weight_avg_trash_raw,vmon_avg_scale);
 
 [lcm1_avg_trash_avg_chunk, lcm1_avg_trash_stdev_chunk,...
     lcm1_avg_trash_avg,lcm1_avg_trash_stdev,...
     lcm1_avg_trash_stdev_avg_chunk,lcm1_avg_trash_stdev_stdev_chunk] ...
-    = chunkify(num_files,num_up_chunks,num_up_chunk_rows,...
-    num_trash_points,up_chunk_array,lcm1_avg_trash_raw,...
+    = chunkify(num_files,num_trash_chunks,...
+    num_trash_points,trash_chunk_array,lcm1_avg_trash_raw,...
     lcm1_weight_avg_trash_raw,lcm1_avg_scale);
 
 
@@ -1678,17 +1700,17 @@ for i = 1:num_files
    
    %%%%%%%%%%%%%% ramp data plot of ramp voltage v time %%%%%%%%%%%%%%%%%%
    figure
-   plot(time(i,start_point(i):numpoints(i)),...
-       vmon_avg(i,start_point(i):numpoints(i)) - vmon_avg_offset(i),...
+   plot(time(i,1:numpoints(i)),...
+       vmon_avg(i,1:numpoints(i)) - vmon_avg_offset(i),...
        'x','Color', 'black','MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(time_trash(i,:),...
-       vmon_avg_trash(i,:) - vmon_avg_offset(i),...
+   plot(time_trash(i,trash_chunk_array(i,2,1)+1:trash_chunk_array(i,2,end)),...
+       vmon_avg_trash(i,trash_chunk_array(i,2,1)+1:trash_chunk_array(i,2,end)) - vmon_avg_offset(i),...
        'o','Color', cmap(1+i+ 0*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(time_ramp_up(i,:), ...
-       vmon_avg_ramp_up(i,:) - vmon_avg_offset(i),...
+   plot(time_ramp_up(i,up_chunk_array(i,2,1)+1:up_chunk_array(i,2,end)), ...
+       vmon_avg_ramp_up(i,up_chunk_array(i,2,1)+1:up_chunk_array(i,2,end)) - vmon_avg_offset(i),...
        'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(time_ramp_down(i,:), ...
-       vmon_avg_ramp_down(i,:) - vmon_avg_offset(i),...
+   plot(time_ramp_down(i,down_chunk_array(i,2,1)+1:down_chunk_array(i,2,end)), ...
+       vmon_avg_ramp_down(i,down_chunk_array(i,2,1)+1:down_chunk_array(i,2,end)) - vmon_avg_offset(i),...
        'o','Color', cmap(1+i+2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
    %axis(plot_bounds)
    pbaspect([1.33 1 1])
@@ -1698,15 +1720,27 @@ for i = 1:num_files
    
       %%%%%%%%%%%%%% ramp data plot of ramp leakage v time %%%%%%%%%%%%%%%%%%
    figure
-   plot(time_trash(i,start_point(i):num_trash_points),...
-       lcm1_avg_trash(i,start_point(i):num_trash_points) - lcm1_avg_offset(i),...
+   plot(time(i,1:numpoints(i)),...
+       lcm1_avg(i,1:numpoints(i)) - lcm1_avg_offset(i),...
+       'x','Color', 'black','MarkerSize', 8, 'LineWidth', 2.0); hold on;
+   plot(time_trash(i,trash_chunk_array(i,2,1)+1:trash_chunk_array(i,2,end)),...
+       lcm1_avg_trash(i,trash_chunk_array(i,2,1)+1:trash_chunk_array(i,2,end)) - lcm1_avg_offset(i),...
        'o','Color', cmap(1+i+ 0*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(time_ramp_up(i,start_point(i):num_ramp_up_points), ...
-       lcm1_avg_ramp_up(i,start_point(i):num_ramp_up_points) - lcm1_avg_offset(i),...
+   plot(time_ramp_up(i,up_chunk_array(i,2,1)+1:up_chunk_array(i,2,end)), ...
+       lcm1_avg_ramp_up(i,up_chunk_array(i,2,1)+1:up_chunk_array(i,2,end)) - lcm1_avg_offset(i),...
        'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
-   plot(time_ramp_down(i,start_point(i):num_ramp_down_points), ...
-       lcm1_avg_ramp_down(i,start_point(i):num_ramp_down_points) - lcm1_avg_offset(i),...
-       'o','Color', cmap(1+i+2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
+   plot(lcm1_charge_neg_time(i,:),lcm1_avg_charge_neg(i,:) - lcm1_avg_offset(i),...
+       'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
+   plot(lcm1_discharge_pos_time(i,:),lcm1_avg_discharge_pos(i,:) - lcm1_avg_offset(i),...
+       'o','Color', cmap(1+i+ 1*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
+   plot(time_ramp_down(i,down_chunk_array(i,2,1)+1:down_chunk_array(i,2,end)), ...
+       lcm1_avg_ramp_down(i,down_chunk_array(i,2,1)+1:down_chunk_array(i,2,end)) - lcm1_avg_offset(i),...
+       'o','Color', cmap(1+i+2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;
+   plot(lcm1_charge_pos_time(i,:),lcm1_avg_charge_pos(i,:) - lcm1_avg_offset(i),...
+       'o','Color', cmap(1+i+ 2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;   
+   plot(lcm1_discharge_neg_time(i,:),lcm1_avg_discharge_neg(i,:) - lcm1_avg_offset(i),...
+       'o','Color', cmap(1+i+ 2*(num_files+1),:),'MarkerSize', 8, 'LineWidth', 2.0); hold on;    
+
    %axis(plot_bounds)
    pbaspect([1.33 1 1])
    ax = gca; % current axes
