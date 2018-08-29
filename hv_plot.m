@@ -7,21 +7,24 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
     inside_plot = [0.4 0.73 0.31 0.19]; % edges: x y width height
     outside_plot = [0.73 0.45 0.21 0.21];
 
-    grid_box = zeros(num_files,4);
+    grid_box = zeros(num_sets,4);
 
-    for i = 1:num_files
+    for i = 1:num_sets
         grid_text(i,:) = [ 0.4 0.73 0.31 0.19 ];
     end
 
+% generate colormap of red, blue, and green with intermediate intensities
+% determined by the amount of datasets being plotted (i.e. more datasets
+% will result in more intermediate intensities).
     
     redhsv = [0 1 1];     % red HSV
-    red_list_hsv = zeros(num_files + 1,3);
-    red_list_rgb = zeros(num_files + 1,3);
-    red_step = round(0.75/(num_files + 1),4);
+    red_list_hsv = zeros(num_sets + 1,3);
+    red_list_rgb = zeros(num_sets + 1,3);
+    red_step = round(0.75/(num_sets + 1),4);
     
-    for i = 1:num_files+1
-        sat = 1 + red_step*(i - num_files - 1);
-        val = 1 + red_step*(i - num_files - 1)/3.;
+    for i = 1:num_sets+1
+        sat = 1 + red_step*(i - num_sets - 1);
+        val = 1 + red_step*(i - num_sets - 1)/3.;
         red_list_hsv(i,1) = redhsv(1);
         red_list_hsv(i,2) = sat;
         red_list_hsv(i,3) = val;
@@ -29,13 +32,13 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
     end
 
     bluehsv = [0.667 1 1];     % blue HSV
-    blue_list_hsv = zeros(num_files + 1,3);
-    blue_list_rgb = zeros(num_files + 1,3);
-    blue_step = round(0.75/(num_files + 1),4);
+    blue_list_hsv = zeros(num_sets + 1,3);
+    blue_list_rgb = zeros(num_sets + 1,3);
+    blue_step = round(0.75/(num_sets + 1),4);
     
-    for i = 1:num_files+1
-        sat = 1 + blue_step*(i - num_files - 1);
-        val = 1 + blue_step*(i - num_files - 1)/3.;
+    for i = 1:num_sets+1
+        sat = 1 + blue_step*(i - num_sets - 1);
+        val = 1 + blue_step*(i - num_sets - 1)/3.;
         blue_list_hsv(i,1) = bluehsv(1);
         blue_list_hsv(i,2) = sat;
         blue_list_hsv(i,3) = val;
@@ -43,13 +46,13 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
     end
 
     grnhsv = [0.333 1 1];     % green HSV
-    grn_list_hsv = zeros(num_files + 1,3);
-    grn_list_rgb = zeros(num_files + 1,3);
-    grn_step = round(0.75/(num_files + 1),4);
+    grn_list_hsv = zeros(num_sets + 1,3);
+    grn_list_rgb = zeros(num_sets + 1,3);
+    grn_step = round(0.75/(num_sets + 1),4);
     
-    for i = 1:num_files+1
-        sat = 1 + grn_step*(i - num_files - 1);
-        val = 1 + grn_step*(i - num_files - 1)/3.;
+    for i = 1:num_sets+1
+        sat = 1 + grn_step*(i - num_sets - 1);
+        val = 1 + grn_step*(i - num_sets - 1)/3.;
         grn_list_hsv(i,1) = grnhsv(1);
         grn_list_hsv(i,2) = sat;
         grn_list_hsv(i,3) = val;
@@ -59,10 +62,10 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
     num_colors = 3*length(redhsv(:,1));
     join_list_rgb = zeros(num_colors,3);
 
-    for i =1:num_files + 1
+    for i =1:num_sets + 1
         join_list_rgb(i,:,:) = red_list_rgb(i,:,:);
-        join_list_rgb(i+num_files + 1,:,:) = grn_list_rgb(i,:,:);
-        join_list_rgb(i+2*num_files+2,:,:) = blue_list_rgb(i,:,:);
+        join_list_rgb(i+num_sets + 1,:,:) = grn_list_rgb(i,:,:);
+        join_list_rgb(i+2*num_sets+2,:,:) = blue_list_rgb(i,:,:);
 
     end
 
@@ -92,20 +95,6 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
     zero_line(1,1) = xmin;
     zero_line(2,1) = xmax;
 
-%%%%%%%%%%%%%%%%%%%%%%% of max field v. gap size %%%%%%%%%%%%%%%%%%%%%%%%%%
-    if plot == 1
-
-        figure1 = figure('Units','normalized')
-        plot(xdata_1, ydata_1,...
-           'o','Color', cmap(num_sets+1,:),'MarkerSize', 6, 'LineWidth', 2.0); %nA
-        pbaspect([1.33 1 1])
-        ax = gca; % current axes
-        ax.TickDir = 'out'; % make ticks point out
-        title(title_string,'FontSize',40)
-        xlabel(xlabel_string,'FontSize',32)
-        ylabel(ylabel_string,'FontSize',32)
-
-    end
 
 %%%%%%%%%%%%%%%%%%% sample set plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -144,7 +133,7 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
 %%%%%%%%%%%%%% plot leakage current v. meas. test # %%%%%%%%%%%%%%%%%%%%%%    
     if plot == 3
 
-        figure1 = figure('Units','normalized')
+        figure3 = figure('Units','normalized')
         errorbar(xdata_1,ydata_1,ydata_stdev_1,...
             's','Color', 'blue','MarkerSize', 12, 'LineWidth', 1.0); hold on; %nA
         
@@ -164,8 +153,11 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
         title(title_string,'FontSize',40)
         xlabel(xlabel_string,'FontSize',32)
         ylabel(ylabel_string,'FontSize',32)
-        annotation(figure1,'textbox',outside_plot,'String',annote_string,...
-            'FontSize',32,'BackgroundColor',[1 1 1]);
+        
+        if annote == 1
+            annotation(figure3,'textbox',outside_plot,'String',annote_string,...
+                'FontSize',32,'BackgroundColor',[1 1 1]);
+        end
     end
     
     left_color = cmap(num_sets+1+0*num_sets+2,:);
@@ -174,124 +166,11 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
 
     for i = 1:num_sets
         
-%%%%%% %grid of log leakage current & viktage v. time  %%%%%%%%%%%%%%%%%%%
-% note: this won't run in versions previous to 2016a, use plotyy instead
-        if plot == 5
-            subplot(num_sets,1,num_sets + 1 - i)
-        %    figure
-            ax = gca; % current axes
 
-            text(...
-               'Position',[xmax ymax_right],...
-               'String',legend_titles(i),...
-               'HorizontalAlignment','right','VerticalAlignment','top',...
-               'FontSize',14);
-            ax.TickDir = 'out'; % make ticks point out
-
-            yyaxis left
-            plot(xdata_1(i,:),ydata_1(i,:),...
-                'x','Color', cmap(1+i+ 1*(num_sets+1),:),'MarkerSize', 4,...
-                'LineWidth', 1.0); hold on;
-
-            if overplot > 0
-                plot(xdata_2(i,:),ydata_2(i,:),'o','Color',...
-                    cmap(1+i+ 2*(num_sets+1),:),'MarkerSize', 4,'LineWidth', 1.0);
-            end
-            axis(plot_bounds)
-            
-            yyaxis right
-            plot(xdata_3(i,:),ydata_3(i,:),...
-               '-','Color', cmap(1+i+ 3*(num_sets+1),:),'MarkerSize', 3,...
-               'LineWidth', 2.0);
-            ylim([ymin_right ymax_right])
-            pbaspect([7 1 1])
-        end
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CHUNK TIME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % %%%%%%%%%%%%%% ramp data plot of ramp_up voltage v time %%%%%%%%%%%%%%%%%%%
-        if plot == 7
-           plot(xdata_1(i,:),ydata_1(i,:),...
-           'o','Color', cmap(1+i+ 0*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           pbaspect([1.33 1 1])
-           ax = gca; % current axes
-           ax.TickDir = 'out'; % make ticks point out
-        end
-
-       %%%%%%%%%%%%%% ramp data plot of ramp voltage v time %%%%%%%%%%%%%%%%%%
-       if plot == 8
-           figure
-           plot(xdata_1(i,:),ydata_1(i,:),...
-               'x','Color', 'black','MarkerSize', 8, 'LineWidth', 2.0);
-           if overplot > 0
-               hold on;
-               plot(xdata_2(i,:),ydata_2(i,:),...
-                   'o','Color', cmap(1+i+ 0*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           end
-           
-           if overplot > 1
-               hold on;
-               plot(xdata_3(i,:),ydata_3(i,:),...
-                   'o','Color', cmap(1+i+ 1*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           end
-           
-           if overplot > 2
-               hold on;
-               plot(xdata_4(i,:),ydata_4(i,:),...
-                   'o','Color', cmap(1+i+2*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           end
-           pbaspect([1.33 1 1])
-           ax = gca; % current axes
-           ax.TickDir = 'out'; % make ticks point out
-       end
-   
-%%%%%%%%%%%%%%%%%% ramp data plot of ramp leakage v time %%%%%%%%%%%%%%%%%%
-       if plot == 9
-           
-           figure1 =figure('Units','normalized')
-           plot(xdata_1(i,:),ydata_1(i,:),...
-               'x','Color', 'black','MarkerSize', 8, 'LineWidth', 2.0)
-           
-           if overplot > 0
-               hold on;
-               plot(xdata_2(i,:),ydata_2(i,:),...
-                   'o','Color', cmap(1+i+ 0*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           end
-           
-           if overplot > 1
-               hold on;
-               plot(xdata_3(i,:),ydata_3(i,:),...
-                   '*','Color', cmap(1+i+ 1*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           end
-           
-           if overplot > 2
-               hold on;
-               plot(xdata_4(i,:),ydata_4(i,:),...
-                   '^','Color', cmap(1+i+2*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           end
-           
-           if legend_show == 1
-               l = legend('show'); l.String = legend_string; 
-               l.FontSize = 32; l.Location = 'northeast outside';
-           end
-           
-           if annote == 1
-               annotation(figure1,'textbox',outside_plot,'String',...
-                  annote_string,'FontSize',32,'BackgroundColor',[1 1 1]);
-           end
-           
-           pbaspect([1.33 1 1])           
-           ax = gca; % current axes
-           ax.TickDir = 'out'; % make ticks point out
-           ax.FontSize = 32;
-           title(title_string,'FontSize',40)
-           xlabel(xlabel_string,'FontSize',32)
-           ylabel(ylabel_string,'FontSize',32)
-           
-       end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CHUNK TIME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%% ramp data plot of mean up chunk leakage current v chunk # %%%%%%%
-        if plot == 10
+        if plot == 8
 
             figure5= figure('Units','normalized')
             plot(xdata_1(i,:),ydata_1(i,:),...
@@ -335,17 +214,40 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
 
         end  
 
-%%%%%%%%%%%%%%%%% grid of psvoltage v. pscurrent %%%%%%%%%%%%%%%%%%%%%%%%%%
-        if plot == 4
-            figure1 =figure('Units','normalized')
-            subplot(num_sets,1,num_sets + 1 - i)
-            plot(xdata_1(i,:),ydata_1(i,:),...
-                'o','Color', cmap(1+i+ 0*(num_sets+1),:),'MarkerSize', 2, 'LineWidth', 2.0); %nA
-            pbaspect([1.33 1 1])
-            ax = gca; % current axes
-            ax.TickDir = 'out'; % make ticks point out
-        end
+%%%%%%% %grid of log leakage current & viktage v. time  %%%%%%%%%%%%%%%%%%%
 
+% note: this won't run in versions previous to 2016a, use plotyy instead
+        if plot == 5
+            subplot(num_sets,1,num_sets + 1 - i)
+        %    figure
+            ax = gca; % current axes
+
+            text(...
+               'Position',[xmax ymax_right],...
+               'String',legend_titles(i),...
+               'HorizontalAlignment','right','VerticalAlignment','top',...
+               'FontSize',14);
+            ax.TickDir = 'out'; % make ticks point out
+
+            yyaxis left
+            plot(xdata_1(i,:),ydata_1(i,:),...
+                'x','Color', cmap(1+i+ 1*(num_sets+1),:),'MarkerSize', 4,...
+                'LineWidth', 1.0); hold on;
+
+            if overplot > 0
+                plot(xdata_2(i,:),ydata_2(i,:),'o','Color',...
+                    cmap(1+i+ 2*(num_sets+1),:),'MarkerSize', 4,'LineWidth', 1.0);
+            end
+            axis(plot_bounds)
+            
+            yyaxis right
+            plot(xdata_3(i,:),ydata_3(i,:),...
+               '-','Color', cmap(1+i+ 3*(num_sets+1),:),'MarkerSize', 3,...
+               'LineWidth', 2.0);
+            ylim([ymin_right ymax_right])
+            pbaspect([7 1 1])
+        end
+        
 %%%%%%%%% grid of field v. time with corresponding leakage current %%%%%%%%
         if plot == 6
             if i > 1
@@ -369,23 +271,11 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
            ax.FontSize = 16;
            ax.TickDir = 'out'; % make ticks point out
         end
-        
-%%%%%%%%%%%%%%%%%%% ramp data plot of lcm1 v time %%%%%%%%%%%%%%%%%%%%%%%%%
-        if plot == 11
-          subplot(num_sets,1,num_sets + 1 - i)
-           plot(xdata_1(i,:),ydata_1(i,:),...
-           '.','Color', cmap(1+i+ 1*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-           axis(plot_bounds)
-           pbaspect([4 1 1])
-           ax = gca; % current axes
-           ax.FontSize = 16;
-           ax.TickDir = 'out'; % make ticks point out
-        end
-
     end
 
-%%% Grid Super Axis Labels %%%
-    if plot == 4 || plot == 6 || plot == 11
+%%%%%%%%%%%%%%%%%%%%%%%%% Grid Super Axis Labels %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    if plot == 5 || plot == 6
         subplot(num_sets,1,num_sets)
         xlabel(xlabel_string,'FontSize',32)
         subplot(num_sets,1,num_sets-1)
@@ -404,12 +294,4 @@ function f = hv_plot(plot, overplot,annote,annote_string,legend_show,legend_stri
         ax.FontSize = 32;
         ax.TickDir = 'out'; % make ticks point out
     end
-
-    %%%% bounds and tick labels. comment out to let matlab autoscale %%%%%%%%%%
-
-    %ax.XTick = xtick_numbers;
-    %ax.YTick = ytick_numbers;
-    %axis(plot_bounds)
-
-    %%%%                                                             %%%%%%%%%%
 end
