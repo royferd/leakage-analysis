@@ -904,7 +904,8 @@ for i = 1:num_files
 end
 
     
-up_chunk_array = zeros(num_files,2,num_up_chunks);
+up_chunk_array = zeros(num_files,2,num_up_chunks); % this triggers an error
+% if more than one file is being read
 down_chunk_array = zeros(num_files,2,num_down_chunks);
 trash_chunk_array = zeros(num_files,2,num_trash_chunks);
 
