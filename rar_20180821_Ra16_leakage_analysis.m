@@ -888,17 +888,15 @@ for i = 1:num_files
     
     %this isn't counting correctly and I don't know why.
     if EDM_sim == 1
-        
-        truth = logical(num_trash_chunks(i) == (num_down_chunks(i) + num_up_chunks(i)));
-        
-        if truth == 1
-            disp('num trash chunks = num_down_chunks + num_up_chunks... yay!')
-        elseif truth == 0
-            chunk_warn = ['num_trash_chunks != num_down_chunks + num_up_chunks...'...
-                ' check your chunks, something may be wrong with chunk'...
-                ' identifier algorithm. Inclusive chunk analysis may not work correctly.'];
-            disp(chunk_warn)
-        end                
+        mes1 = ['file number: ',i];
+        mes2 = ['number of up_chunks: ', count_up_chunks(i) - 2];
+        mes3 = ['number of  down chunks: ', count_down_chunks(i) - 2];
+        mes4 = ['number of trash chunks: ', count_trash_chunks(i) -4];
+        disp(mes1)
+        disp(mes2)
+        disp(mes3)
+        disp(mes4)
+        disp('the number of trash chunks should be the sum of up and down chunks')              
     end
   
 end

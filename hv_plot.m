@@ -36,7 +36,7 @@ function f = hv_plot(plot, overplot,annote,legend_show,...
     xlabel_string = 'xlabel_string';
     ylabel_string = 'ylabel_string';
     title_string = 'title_string';
-    num_sets = length(xdata_1(:,1));
+    num_sets = 1;
     
     %text box assignments
     inside_plot = [0.4 0.73 0.31 0.19]; % edges: x y width height
@@ -176,6 +176,10 @@ function f = hv_plot(plot, overplot,annote,legend_show,...
     right_color = cmap(num_sets+1+2*num_sets+2,:);
     % set(fig,'defaultAxesColorOrder',[left_color; right_color]);
 
+    figure2= figure('Units','normalized')
+    plot(1:1:35,1:1:35,...
+        '^','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
+    
     for i = 1:num_sets
         
 
@@ -192,9 +196,9 @@ function f = hv_plot(plot, overplot,annote,legend_show,...
         if plot == 2
 
             figure2= figure('Units','normalized')
-            plot(xdata_1(i,:),ydata_1(i,:),...
-                '^','Color', cmap(1+i+ 2*(num_sets+1),:),'MarkerSize', 8, 'LineWidth', 2.0);
-
+            plot([1:1:35],[1:1:35],...
+                '^','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
+%cmap(1+i+ 2*(num_sets+1),:)
             if overplot > 0
                 hold on;
                 plot(xdata_2(i,:),ydata_2(i,:),...
