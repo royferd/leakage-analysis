@@ -45,7 +45,7 @@ EDM_sim = 1;        % 0 = not an EDM sim
 inclusive_data = 1; % 0 = do not incorporate ramp data points into ramp CHUNKS (exclusive)
 %                      1 = incorporate ramp data (inclusive)
 
-power_supply = 3; % 0 = unipolar Acopian 
+power_supply = 2; % 0 = unipolar Acopian 
 %                   1 = bipolar AK (installed and tested 8-18-2017)
 %                   2 = Ra EDM Spellman power supply for 2016 run
 %                   3 = Ra EDM Spellman power supply for 2018/2019 data
