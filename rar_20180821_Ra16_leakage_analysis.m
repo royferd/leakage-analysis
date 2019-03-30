@@ -572,7 +572,7 @@ lcm1_avg_offset = zeros(num_files,1);
 field_avg_offset = zeros(num_files,1);
 
 for i = 1:num_files
-    for j = start_offset(i,1):start_offset(i,2);
+    for j = start_offset(i,1):start_offset(i,2)
         vmon_avg_offset_raw_start_wt(i,j-start_offset(i,1)+1) = vmon_avg_raw(i,j)*vmon_weight_raw(i,j);
         imon_avg_offset_raw_start_wt(i,j-start_offset(i,1)+1) = imon_avg_raw(i,j)*imon_weight_raw(i,j);
         lcm1_avg_offset_raw_start_wt(i,j-start_offset(i,1)+1) = lcm1_avg_raw(i,j)*lcm1_weight_raw(i,j);
@@ -888,10 +888,14 @@ for i = 1:num_files
     
     %this isn't counting correctly and I don't know why.
     if EDM_sim == 1
-        mes1 = ['file number: ',i];
-        mes2 = ['number of up_chunks: ', count_up_chunks(i) - 2];
-        mes3 = ['number of  down chunks: ', count_down_chunks(i) - 2];
-        mes4 = ['number of trash chunks: ', count_trash_chunks(i) -4];
+        file_number_str = sprintf('%d',i);
+        up_chunks_str = sprintf('%d',count_up_chunks(i)-2);
+        down_chunks_str = sprintf('%d',count_down_chunks(i)-2);
+        trash_chunks_str = sprintf('%d',count_trash_chunks(i)-4);
+        mes1 = ['file number: ',file_number_str];
+        mes2 = ['number of up_chunks: ', up_chunks_str];
+        mes3 = ['number of  down chunks: ', down_chunks_str];
+        mes4 = ['number of trash chunks: ', trash_chunks_str];
         disp(mes1)
         disp(mes2)
         disp(mes3)
@@ -1564,3 +1568,14 @@ for i =1:num_files
        end
     end
 end
+    
+% hv_plot_xy_errors('',1, vmon_avg_ramp_down_avg_chunk,...
+%     vmon_avg_ramp_down_stdev_chunk,lcm1_avg_ramp_down_avg_chunk,...
+%     lcm1_avg_ramp_down_stdev_chunk);
+
+% hv_plot_xy_scatter('',1,[1:1:num_down_chunks],lcm1_avg_ramp_down_avg_chunk(1:num_down_chunks),...
+%     [1:1:num_trash_chunks],lcm1_avg_trash_avg_chunk(1:num_trash_chunks),[1:1:num_up_chunks],...
+%     lcm1_avg_ramp_up_avg_chunk(1:num_up_chunks));
+
+hv_grid_one_axis('',1,[1:1:num_down_chunks],lcm1_avg_ramp_down_avg_chunk(1:num_down_chunks),...
+    [1:1:num_trash_chunks],lcm1_avg_trash_avg_chunk(1:num_trash_chunks));
