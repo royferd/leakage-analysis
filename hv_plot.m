@@ -31,11 +31,11 @@ function f = hv_plot(plot, overplot,annote,legend_show,...
 % positive (one dataset) and negative (the other dataset)
 %  on the left vertical axis and a linear plot of the whole dataset on the
 %  right axis.
-
-    annote_string = 'annote_string';
-    xlabel_string = 'xlabel_string';
-    ylabel_string = 'ylabel_string';
-    title_string = 'title_string';
+    legend_string = '';
+    annote_string = 'annote string';
+    xlabel_string = 'xlabel string';
+    ylabel_string = 'ylabel string';
+    title_string = 'title string';
     num_sets = 1;
     
     %text box assignments
