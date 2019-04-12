@@ -1,4 +1,5 @@
 function f = hv_plot_xy_errors(annote,legend_show,...
+    save_fig,savepath,plotname,...
     xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
 
 % Properties of plot_x_y_errors:
@@ -208,14 +209,27 @@ function f = hv_plot_xy_errors(annote,legend_show,...
     xlabel(xlabel_string,'FontSize',32)
     ylabel(ylabel_string,'FontSize',32)
     if legend_show == 1
+              
         l = legend('show'); l.String = legend_string; 
         l.FontSize = 32; l.Location = 'northeast outside';
+    
     end
 
     if (length(annote) > 0)
         annotation(figure1,'textbox',outside_plot,'String',annote_string,...
             'FontSize',32,'BackgroundColor',[1 1 1]);
     end
+    
+    if save_fig == 1
+        
+        fig = gcf;
+        fig.PaperUnits = 'inches';
+        fig.PaperPosition = [0 0 12 9]; 
+        
+        save_file_path = fullfile(savepath,sprintf('%s.png',plotname));
+        print (save_file_path,'-dpng');
+    end
+        
     
 %     left_color = cmap(num_sets+1+0*num_sets+2,:);
 %     right_color = cmap(num_sets+1+2*num_sets+2,:);
