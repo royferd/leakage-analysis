@@ -3,7 +3,7 @@ function [discharge_times, discharge_vals, ...
     find_discharges_final(data_raw,...
     data_weight_raw,time,x_avg_per_chunk,...
     x_stdev_per_chunk,num_chunk,chunk_array,bval,minimize,...
-    scale,tail,title_string,plotname,save_figs)
+    scale,tail,title_string,plotname,save_figs,savepath)
     
     %store time and values of the discharges
     xlabel_string = 'leakage current (pA)';
@@ -89,8 +89,8 @@ function [discharge_times, discharge_vals, ...
         ordered_xdata = sort(xdata);
         plot_subset_xdata = ordered_xdata(1:most_xdata);
         
-        figure0 = figure;
-        %figure0 = figure('visible','off');
+        %figure0 = figure;
+        figure0 = figure('visible','off');
         
         h1 = histogram(xdata,'BinWidth',bval);
 %       h1 = histcounts(xdata,'BinWidth',bval);
@@ -385,7 +385,12 @@ function [discharge_times, discharge_vals, ...
             %tcklbl
             % Update tick labels
             %set(gca,'XTickLabel',tcklbl)
-            print (sprintf('%s_%d',plotname,i),'-dpng');
+            
+            save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
+            %print (sprintf('%s_%d',plotname,i),'-dpng');
+            print (save_file_path,'-dpng');
+            
+            
         end
 
         discharge_times = [discharge_times time_of_discharge];

@@ -12,7 +12,8 @@ function [y_avg_set_avg_chunk, y_avg_set_stdev_chunk,...
     num_set_points,chunk_array, y_avg_set_raw,...
     y_weight_avg_set_raw,y_avg_scale)
 
-    %7/11/2017 can't think of a way to store chunk averaging for more than 1 data set
+    % 7/11/2017 can't think of a way to store chunk averaging for more than 
+    % 1 data set
 
     % the first/last few points in each chunk may be intermediate points
     % from a ramp down/up. When chunkifying, trim off these points.
