@@ -98,7 +98,7 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
     extra = 0;
 
 %    if (power_supply == 0) || (power_supply == 1)
-    if (power_supply == 0) || (power_supply == 1) || (power_supply == 3)
+    if (power_supply == 0) || (power_supply == 1) || (power_supply == 3) || power_supply == 4
         
         extra = 0;
         for i = 1:num_files
