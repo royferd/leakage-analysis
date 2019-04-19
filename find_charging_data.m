@@ -23,6 +23,12 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
     lcm1_inv_weight_avg_trash_raw,...
     lcm1_weight_avg_trash_raw,time_trash)
 
+    disp('running find_charging_data.m');
+    
+    % when identifying a charging or discharging segment, include a few
+    % extra points in the direction of increasing stability to make double
+    % sure we're collecting all transitional data points.
+    buffer = 2;
 
     num_files = length(num_trash_chunks);
     
@@ -115,6 +121,10 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             
             lcm1_avg_trash_steady_stdev(i,j) = ...
                 mean(lcm1_inv_weight_avg_trash(i,middle_lo:middle_hi));
+            
+%             lcm1_avg_trash_steady_stdev(i,j) = ...
+%                 std(lcm1_inv_weight_avg_trash(i,middle_lo:middle_hi),...
+%                 lcm1_inv_weight_avg_trash(i,middle_lo:middle_hi));
         
         end
 
@@ -140,23 +150,41 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
             for k = chunk_begin:chunk_begin+ middle
 
+%                 if (lcm1_inv_weight_avg_trash(i,k+1) < ...
+%                         1.5 * lcm1_avg_trash_steady_stdev(i,j) && ...
+%                         lcm1_inv_weight_avg_trash(i,k+1) > ...
+%                         lcm1_inv_weight_avg_trash(i,k+2))
+                    
                 if (lcm1_inv_weight_avg_trash(i,k+1) < ...
                         1.5 * lcm1_avg_trash_steady_stdev(i,j) && ...
-                        lcm1_inv_weight_avg_trash(i,k+1) > ...
-                        lcm1_inv_weight_avg_trash(i,k+2))
+                        abs(lcm1_avg_trash(i,k+1)) > ...
+                        abs(lcm1_avg_trash(i,k+2)) && k > chunk_begin)
 
-                    if (max(lcm1_avg_trash(i,chunk_begin:k)) < ...
-                            lcm1_avg_trash_steady_avg(i,j) && ...
-                            abs(max(lcm1_avg_trash(i,chunk_begin:k))) > ...
-                            3 * abs(lcm1_avg_trash_steady_avg(i,j)))
+%                     if (max(lcm1_avg_trash(i,chunk_begin:k)) < ...
+%                             lcm1_avg_trash_steady_avg(i,j) && ...
+%                             abs(max(lcm1_avg_trash(i,chunk_begin:k))) > ...
+%                             3 * abs(lcm1_avg_trash_steady_avg(i,j)))
 
+                    [max_leak_mag,max_leak_index] = max(abs(lcm1_avg_trash(i,chunk_begin:k)));
+                    max_leak_value = max_leak_mag(1)*sign(lcm1_avg_trash(i,chunk_begin+max_leak_index(1)-1));
+%                     fprintf('max leakage value for chunk %d: %f \n',j,max_leak_value);
+                    
+                    if max_leak_value > lcm1_avg_trash_steady_avg(i,j)
+
+                        fprintf('%f > %f, this is a discharge ramp from +V \n',...
+                            max_leak_value,lcm1_avg_trash_steady_avg(i,j));
                         %discharge from +V
                         discharge_index_pass(i,j,1) = 1;
 
-                    elseif (max(lcm1_avg_trash(i,chunk_begin:k)) > ...
-                            lcm1_avg_trash_steady_avg(i,j) && ...
-                            abs(max(lcm1_avg_trash(i,chunk_begin:k))) > ...
-                            3 * abs(lcm1_avg_trash_steady_avg(i,j)))
+%                     elseif (max(lcm1_avg_trash(i,chunk_begin:k)) > ...
+%                             lcm1_avg_trash_steady_avg(i,j) && ...
+%                             abs(max(lcm1_avg_trash(i,chunk_begin:k))) > ...
+%                             3 * abs(lcm1_avg_trash_steady_avg(i,j)))
+                    
+                    elseif max_leak_value < lcm1_avg_trash_steady_avg(i,j)
+                        
+                        fprintf('%f < %f, this is a discharge ramp from -V \n',...
+                            max_leak_value,lcm1_avg_trash_steady_avg(i,j));
 
                         %discharge from -V
                         discharge_index_pass(i,j,1) = -1;
@@ -164,7 +192,8 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                     end
 
                     discharge_index_pass(i,j,2) = chunk_begin;
-                    discharge_index_pass(i,j,3) = k+2;
+%                     discharge_index_pass(i,j,3) = k+2;
+                    discharge_index_pass(i,j,3) = k+buffer;
 
                     break            
 
@@ -176,13 +205,16 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
         % met, I simply define the segment to start from chunk_begin and have
         % the same # of points as the previous segment
         if discharge_index_pass(i,j,1) == 0
+          
+            discharge_index_pass(i,j,1) = - discharge_index_pass(i,j-1,1);            
 
-                discharge_index_pass(i,j,1) = - discharge_index_pass(i,j-1,1);
+            discharge_index_pass(i,j,2) = chunk_begin;
 
-                discharge_index_pass(i,j,2) = chunk_begin;
-
-                discharge_index_pass(i,j,3) = (chunk_begin + ...
-                    discharge_index_pass(i,j-1,3) - discharge_index_pass(i,j-1,2));
+            discharge_index_pass(i,j,3) = (chunk_begin + ...
+                discharge_index_pass(i,j-1,3) - discharge_index_pass(i,j-1,2));
+            
+            fprintf('trash chunk # %d: unable to find ramp, assuming discharge from %d voltage. \n',...
+                j,sign(discharge_index_pass(i,j,1)) );
 
         end
 
@@ -207,26 +239,38 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             for k = chunk_begin+ middle:chunk_end 
                 
 
+%                 if (lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
+%                         < 1.5 * lcm1_avg_trash_steady_stdev(i,j) && ...
+%                         lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
+%                         > lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k - 1))
                 if (lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
-                        < 1.5 * lcm1_avg_trash_steady_stdev(i,j) && ...
-                        lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
-                        > lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k - 1))
+                    < 2.0 * lcm1_avg_trash_steady_stdev(i,j) && ...
+                    lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
+                    > lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k - 1))
+                    
+                    [max_leak_mag,max_leak_index] = max(abs(lcm1_avg_trash(i,chunk_end + chunk_begin + middle - k - 1:chunk_end)));
+                    max_leak_value = max_leak_mag(1)*sign(lcm1_avg_trash(i,chunk_end + chunk_begin + middle - k - 1+max_leak_index(1)-1));
+                    %fprintf('max leakage value for chunk %d: %f \n',j,max_leak_value);
 
-                    if (max(lcm1_avg_trash(i,k:chunk_end)) >  lcm1_avg_trash_steady_avg(i,j) && ...
-                            abs(max(lcm1_avg_trash(i,k:chunk_end))) ...
-                            > 3*abs(lcm1_avg_trash_steady_avg(i,j)))
+%                     if (max(lcm1_avg_trash(i,k:chunk_end)) >  lcm1_avg_trash_steady_avg(i,j) && ...
+%                             abs(max(lcm1_avg_trash(i,k:chunk_end))) ...
+%                             > 3*abs(lcm1_avg_trash_steady_avg(i,j)))
+                    if (max_leak_value > lcm1_avg_trash_steady_avg(i,j))
 
                         % charging to +V
                         charge_index_pass(i,j,1) = 1;
 
-                    elseif max(lcm1_avg_trash(i,k:chunk_end)) <  lcm1_avg_trash_steady_avg(i,j)   && abs(max(lcm1_avg_trash(i,k:chunk_end))) > 3*abs(lcm1_avg_trash_steady_avg(i,j))                
+%                     elseif max(lcm1_avg_trash(i,k:chunk_end)) <  lcm1_avg_trash_steady_avg(i,j) && ...
+%                             abs(max(lcm1_avg_trash(i,k:chunk_end))) > 3*abs(lcm1_avg_trash_steady_avg(i,j))                
+                    elseif max_leak_value <  lcm1_avg_trash_steady_avg(i,j)
 
                         % charging to -V
                         charge_index_pass(i,j,1) = -1;
 
                     end
 
-                    charge_index_pass(i,j,2) = chunk_end + chunk_begin + middle - k -1;
+%                     charge_index_pass(i,j,2) = chunk_end + chunk_begin + middle - k -1;
+                    charge_index_pass(i,j,2) = chunk_end + chunk_begin + middle - (k + buffer);
 
                     charge_index_pass(i,j,3) = chunk_end;                
 
@@ -247,7 +291,9 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                     - charge_index_pass(i,j-1,2)));
 
                 charge_index_pass(i,j,3) = chunk_end;
-
+                
+                fprintf('trash chunk # %d: unable to find ramp, assuming charge to %d voltage. \n',...
+                j,sign(charge_index_pass(i,j,1)) );
             end
 
             if max_length_charge < charge_index_pass(i,j,3) - charge_index_pass(i,j,2)

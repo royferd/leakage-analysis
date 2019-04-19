@@ -1,5 +1,6 @@
 function [discharge_times, discharge_vals, ...
-    discharge_stdevs,discharges_per_chunk,dph,dph_std] = ...
+    discharge_stdevs,discharges_per_chunk,dph,dph_std,median_discharge_size,...
+    overall_dph,overall_dph_std,overall_median_discharge_size] = ...
     find_discharges_final(data_raw,...
     data_weight_raw,time,x_avg_per_chunk,...
     x_stdev_per_chunk,num_chunk,chunk_array,bval,minimize,...
@@ -21,8 +22,9 @@ function [discharge_times, discharge_vals, ...
     % is an intermediate point that gets grouped in. We don't want to count
     % this as a discharge so we trim the ends of the segments by a few points.
     trim = 5;
-    '---- find_discarges.m: scanning discharges in: '
-    plotname
+    disp('---- find_discarges.m: scanning discharges in: ');
+    disp(plotname);
+    
     if (minimize == 1)
         disp('numerical optimization will vary Gaussian amplitude, keeping average and stdev fixed.');
 
@@ -405,20 +407,45 @@ function [discharge_times, discharge_vals, ...
     
     start_time = discharge_times(1);
     start_time_index = 1;
+    
     dph = [];
+    overall_dph = 0;
+    
     dph_std = [];
+    overall_dph_std = 0;
+    
+    median_discharge_size = [];
+    overall_median_discharge_size = 0;
     
     if length(discharge_times) < 1
         
         dph = [0];
+        overall_dph = 0;
+        
         dph_std = [0];
+        overall_dph_std = 0;
+        
+        median_discharge_size = [0];
+        overall_median_discharge_size = 0;
         
     elseif length(discharge_times) == 1
         
         dph = [1];
+        overall_dph = 1;
+        
         dph_std = [1];
+        overall_dph_std = 1;
+        
+        median_discharge_size = [discharge_stdevs(1)];
+        overall_median_discharge_size = discharge_stdevs(1);
         
     elseif length(discharge_times) > 1
+        
+        overall_dph = length(discharge_times(start_time_index:end))*60.0/(discharge_times(end) - discharge_times(start_time_index));
+                
+        overall_dph_std = sqrt(overall_dph);
+
+        overall_median_discharge_size = median(discharge_stdevs(start_time_index:end));
     
         for i =1:length(discharge_times)
 
@@ -431,9 +458,14 @@ function [discharge_times, discharge_vals, ...
                 avg_discharges_this_hour = length(discharge_times(start_time_index:i))*60.0/time_delta;
                 
                 std_this_hour = sqrt(avg_discharges_this_hour);
+                
+                median_discharge_size_this_hour = median(discharge_stdevs(start_time_index:i));
 
                 dph = [dph avg_discharges_this_hour];
+                
                 dph_std = [dph_std std_this_hour];
+                
+                median_discharge_size = [median_discharge_size median_discharge_size_this_hour];
 
                 % now redefine start_time and start_time_index so that we can
                 % look for the avg. # of discharges for the next hour.
@@ -472,17 +504,29 @@ function [discharge_times, discharge_vals, ...
             
             std_this_hour = sqrt(avg_discharges_this_hour);
             
+            median_discharge_size_this_hour = median(discharge_stdevs(start_time_index:end));
+            
+            median_discharge_size = [median_discharge_size median_discharge_size_this_hour];
+            
             dph = [dph avg_discharges_this_hour];
+            
             dph_std = [dph_std std_this_hour];
             
         elseif time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
                 time_delta < 8.0
             
             avg_discharges_this_hour = length(discharge_times(start_time_index:end))*60.0/time_delta;
+         
             std_this_hour = sqrt(avg_discharges_this_hour);
             
+            median_discharge_size_this_hour = ...
+                median([median_discharge_size(end) discharge_stdevs(start_time_index:end)]);
+            
             dph(end) = (dph(end) + avg_discharges_this_hour)/2.0;
+            
             dph_std(end) = sqrt((dph_std(end))^2+ (std_this_hour)^2);
+            
+            median_discharge_size(end) = median_discharge_size_this_hour;
             
             
     
