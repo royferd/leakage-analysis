@@ -522,7 +522,7 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
     end
     
     %get rid of those pesky zeros in front
-    
+   % 
     zero_chunk_array = zero_chunk_array_pass(:,:,2:end);
     
     lcm1_avg_zero_raw = lcm1_avg_zero_raw_pass(2:end);
