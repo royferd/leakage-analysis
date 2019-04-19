@@ -180,7 +180,7 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
             end
 
             for k = 1:max_length_charge
-                
+           %     
            %     charge_neg_index(i,j)+1+k;
            fprintf('k: %d \n',k);
            fprintf('length of max charge: %d \n',max_length_charge);

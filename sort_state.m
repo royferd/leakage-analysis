@@ -476,7 +476,7 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
 %        lcm1_inv_weight_avg_trash_raw = (lcm1_weight_avg_trash_raw(:,:)).^(-1/2);
 % % %         
 %          num_trash_points(i) = length(lcm1_avg_trash_raw);  
-
+%
     end
     
 end

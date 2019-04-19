@@ -494,6 +494,7 @@ function [discharge_times, discharge_vals, ...
         
         % if we don't get a full last hour, we can extrapolate the last
         % dph
+        %
         time_delta = discharge_times(end) - start_time;
         
         if time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
