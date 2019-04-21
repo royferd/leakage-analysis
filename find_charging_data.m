@@ -106,10 +106,13 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
         
         for j = 1:num_trash_chunks(i)
             
-%            chunk_begin = trash_chunk_array(i,2,j);
-            chunk_begin = trash_chunk_array(i,2,j) + 1;
+%             chunk_begin = trash_chunk_array(i,2,j) + 1;
+%             
+%             chunk_end = trash_chunk_array(i,2,j+1);
             
-            chunk_end = trash_chunk_array(i,2,j+1);
+            chunk_begin = trash_chunk_array(i,1,j) + 1;
+            
+            chunk_end = trash_chunk_array(i,2,j);
             
             middle = round((chunk_end - chunk_begin)/2,0);
             
@@ -143,9 +146,14 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
             %first point might be the start of the ramp, which could be a small
             %stdev. Increment by 1 so we know we're starting on a ramp point
-            chunk_begin = trash_chunk_array(i,2,j)+1;
+%             chunk_begin = trash_chunk_array(i,2,j)+1;
+% 
+%             chunk_end = trash_chunk_array(i,2,j+1);
+            
+            chunk_begin = trash_chunk_array(i,1,j)+1;
 
-            chunk_end = trash_chunk_array(i,2,j+1);
+            chunk_end = trash_chunk_array(i,2,j);
+            
             middle = round((chunk_end - chunk_begin)/2,0);
 
             for k = chunk_begin:chunk_begin+ middle
@@ -169,10 +177,12 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                     max_leak_value = max_leak_mag(1)*sign(lcm1_avg_trash(i,chunk_begin+max_leak_index(1)-1));
 %                     fprintf('max leakage value for chunk %d: %f \n',j,max_leak_value);
                     
-                    if max_leak_value > lcm1_avg_trash_steady_avg(i,j)
+%                     if max_leak_value > lcm1_avg_trash_steady_avg(i,j)
+                        if max_leak_value < lcm1_avg_trash_steady_avg(i,j)
 
-                        fprintf('%f > %f, this is a discharge ramp from +V \n',...
-                            max_leak_value,lcm1_avg_trash_steady_avg(i,j));
+%                         fprintf('%f < %f, this is a discharge ramp from +V \n',...
+%                             max_leak_value,lcm1_avg_trash_steady_avg(i,j));
+
                         %discharge from +V
                         discharge_index_pass(i,j,1) = 1;
 
@@ -181,10 +191,11 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 %                             abs(max(lcm1_avg_trash(i,chunk_begin:k))) > ...
 %                             3 * abs(lcm1_avg_trash_steady_avg(i,j)))
                     
-                    elseif max_leak_value < lcm1_avg_trash_steady_avg(i,j)
+%                    elseif max_leak_value < lcm1_avg_trash_steady_avg(i,j)
+                    elseif max_leak_value > lcm1_avg_trash_steady_avg(i,j)    
                         
-                        fprintf('%f < %f, this is a discharge ramp from -V \n',...
-                            max_leak_value,lcm1_avg_trash_steady_avg(i,j));
+%                         fprintf('%f > %f, this is a discharge ramp from -V \n',...
+%                             max_leak_value,lcm1_avg_trash_steady_avg(i,j));
 
                         %discharge from -V
                         discharge_index_pass(i,j,1) = -1;
@@ -213,8 +224,8 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             discharge_index_pass(i,j,3) = (chunk_begin + ...
                 discharge_index_pass(i,j-1,3) - discharge_index_pass(i,j-1,2));
             
-            fprintf('trash chunk # %d: unable to find ramp, assuming discharge from %d voltage. \n',...
-                j,sign(discharge_index_pass(i,j,1)) );
+%             fprintf('trash chunk # %d: unable to find ramp, assuming discharge from %d voltage. \n',...
+%                 j,sign(discharge_index_pass(i,j,1)) );
 
         end
 
@@ -230,9 +241,14 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
         for j = 1:num_trash_chunks(i)
 
-            chunk_begin = trash_chunk_array(i,2,j)+1;
+%             chunk_begin = trash_chunk_array(i,2,j)+1;
+% 
+%             chunk_end = trash_chunk_array(i,2,j+1);
+            
+            chunk_begin = trash_chunk_array(i,1,j)+1;
 
-            chunk_end = trash_chunk_array(i,2,j+1);
+            chunk_end = trash_chunk_array(i,2,j);
+            
 
             middle = round((chunk_end - chunk_begin)/2,0);
 
@@ -510,7 +526,7 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
             elseif j > 1
 
-                msg = sprintf('at %dth trash chunk, we did not trigger a zero chunk',j)
+                fprintf('at %dth trash chunk, we did not trigger a zero chunk \n',j)
 
             end
 
@@ -522,7 +538,7 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
     end
     
     %get rid of those pesky zeros in front
-   % 
+    
     zero_chunk_array = zero_chunk_array_pass(:,:,2:end);
     
     lcm1_avg_zero_raw = lcm1_avg_zero_raw_pass(2:end);
