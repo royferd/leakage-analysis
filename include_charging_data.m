@@ -102,20 +102,16 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
 
             down_chunk_inc_array_pass(i,2,j) = length(lcm1_avg_ramp_down_inc_raw_pass(i,:));
 
-%             disp('down chunk #:');
-%             disp(num_down_chunks);
-%             disp('length of lcm1_avg_discharge_pos_sum_current_raw:');
-%             disp(length(lcm1_avg_discharge_pos_sum_current_raw));
-%             disp('length of lcm1_avg_discharge_pos_raw:');
-%             disp(length(lcm1_avg_discharge_pos_raw));
-            
+            fprintf('down chunk # = %d \n',num_down_chunks);
+            fprintf('length of lcm1_avg_discharge_pos_sum_current_raw = %d \n',...
+                length(lcm1_avg_discharge_pos_sum_current_raw));
+            fprintf('length of lcm1_avg_discharge_pos_raw = %d \n',...
+                length(lcm1_avg_discharge_pos_raw));            
             
             for k = 1:max_length_discharge
 
-%                 disp('k:');
-%                 disp(k);
-%                 disp('discharge_pos_index(i,j)+1+k:');
-%                 disp(discharge_pos_index(i,j)+1+k);
+                fprintf('down chunk k = %d \n',k);
+                fprintf('discharge_pos_index(i,j)+1+k = %d \n',discharge_pos_index(i,j)+1+k);
                 
                 lcm1_avg_discharge_pos_sum_current_raw(i,k) = ...
                     lcm1_avg_discharge_pos_sum_current_raw(i,k) + lcm1_avg_discharge_pos_raw(i,discharge_pos_index(i,j)+1+k);
