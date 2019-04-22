@@ -140,10 +140,10 @@ function [discharge_times, discharge_vals, ...
 
         end
 
-        disp('opt_x_hist_data:')
-        disp(opt_x_hist_data)
-        disp('opt_counts: ')
-        disp(opt_counts)
+%         disp('opt_x_hist_data:')
+%         disp(opt_x_hist_data)
+%         disp('opt_counts: ')
+%         disp(opt_counts)
 
 
         % view minimization output
@@ -265,9 +265,9 @@ function [discharge_times, discharge_vals, ...
         time_of_discharge = time_of_discharge_pass(2:end);
         stdev_discharge_values = stdev_discharge_values_pass(2:end);
 
-        sprintf('chunk no: %d',i)
-        sprintf('# discharges: %d',count_discharges)
-        sprintf('%.2f pA at %.2f m \n', discharge_values,time_of_discharge)
+%         sprintf('chunk no: %d',i)
+%         sprintf('# discharges: %d',count_discharges)
+%         sprintf('%.2f pA at %.2f m \n', discharge_values,time_of_discharge)
 
         %%%%%%%
 
@@ -290,15 +290,15 @@ function [discharge_times, discharge_vals, ...
         end
 
 
-        'loop:'
-        i
-        'gaussian average: ' 
-        gaus_avg
-        'xstd: '
-        gaus_stdev
-
-        'number of discharges: '
-        count_discharges
+%         'loop:'
+%         i
+%         'gaussian average: ' 
+%         gaus_avg
+%         'xstd: '
+%         gaus_stdev
+% 
+%         'number of discharges: '
+%         count_discharges
 
 
         %%%%%%%%%%%%%%%%%%%%%%% gaussian fit of ramp data %%%%%%%%%%%%%%%%%%%%%
@@ -349,6 +349,10 @@ function [discharge_times, discharge_vals, ...
             else
 
                 %axis ([ floor(xavg - 5*gaus_stdev) ceil(xavg + 5*gaus_stdev) 0 5.*ceil(1.1*max(opt_counts)/5.)]);
+%                 fprintf('floor(gaus_avg - 6*gaus_stdev) = %f \n',floor(gaus_avg - 6*gaus_stdev));
+%                 fprintf('ceil(gaus_avg + 6*gaus_stdev) = %f \n',ceil(gaus_avg + 6*gaus_stdev));
+%                 fprintf('5.*ceil(1.1*max(counts)/5.) = %f \n',5.*ceil(1.1*max(counts)/5.));
+               
                 axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*max(counts)/5.)]);
 
             end
