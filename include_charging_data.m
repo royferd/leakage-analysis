@@ -69,7 +69,8 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
     
     for i = 1:num_files
 
-        for j = 1:num_down_chunks(i)
+%        for j = 1:num_down_chunks(i)
+        for j = 1:num_down_chunks(i) - 1 
 
             down_chunk_inc_array_pass(i,1,j) = length(lcm1_avg_ramp_down_inc_raw_pass(i,:));
 
@@ -102,11 +103,11 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
 
             down_chunk_inc_array_pass(i,2,j) = length(lcm1_avg_ramp_down_inc_raw_pass(i,:));
 
-            fprintf('down chunk # = %d \n',num_down_chunks);
-            fprintf('length of lcm1_avg_discharge_pos_sum_current_raw = %d \n',...
-                length(lcm1_avg_discharge_pos_sum_current_raw));
-            fprintf('length of lcm1_avg_discharge_pos_raw = %d \n',...
-                length(lcm1_avg_discharge_pos_raw));            
+%             fprintf('down chunk # = %d \n',num_down_chunks);
+%             fprintf('length of lcm1_avg_discharge_pos_sum_current_raw = %d \n',...
+%                 length(lcm1_avg_discharge_pos_sum_current_raw));
+%             fprintf('length of lcm1_avg_discharge_pos_raw = %d \n',...
+%                 length(lcm1_avg_discharge_pos_raw));            
             
             for k = 1:max_length_discharge
 
@@ -114,10 +115,12 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
                 fprintf('discharge_pos_index(i,j)+1+k = %d \n',discharge_pos_index(i,j)+1+k);
                 
                 lcm1_avg_discharge_pos_sum_current_raw(i,k) = ...
-                    lcm1_avg_discharge_pos_sum_current_raw(i,k) + lcm1_avg_discharge_pos_raw(i,discharge_pos_index(i,j)+1+k);
+                    lcm1_avg_discharge_pos_sum_current_raw(i,k) + ...
+                    lcm1_avg_discharge_pos_raw(i,discharge_pos_index(i,j)+1+k);
 
                 lcm1_avg_discharge_pos_sum_weight_raw(i,k) = ...
-                    lcm1_avg_discharge_pos_sum_weight_raw(i,k)+ lcm1_weight_discharge_pos_raw(i,discharge_pos_index(i,j)+1+k);
+                    lcm1_avg_discharge_pos_sum_weight_raw(i,k)+ ...
+                    lcm1_weight_discharge_pos_raw(i,discharge_pos_index(i,j)+1+k);
 
             end
 
@@ -130,7 +133,8 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
 
         end
 
-        for j = 1:num_up_chunks(i)
+%        for j = 1:num_up_chunks(i)
+        for j = 1:num_up_chunks(i) - 1
 
             up_chunk_inc_array_pass(i,1,j) = length(lcm1_avg_ramp_up_inc_raw_pass(i,:));          
 
@@ -178,13 +182,13 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
             for k = 1:max_length_charge
            %     
            %     charge_neg_index(i,j)+1+k;
-           fprintf('k: %d \n',k);
-           fprintf('length of max charge: %d \n',max_length_charge);
-           fprintf('length of lcm1_avg_charge_neg_sum_current_raw: %d \n',...
-               length(lcm1_avg_charge_neg_sum_current_raw));
-           fprintf('length of lcm1_avg_charge_neg_raw: %d \n',...
-               length(lcm1_avg_charge_neg_raw));
-           fprintf('charge_neg_index(i,j)+1+k: %d \n',charge_neg_index(i,j)+1+k);
+%            fprintf('k: %d \n',k);
+%            fprintf('length of max charge: %d \n',max_length_charge);
+%            fprintf('length of lcm1_avg_charge_neg_sum_current_raw: %d \n',...
+%                length(lcm1_avg_charge_neg_sum_current_raw));
+%            fprintf('length of lcm1_avg_charge_neg_raw: %d \n',...
+%                length(lcm1_avg_charge_neg_raw));
+%            fprintf('charge_neg_index(i,j)+1+k: %d \n',charge_neg_index(i,j)+1+k);
 
                 lcm1_avg_charge_neg_sum_current_raw(i,k) = ...
                     (lcm1_avg_charge_neg_sum_current_raw(i,k) + ...

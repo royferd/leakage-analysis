@@ -1,4 +1,4 @@
-function f = hv_plot_xy_errors(annote,legend_show,...
+function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     save_fig,savepath,plotname,...
     xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
 
@@ -83,7 +83,7 @@ function f = hv_plot_xy_errors(annote,legend_show,...
     annote_string = annote;
     xlabel_string = 'xlabel string';
     ylabel_string = 'ylabel string';
-    title_string = 'title string';
+    title_string = plot_title;
     num_sets = 1;
     
     %text box assignments
@@ -157,7 +157,6 @@ function f = hv_plot_xy_errors(annote,legend_show,...
     %titles and shit
 
     approximate_time_points = 4800;
-    title_string = 'plot title';
     x_label = 'x label';
     y_label = 'y label';
     xtick_numbers = [ 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75];
@@ -205,9 +204,9 @@ function f = hv_plot_xy_errors(annote,legend_show,...
     pbaspect([1.33 1 1])
     ax = gca; % current axes
     ax.TickDir = 'out'; % make ticks point out
-    title(title_string,'FontSize',40)
-    xlabel(xlabel_string,'FontSize',32)
-    ylabel(ylabel_string,'FontSize',32)
+    title(title_string,'FontSize',32)
+    xlabel(xlabel_string,'FontSize',24)
+    ylabel(ylabel_string,'FontSize',24)
     if legend_show == 1
               
         l = legend('show'); l.String = legend_string; 
@@ -217,7 +216,7 @@ function f = hv_plot_xy_errors(annote,legend_show,...
 
     if (length(annote) > 0)
         annotation(figure1,'textbox',outside_plot,'String',annote_string,...
-            'FontSize',32,'BackgroundColor',[1 1 1]);
+            'FontSize',24,'BackgroundColor',[1 1 1]);
     end
     
     if save_fig == 1
