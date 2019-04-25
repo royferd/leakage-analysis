@@ -106,10 +106,6 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
         
         for j = 1:num_trash_chunks(i)
             
-%             chunk_begin = trash_chunk_array(i,2,j) + 1;
-%             
-%             chunk_end = trash_chunk_array(i,2,j+1);
-            
             chunk_begin = trash_chunk_array(i,1,j) + 1;
             
             chunk_end = trash_chunk_array(i,2,j);
@@ -124,10 +120,6 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             
             lcm1_avg_trash_steady_stdev(i,j) = ...
                 mean(lcm1_inv_weight_avg_trash(i,middle_lo:middle_hi));
-            
-%             lcm1_avg_trash_steady_stdev(i,j) = ...
-%                 std(lcm1_inv_weight_avg_trash(i,middle_lo:middle_hi),...
-%                 lcm1_inv_weight_avg_trash(i,middle_lo:middle_hi));
         
         end
 
@@ -146,9 +138,6 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
             %first point might be the start of the ramp, which could be a small
             %stdev. Increment by 1 so we know we're starting on a ramp point
-%             chunk_begin = trash_chunk_array(i,2,j)+1;
-% 
-%             chunk_end = trash_chunk_array(i,2,j+1);
             
             chunk_begin = trash_chunk_array(i,1,j)+1;
 
@@ -157,27 +146,17 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             middle = round((chunk_end - chunk_begin)/2,0);
 
             for k = chunk_begin:chunk_begin+ middle
-
-%                 if (lcm1_inv_weight_avg_trash(i,k+1) < ...
-%                         1.5 * lcm1_avg_trash_steady_stdev(i,j) && ...
-%                         lcm1_inv_weight_avg_trash(i,k+1) > ...
-%                         lcm1_inv_weight_avg_trash(i,k+2))
-                    
+ 
                 if (lcm1_inv_weight_avg_trash(i,k+1) < ...
                         1.5 * lcm1_avg_trash_steady_stdev(i,j) && ...
                         abs(lcm1_avg_trash(i,k+1)) > ...
                         abs(lcm1_avg_trash(i,k+2)) && k > chunk_begin)
 
-%                     if (max(lcm1_avg_trash(i,chunk_begin:k)) < ...
-%                             lcm1_avg_trash_steady_avg(i,j) && ...
-%                             abs(max(lcm1_avg_trash(i,chunk_begin:k))) > ...
-%                             3 * abs(lcm1_avg_trash_steady_avg(i,j)))
-
                     [max_leak_mag,max_leak_index] = max(abs(lcm1_avg_trash(i,chunk_begin:k)));
                     max_leak_value = max_leak_mag(1)*sign(lcm1_avg_trash(i,chunk_begin+max_leak_index(1)-1));
 %                     fprintf('max leakage value for chunk %d: %f \n',j,max_leak_value);
                     
-%                     if max_leak_value > lcm1_avg_trash_steady_avg(i,j)
+
                         if max_leak_value < lcm1_avg_trash_steady_avg(i,j)
 
 %                         fprintf('%f < %f, this is a discharge ramp from +V \n',...
@@ -186,12 +165,7 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                         %discharge from +V
                         discharge_index_pass(i,j,1) = 1;
 
-%                     elseif (max(lcm1_avg_trash(i,chunk_begin:k)) > ...
-%                             lcm1_avg_trash_steady_avg(i,j) && ...
-%                             abs(max(lcm1_avg_trash(i,chunk_begin:k))) > ...
-%                             3 * abs(lcm1_avg_trash_steady_avg(i,j)))
-                    
-%                    elseif max_leak_value < lcm1_avg_trash_steady_avg(i,j)
+
                     elseif max_leak_value > lcm1_avg_trash_steady_avg(i,j)    
                         
 %                         fprintf('%f > %f, this is a discharge ramp from -V \n',...
@@ -203,7 +177,7 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                     end
 
                     discharge_index_pass(i,j,2) = chunk_begin;
-%                     discharge_index_pass(i,j,3) = k+2;
+
                     discharge_index_pass(i,j,3) = k+buffer;
 
                     break            
@@ -254,11 +228,6 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
             for k = chunk_begin+ middle:chunk_end 
                 
-
-%                 if (lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
-%                         < 1.5 * lcm1_avg_trash_steady_stdev(i,j) && ...
-%                         lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
-%                         > lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k - 1))
                 if (lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
                     < 2.0 * lcm1_avg_trash_steady_stdev(i,j) && ...
                     lcm1_inv_weight_avg_trash(i,chunk_end + chunk_begin + middle - k) ...
@@ -268,16 +237,11 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                     max_leak_value = max_leak_mag(1)*sign(lcm1_avg_trash(i,chunk_end + chunk_begin + middle - k - 1+max_leak_index(1)-1));
                     %fprintf('max leakage value for chunk %d: %f \n',j,max_leak_value);
 
-%                     if (max(lcm1_avg_trash(i,k:chunk_end)) >  lcm1_avg_trash_steady_avg(i,j) && ...
-%                             abs(max(lcm1_avg_trash(i,k:chunk_end))) ...
-%                             > 3*abs(lcm1_avg_trash_steady_avg(i,j)))
                     if (max_leak_value > lcm1_avg_trash_steady_avg(i,j))
 
                         % charging to +V
                         charge_index_pass(i,j,1) = 1;
 
-%                     elseif max(lcm1_avg_trash(i,k:chunk_end)) <  lcm1_avg_trash_steady_avg(i,j) && ...
-%                             abs(max(lcm1_avg_trash(i,k:chunk_end))) > 3*abs(lcm1_avg_trash_steady_avg(i,j))                
                     elseif max_leak_value <  lcm1_avg_trash_steady_avg(i,j)
 
                         % charging to -V
@@ -285,7 +249,6 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
                     end
 
-%                     charge_index_pass(i,j,2) = chunk_end + chunk_begin + middle - k -1;
                     charge_index_pass(i,j,2) = chunk_end + chunk_begin + middle - (k + buffer);
 
                     charge_index_pass(i,j,3) = chunk_end;                
@@ -338,16 +301,10 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
     
     end
 
-    % We want all but the first discharge_index and all but the last
-    % charge_index.
-    %
-    % <type>_index_count, where <type> can be charge_pos, charge_neg,
-    % discharge_pos, discharge_neg, increments when we iterate thru an
-    % index of <type>'s.
-    % <type>_index_count_increment is a vector that we will use to check
-    % whether the count updated or not.
-    
+    % simulation should end with a discharge, so omit the last charge
     charge_index = charge_index_pass(:,1:end-1,:);
+    
+    % simulation should start with a charge, so omit first discharge
     discharge_index = discharge_index_pass(:,2:end,:);
 
     charge_neg_index_count = 0;
@@ -388,10 +345,6 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
                 discharge_pos_index_count = discharge_pos_index_count+1;
                 
-%                 discharge_pos_index_count_increment(end+1) = discharge_pos_index_count;
-%                 
-%                 discharge_neg_index_count_increment(end+1) = discharge_neg_index_count_increment(end);
-
                 discharge_pos_index(i,discharge_pos_index_count+1) = ...
                     discharge_pos_index(i,discharge_pos_index_count) + ...
                     discharge_index(i,j,3) - discharge_index(i,j,2)+1;            
@@ -412,19 +365,21 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
                 discharge_neg_index_count = discharge_neg_index_count+1;
                 
-%                 discharge_neg_index_count_increment(end+1) = discharge_neg_index_count;
-%                 
-%                 discharge_pos_index_count_increment(end+1) = discharge_pos_index_count_increment(end);
+                discharge_neg_index(i,discharge_neg_index_count+1) = ...
+                    discharge_neg_index(i,discharge_neg_index_count) + ...
+                    discharge_index(i,j,3) - discharge_index(i,j,2)+1;
 
-                discharge_neg_index(i,discharge_neg_index_count+1) = discharge_neg_index(i,discharge_neg_index_count) + discharge_index(i,j,3) - discharge_index(i,j,2)+1;
+                lcm1_avg_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
 
-                lcm1_avg_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = lcm1_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+                lcm1_stdev_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_inv_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
 
-                lcm1_stdev_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) =lcm1_inv_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+                lcm1_weight_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
 
-                lcm1_weight_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) =lcm1_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
-
-                lcm1_discharge_neg_pass_time(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+                lcm1_discharge_neg_pass_time(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
 
             end
             
@@ -436,43 +391,27 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             if charge_index(i,j,1) == 1
 
                 charge_pos_index_count = charge_pos_index_count+1; 
-                
-                %wait for ramp to zero to occur before collecting no
-                %voltage data
-%                 if discharge_neg_index_count_increment(j+1) > discharge_neg_index_count_increment(j)
-%                 
-%                     charge_pos_index_count_increment(end+1) = charge_pos_index_count;
-%                     
-%                 else charge_pos_index_count_increment(end+1) = charge_pos_index_count_increment(end);
-%                     
-%                 end
-                
-%                charge_neg_index_count_increment(end+1) = charge_neg_index_count_increment(end);
 
-                lcm1_avg_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = lcm1_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+                lcm1_avg_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
 
-                lcm1_weight_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) =lcm1_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+                lcm1_weight_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
 
-                lcm1_stdev_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) =lcm1_inv_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+                lcm1_stdev_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_inv_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
 
-                lcm1_charge_pos_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+                lcm1_charge_pos_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
 
-                charge_pos_index(i,charge_pos_index_count+1) = charge_pos_index(i,charge_pos_index_count) + charge_index(i,j,3) - charge_index(i,j,2)+1;
+                charge_pos_index(i,charge_pos_index_count+1) = ...
+                    charge_pos_index(i,charge_pos_index_count) + ...
+                    charge_index(i,j,3) - charge_index(i,j,2)+1;
 
             elseif charge_index(i,j,1) == -1
                 
                 charge_neg_index_count = charge_neg_index_count+1;
 
-                
-%                 if discharge_pos_index_count_increment(j+1) > discharge_pos_index_count_increment(j)
-%                 
-%                     charge_neg_index_count_increment(end+1) = charge_neg_index_count;
-%                     
-%                 else charge_neg_index_count_increment(end+1) = charge_neg_index_count_increment(end);
-% 
-%                 end
-                    
-%                charge_pos_index_count_increment(end+1) = charge_pos_index_count_increment(end);
 
                 lcm1_avg_charge_neg_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
                     lcm1_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
@@ -486,7 +425,8 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                 lcm1_charge_neg_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
                     time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
 
-                charge_neg_index(i,charge_neg_index_count+1) = charge_neg_index(i,charge_neg_index_count) + ...
+                charge_neg_index(i,charge_neg_index_count+1) = ...
+                    charge_neg_index(i,charge_neg_index_count) + ...
                     charge_index(i,j,3) - charge_index(i,j,2)+1;
 
             end
@@ -496,12 +436,6 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             charge_neg_index_count_increment(end+1) = charge_neg_index_count;
             
             
-%             if discharge_pos_index_count_increment(j+1) > discharge_pos_index_count_increment(j) && ...
-%                     charge_neg_index_count_increment(j+1) > charge_neg_index_count_increment(j) && ...
-%                     charge_index(i,j,2) > discharge_index(i,j,3) || ...
-%                     discharge_neg_index_count_increment(j+1) > discharge_neg_index_count_increment(j) && ...
-%                     charge_pos_index_count_increment(j+1) > charge_pos_index_count_increment(j) && ...
-%                     charge_index(i,j,2) > discharge_index(i,j,3)
 
             if j > 1 && charge_index(i,j,2)-1 > discharge_index(i,j-1,3)+1
                 

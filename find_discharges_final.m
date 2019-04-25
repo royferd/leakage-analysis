@@ -50,10 +50,7 @@ function [discharge_times, discharge_vals, ...
 
         stdev_discharge_values_pass = zeros(1,1);
 
-      %  xavg = 15.;
-        xavg = x_avg_per_chunk(i);
 
-        xstd = x_stdev_per_chunk(i);
 
     %for i = 1:4
 
@@ -91,6 +88,16 @@ function [discharge_times, discharge_vals, ...
         ordered_xdata = sort(xdata);
         plot_subset_xdata = ordered_xdata(1:most_xdata);
         
+      %  xavg = 15.;
+        
+        
+%        xavg = x_avg_per_chunk(i);
+        xavg = mode(floor(ordered_xdata(1:most_xdata)));
+
+        xstd = x_stdev_per_chunk(i);
+        
+        
+        
         %figure0 = figure;
         figure0 = figure('visible','off');
         
@@ -98,6 +105,10 @@ function [discharge_times, discharge_vals, ...
 %       h1 = histcounts(xdata,'BinWidth',bval);
         nbins = h1.NumBins;
         [counts,edges] = histcounts(xdata,nbins);
+        
+        fprintf('maximum counts = %d \n',max(counts));        
+%         fprintf('x avg for chunk %d = %f \n',i,xavg);
+%         fprintf('x std for chunk %d = %f \n',i,xstd);
             
 
 
@@ -179,7 +190,7 @@ function [discharge_times, discharge_vals, ...
             fun = @(x)gaus_min_amp_avg(x,opt_x_hist_data,opt_counts,xavg,xstd);
 
 %            x0 = [0.75*max(counts) mean(opt_x_hist_data)];
-            x0 = [0.75*max(opt_counts) xavg];
+            x0 = [max(opt_counts) xavg];
 
             bestx = fminsearch(fun,x0,options);
 
@@ -194,16 +205,16 @@ function [discharge_times, discharge_vals, ...
             % optimize the amplitude and average of the Gaussian for fixed stdev:    
             fun = @(x)gaus_min_amp_avg_stdev(x,opt_x_hist_data,opt_counts);
 
-            x0 = [0.75*max(counts) xavg xstd];
+            x0 = [sqrt(0.75*max(counts)) xavg xstd];
           %  x0 = [max(counts) xavg 1.5];
 
             bestx = fminsearch(fun,x0,options);
 
-            gaus_a = bestx(1);
+            gaus_a = bestx(1)^2;
 
             gaus_avg = bestx(2);
 
-            gaus_stdev = bestx(3);
+            gaus_stdev = abs(bestx(3));
             
         end
 
@@ -331,7 +342,9 @@ function [discharge_times, discharge_vals, ...
            % figure1 = figure('visible','off');
             figure1 = figure;
                 
-            histogram(xdata,'BinWidth',bval); hold on;
+            h2 = histogram(xdata,'BinWidth',bval); hold on;
+            max_h2 = max(h2.Values);
+            fprintf('maximum count from plotted histogram = %d \n',max_h2);
                                             
             
             
@@ -340,20 +353,22 @@ function [discharge_times, discharge_vals, ...
             %histogram(opt_x_hist_data,'BinWidth',bval); hold on;
             
             plot(gaus_fit(:,1),gaus_fit(:,2),'r-','LineWidth',2.0);
+            
+            fprintf('chunk # %d \n', i);
+            fprintf('gaus amp = %f \n',gaus_a);
+            fprintf('gaus avg = %f \n',gaus_avg);
+            fprintf('gaus stdev = %f \n',gaus_stdev);
+            fprintf('x range min = %f \n',floor(gaus_avg - 6*gaus_stdev));
+            fprintf('x range max = %f \n',ceil(gaus_avg + 6*gaus_stdev));
+            fprintf(' y range max = %f \n',5.*ceil(1.1*max(counts)/5.));
 
             if ((gaus_avg - 6*gaus_stdev)/5.0 > 1.0)
 
-        %         [ 5.0*floor((xavg - 5*gaus_stdev)/5.0) 5.0*ceil((xavg + 5*gaus_stdev)/5.0) 0 5.*ceil(1.1*max(opt_counts)/5.)]
-                axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*max(counts)/5.)]);
+                axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*(max_h2)/5.)]);
 
             else
-
-                %axis ([ floor(xavg - 5*gaus_stdev) ceil(xavg + 5*gaus_stdev) 0 5.*ceil(1.1*max(opt_counts)/5.)]);
-%                 fprintf('floor(gaus_avg - 6*gaus_stdev) = %f \n',floor(gaus_avg - 6*gaus_stdev));
-%                 fprintf('ceil(gaus_avg + 6*gaus_stdev) = %f \n',ceil(gaus_avg + 6*gaus_stdev));
-%                 fprintf('5.*ceil(1.1*max(counts)/5.) = %f \n',5.*ceil(1.1*max(counts)/5.));
                
-                axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*max(counts)/5.)]);
+                axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*(max_h2)/5.)]);
 
             end
 
@@ -523,6 +538,9 @@ function [discharge_times, discharge_vals, ...
             avg_discharges_this_hour = length(discharge_times(start_time_index:end))*60.0/time_delta;
          
             std_this_hour = sqrt(avg_discharges_this_hour);
+
+            fprintf('start_time_index = %d \n',start_time_index);
+            fprintf('length of discharge_stdevs = %d \n',length(discharge_stdevs));
             
             median_discharge_size_this_hour = ...
                 median([median_discharge_size(end) discharge_stdevs(start_time_index:end)]);

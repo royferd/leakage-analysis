@@ -9,4 +9,4 @@ B = x(2);
 %C = xstd;
 C = x(3);
 
-gaus = sum( ( ydata - A*exp( -( ( xdata - B )/(sqrt(2)*C) ).^2 ) ).^2 );
+gaus = sum( ( ydata - A^2*exp( -( ( xdata - B )/(sqrt(2)*C) ).^2 ) ).^2 );
