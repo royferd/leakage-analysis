@@ -111,8 +111,8 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
             
             for k = 1:max_length_discharge
 
-                fprintf('down chunk k = %d \n',k);
-                fprintf('discharge_pos_index(i,j)+1+k = %d \n',discharge_pos_index(i,j)+1+k);
+%                 fprintf('down chunk k = %d \n',k);
+%                 fprintf('discharge_pos_index(i,j)+1+k = %d \n',discharge_pos_index(i,j)+1+k);
                 
                 lcm1_avg_discharge_pos_sum_current_raw(i,k) = ...
                     lcm1_avg_discharge_pos_sum_current_raw(i,k) + ...

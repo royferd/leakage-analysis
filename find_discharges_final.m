@@ -1,22 +1,34 @@
-function [discharge_times, discharge_vals, ...
-    discharge_stdevs,discharges_per_chunk,dph,dph_std,median_discharge_size,...
-    overall_dph,overall_dph_std,overall_median_discharge_size] = ...
+function [discharge_times,discharge_times_cutoff, discharge_vals, ...
+    discharge_vals_cutoff,discharge_stdevs,discharge_stdevs_cutoff,...
+    discharges_per_chunk,discharges_per_chunk_cutoff] = ...
     find_discharges_final(data_raw,...
     data_weight_raw,time,x_avg_per_chunk,...
     x_stdev_per_chunk,num_chunk,chunk_array,bval,minimize,...
-    scale,tail,title_string,plotname,save_figs,savepath)
+    scale,tail,stdev_discharge_cutoff,title_string,plotname,save_figs,savepath)
+    
+% function [discharge_times, discharge_vals, ...
+%     discharge_stdevs,discharges_per_chunk,dph,dph_std,median_discharge_size,...
+%     overall_dph,overall_dph_std,overall_median_discharge_size] = ...
+%     find_discharges_final(data_raw,...
+%     data_weight_raw,time,x_avg_per_chunk,...
+%     x_stdev_per_chunk,num_chunk,chunk_array,bval,minimize,...
+%     scale,tail,stdev_discharge_cutoff,title_string,plotname,save_figs,savepath)
     
     %store time and values of the discharges
     xlabel_string = 'leakage current (pA)';
     ylabel_string = 'counts';
     
     discharge_times = [];
+    discharge_times_cutoff = [];
 
     discharge_vals = [];
+    discharge_vals_cutoff = [];
 
     discharge_stdevs = [];
+    discharge_stdevs_cutoff = [];
 
     discharges_per_chunk = [];
+    discharges_per_chunk_cutoff = [];
 
     % the ramping sorting is imperfect and there is usually a point or two that
     % is an intermediate point that gets grouped in. We don't want to count
@@ -35,6 +47,9 @@ function [discharge_times, discharge_vals, ...
         disp('numerical optimization will vary Gaussian amplitude, average, and stdev.')
 
     end
+    
+%     fprintf('number of input arguments = %d \n',nargin);
+%     fprintf('number of output arguments = %d \n',nargout);
 
     for i = 1:num_chunk
 
@@ -43,12 +58,16 @@ function [discharge_times, discharge_vals, ...
         % we're interested in the number of discharges, the values of the
         % discharges, and the time at which the discharges happened
         count_discharges = 0;
+        count_discharges_cutoff = 0;
 
         discharge_values_pass = zeros(1,1);
+        discharge_values_cutoff_pass = zeros(1,1);
 
         time_of_discharge_pass = zeros(1,1);
+        time_of_discharge_cutoff_pass = zeros(1,1);
 
         stdev_discharge_values_pass = zeros(1,1);
+        stdev_discharge_values_cutoff_pass = zeros(1,1);
 
 
 
@@ -106,7 +125,7 @@ function [discharge_times, discharge_vals, ...
         nbins = h1.NumBins;
         [counts,edges] = histcounts(xdata,nbins);
         
-        fprintf('maximum counts = %d \n',max(counts));        
+%         fprintf('maximum counts = %d \n',max(counts));        
 %         fprintf('x avg for chunk %d = %f \n',i,xavg);
 %         fprintf('x std for chunk %d = %f \n',i,xstd);
             
@@ -219,7 +238,7 @@ function [discharge_times, discharge_vals, ...
         end
 
 
-        %%%%%
+        %%%%%  Find discharges with 5 sigma test
 
         for j = (chunk_array(:,1,i)+1)+trim:chunk_array(:,2,i) - trim
 
@@ -263,24 +282,47 @@ function [discharge_times, discharge_vals, ...
 
             end
 
-        end
-
-        
-
-    %     [count_discharges,discharge_values,stdev_discharge_values,time_of_discharge] = ...
-    %         find_discharges(xdata,xdata_stdev,...
-    %         lcm1_avg_ramp_up_avg_chunk(i),time,lcm1_avg_ramp_up_stdev_chunk(i),sprintf('plot_%d',i));
-
+        end               
 
         discharge_values = discharge_values_pass(2:end);
         time_of_discharge = time_of_discharge_pass(2:end);
         stdev_discharge_values = stdev_discharge_values_pass(2:end);
 
-%         sprintf('chunk no: %d',i)
-%         sprintf('# discharges: %d',count_discharges)
-%         sprintf('%.2f pA at %.2f m \n', discharge_values,time_of_discharge)
+%         fprintf('chunk no: %d \n',i);
+%         fprintf('# discharges: %d \n',count_discharges);
+%         fprintf('%.2f pA at %.2f m \n',discharge_values,time_of_discharge);
 
-        %%%%%%%
+
+        %%%%% Find discharges with stdev cutoff test
+        
+        for j = (chunk_array(:,1,i)+1)+trim:chunk_array(:,2,i) - trim
+
+            %one tailed test. we only count values greater than xavg + 5 stdev
+            if (tail == 1) 
+
+                if ( xdata(j-(chunk_array(:,1,i)+trim)) > gaus_avg + stdev_discharge_cutoff)
+
+                        count_discharges_cutoff = count_discharges_cutoff + 1;
+
+                        % value of discharge - average leakage current
+                        discharge_values_cutoff_pass(end+1) = xdata(j-(chunk_array(:,1,i)+trim)) - gaus_avg;
+
+                        time_of_discharge_cutoff_pass(end+1) = time_this_chunk(j-(chunk_array(:,1,i)+trim));
+
+                        stdev_discharge_values_cutoff_pass(end+1) = ...
+                            xdata_stdev(j-(chunk_array(:,1,i)+trim)) + gaus_stdev;
+
+                end
+
+            end
+
+        end               
+
+        discharge_values_cutoff = discharge_values_cutoff_pass(2:end);
+        time_of_discharge_cutoff = time_of_discharge_cutoff_pass(2:end);
+        stdev_discharge_values_cutoff = stdev_discharge_values_cutoff_pass(2:end);
+        
+        %%%%% cutoff test end
 
         %input arg "options" will display minimization output
     %    bestx = fminsearch(fun,x0,options);
@@ -301,15 +343,10 @@ function [discharge_times, discharge_vals, ...
         end
 
 
-%         'loop:'
-%         i
-%         'gaussian average: ' 
-%         gaus_avg
-%         'xstd: '
-%         gaus_stdev
-% 
-%         'number of discharges: '
-%         count_discharges
+%         fprintf('loop: %d \n',i);
+%         fprintf('gaussian average: %.1f \n',gaus_avg);
+%         fprintf('xstd: %.1f \n',gaus_stdev);
+%         fprintf('number of discharges: %d \n',count_discharges);
 
 
         %%%%%%%%%%%%%%%%%%%%%%% gaussian fit of ramp data %%%%%%%%%%%%%%%%%%%%%
@@ -344,7 +381,7 @@ function [discharge_times, discharge_vals, ...
                 
             h2 = histogram(xdata,'BinWidth',bval); hold on;
             max_h2 = max(h2.Values);
-            fprintf('maximum count from plotted histogram = %d \n',max_h2);
+%             fprintf('maximum count from plotted histogram = %d \n',max_h2);
                                             
             
             
@@ -354,13 +391,13 @@ function [discharge_times, discharge_vals, ...
             
             plot(gaus_fit(:,1),gaus_fit(:,2),'r-','LineWidth',2.0);
             
-            fprintf('chunk # %d \n', i);
-            fprintf('gaus amp = %f \n',gaus_a);
-            fprintf('gaus avg = %f \n',gaus_avg);
-            fprintf('gaus stdev = %f \n',gaus_stdev);
-            fprintf('x range min = %f \n',floor(gaus_avg - 6*gaus_stdev));
-            fprintf('x range max = %f \n',ceil(gaus_avg + 6*gaus_stdev));
-            fprintf(' y range max = %f \n',5.*ceil(1.1*max(counts)/5.));
+%             fprintf('chunk # %d \n', i);
+%             fprintf('gaus amp = %f \n',gaus_a);
+%             fprintf('gaus avg = %f \n',gaus_avg);
+%             fprintf('gaus stdev = %f \n',gaus_stdev);
+%             fprintf('x range min = %f \n',floor(gaus_avg - 6*gaus_stdev));
+%             fprintf('x range max = %f \n',ceil(gaus_avg + 6*gaus_stdev));
+%             fprintf(' y range max = %f \n',5.*ceil(1.1*max(counts)/5.));
 
             if ((gaus_avg - 6*gaus_stdev)/5.0 > 1.0)
 
@@ -414,145 +451,169 @@ function [discharge_times, discharge_vals, ...
             
         end
 
-        discharge_times = [discharge_times time_of_discharge];
+        % check if we had zero discharges this chunk
+        if length(time_of_discharge) == 0
+            
+            discharge_times = [discharge_times time_this_chunk(end)];
+            discharge_times_cutoff = [discharge_times_cutoff time_this_chunk(end)];
+            
+            discharge_vals = [discharge_vals 0.0];
+            discharge_vals_cutoff = [discharge_vals_cutoff 0.0];
+            
+            discharge_stdevs = [discharge_stdevs 0.0];
+            discharge_stdevs_cutoff = [discharge_stdevs_cutoff 0.0];
 
-        discharge_vals = [discharge_vals discharge_values];
+            discharges_per_chunk = [ discharges_per_chunk 0];
+            discharges_per_chunk_cutoff = [ discharges_per_chunk_cutoff 0];
+        
+        else   
+            
+            discharge_times = [discharge_times time_of_discharge];
+            discharge_times_cutoff = [discharge_times_cutoff time_of_discharge_cutoff];
 
-        discharge_stdevs = [discharge_stdevs stdev_discharge_values];
+            discharge_vals = [discharge_vals discharge_values];
+            discharge_vals_cutoff = [discharge_vals_cutoff discharge_values_cutoff];
 
-        discharges_per_chunk = [ discharges_per_chunk count_discharges];
+            discharge_stdevs = [discharge_stdevs stdev_discharge_values];
+            discharge_stdevs_cutoff = [discharge_stdevs_cutoff stdev_discharge_values_cutoff];
+
+            discharges_per_chunk = [ discharges_per_chunk count_discharges];
+            discharges_per_chunk_cutoff = [ discharges_per_chunk_cutoff count_discharges_cutoff];
+        
+        end
 
     end 
-    
-    start_time = discharge_times(1);
-    start_time_index = 1;
-    
-    dph = [];
-    overall_dph = 0;
-    
-    dph_std = [];
-    overall_dph_std = 0;
-    
-    median_discharge_size = [];
-    overall_median_discharge_size = 0;
-    
-    if length(discharge_times) < 1
-        
-        dph = [0];
-        overall_dph = 0;
-        
-        dph_std = [0];
-        overall_dph_std = 0;
-        
-        median_discharge_size = [0];
-        overall_median_discharge_size = 0;
-        
-    elseif length(discharge_times) == 1
-        
-        dph = [1];
-        overall_dph = 1;
-        
-        dph_std = [1];
-        overall_dph_std = 1;
-        
-        median_discharge_size = [discharge_stdevs(1)];
-        overall_median_discharge_size = discharge_stdevs(1);
-        
-    elseif length(discharge_times) > 1
-        
-        overall_dph = length(discharge_times(start_time_index:end))*60.0/(discharge_times(end) - discharge_times(start_time_index));
-                
-        overall_dph_std = sqrt(overall_dph);
 
-        overall_median_discharge_size = median(discharge_stdevs(start_time_index:end));
-    
-        for i =1:length(discharge_times)
-
-            time_delta = discharge_times(i) - start_time;
-
-            if time_delta > 60.0
-
-                %discharges per hour
-                %avg_discharges_this_hour = length(discharge_times(start_time_index:i))*time_delta/60.0;
-                avg_discharges_this_hour = length(discharge_times(start_time_index:i))*60.0/time_delta;
-                
-                std_this_hour = sqrt(avg_discharges_this_hour);
-                
-                median_discharge_size_this_hour = median(discharge_stdevs(start_time_index:i));
-
-                dph = [dph avg_discharges_this_hour];
-                
-                dph_std = [dph_std std_this_hour];
-                
-                median_discharge_size = [median_discharge_size median_discharge_size_this_hour];
-
-                % now redefine start_time and start_time_index so that we can
-                % look for the avg. # of discharges for the next hour.
-                
-                % Break loop if we're already at the last point
-                
-                if i == length(discharge_times)
-                    
-                    start_time = discharge_times(i);
-
-                    start_time_index = i;
-                    
-                    break;
-                    
-                else
-                    
-                    start_time = discharge_times(i+1);
-
-                    start_time_index = i + 1;
-                    
-                end
-
-            end
-
-        end
-        
-        % if we don't get a full last hour, we can extrapolate the last
-        % dph
-        %
-        time_delta = discharge_times(end) - start_time;
-        
-        if time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
-                time_delta > 8.0
-            
-            %avg_discharges_this_hour = length(discharge_times(start_time_index:end))*time_delta/60.0;
-            avg_discharges_this_hour = length(discharge_times(start_time_index:end))*60/time_delta;
-            
-            std_this_hour = sqrt(avg_discharges_this_hour);
-            
-            median_discharge_size_this_hour = median(discharge_stdevs(start_time_index:end));
-            
-            median_discharge_size = [median_discharge_size median_discharge_size_this_hour];
-            
-            dph = [dph avg_discharges_this_hour];
-            
-            dph_std = [dph_std std_this_hour];
-            
-        elseif time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
-                time_delta < 8.0
-            
-            avg_discharges_this_hour = length(discharge_times(start_time_index:end))*60.0/time_delta;
-         
-            std_this_hour = sqrt(avg_discharges_this_hour);
-
-            fprintf('start_time_index = %d \n',start_time_index);
-            fprintf('length of discharge_stdevs = %d \n',length(discharge_stdevs));
-            
-            median_discharge_size_this_hour = ...
-                median([median_discharge_size(end) discharge_stdevs(start_time_index:end)]);
-            
-            dph(end) = (dph(end) + avg_discharges_this_hour)/2.0;
-            
-            dph_std(end) = sqrt((dph_std(end))^2+ (std_this_hour)^2);
-            
-            median_discharge_size(end) = median_discharge_size_this_hour;
-            
-            
-    
-    end
-    
-end
+% % %%%% new function    
+% %     start_time = discharge_times(1);
+% %     start_time_index = 1;
+% %     
+% %     dph = [];
+% %     overall_dph = 0;
+% %     
+% %     dph_std = [];
+% %     overall_dph_std = 0;
+% %     
+% %     median_discharge_size = [];
+% %     overall_median_discharge_size = 0;
+% %     
+% %     if length(discharge_times) < 1
+% %         
+% %         dph = [0];
+% %         overall_dph = 0;
+% %         
+% %         dph_std = [0];
+% %         overall_dph_std = 0;
+% %         
+% %         median_discharge_size = [0];
+% %         overall_median_discharge_size = 0;
+% %         
+% %     elseif length(discharge_times) == 1
+% %         
+% %         dph = [1];
+% %         overall_dph = 1;
+% %         
+% %         dph_std = [1];
+% %         overall_dph_std = 1;
+% %         
+% %         median_discharge_size = [discharge_stdevs(1)];
+% %         overall_median_discharge_size = discharge_stdevs(1);
+% %         
+% %     elseif length(discharge_times) > 1
+% %         
+% %         overall_dph = length(discharge_times(start_time_index:end))*60.0/(discharge_times(end) - discharge_times(start_time_index));
+% %                 
+% %         overall_dph_std = sqrt(overall_dph);
+% % 
+% %         overall_median_discharge_size = median(discharge_stdevs(start_time_index:end));
+% %     
+% %         for i =1:length(discharge_times)
+% % 
+% %             time_delta = discharge_times(i) - start_time;
+% % 
+% %             if time_delta > 60.0
+% % 
+% %                 %discharges per hour
+% %                 %avg_discharges_this_hour = length(discharge_times(start_time_index:i))*time_delta/60.0;
+% %                 avg_discharges_this_hour = length(discharge_times(start_time_index:i))*60.0/time_delta;
+% %                 
+% %                 std_this_hour = sqrt(avg_discharges_this_hour);
+% %                 
+% %                 median_discharge_size_this_hour = median(discharge_stdevs(start_time_index:i));
+% % 
+% %                 dph = [dph avg_discharges_this_hour];
+% %                 
+% %                 dph_std = [dph_std std_this_hour];
+% %                 
+% %                 median_discharge_size = [median_discharge_size median_discharge_size_this_hour];
+% % 
+% %                 % now redefine start_time and start_time_index so that we can
+% %                 % look for the avg. # of discharges for the next hour.
+% %                 
+% %                 % Break loop if we're already at the last point
+% %                 
+% %                 if i == length(discharge_times)
+% %                     
+% %                     start_time = discharge_times(i);
+% % 
+% %                     start_time_index = i;
+% %                     
+% %                     break;
+% %                     
+% %                 else
+% %                     
+% %                     start_time = discharge_times(i+1);
+% % 
+% %                     start_time_index = i + 1;
+% %                     
+% %                 end
+% % 
+% %             end
+% % 
+% %         end
+% %         
+% %         % if we don't get a full last hour, we can extrapolate the last
+% %         % dph
+% %         %
+% %         time_delta = discharge_times(end) - start_time;
+% %         
+% %         if time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
+% %                 time_delta > 8.0
+% %             
+% %             %avg_discharges_this_hour = length(discharge_times(start_time_index:end))*time_delta/60.0;
+% %             avg_discharges_this_hour = length(discharge_times(start_time_index:end))*60/time_delta;
+% %             
+% %             std_this_hour = sqrt(avg_discharges_this_hour);
+% %             
+% %             median_discharge_size_this_hour = median(discharge_stdevs(start_time_index:end));
+% %             
+% %             median_discharge_size = [median_discharge_size median_discharge_size_this_hour];
+% %             
+% %             dph = [dph avg_discharges_this_hour];
+% %             
+% %             dph_std = [dph_std std_this_hour];
+% %             
+% %         elseif time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
+% %                 time_delta < 8.0
+% %             
+% %             avg_discharges_this_hour = length(discharge_times(start_time_index:end))*60.0/time_delta;
+% %          
+% %             std_this_hour = sqrt(avg_discharges_this_hour);
+% % 
+% % %             fprintf('start_time_index = %d \n',start_time_index);
+% % %             fprintf('length of discharge_stdevs = %d \n',length(discharge_stdevs));
+% %             
+% %             median_discharge_size_this_hour = ...
+% %                 median([median_discharge_size(end) discharge_stdevs(start_time_index:end)]);
+% %             
+% %             dph(end) = (dph(end) + avg_discharges_this_hour)/2.0;
+% %             
+% %             dph_std(end) = sqrt((dph_std(end))^2+ (std_this_hour)^2);
+% %             
+% %             median_discharge_size(end) = median_discharge_size_this_hour;
+% %             
+% %             
+% %     
+% %         end
+% %     
+% %     end
