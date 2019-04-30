@@ -18,7 +18,8 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
     start_point,end_point,lcm1_avg_raw,lcm1_weight_raw,time,num_rows,...
     numpoints,sampling_time,EDM_sim,power_supply)
 
-    disp('running sort_state.m');
+    program = which('sort_state','-all');
+    fprintf('running %s \n', program{:});
 
     %%%%%%%%%%%%%%%%%%%%%%%% ramp test code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%08-28-2017 put this into github. implement identical code, both
@@ -309,6 +310,12 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
 
     end
 
+    num_up_chunks = zeros(num_files,1);
+
+    num_down_chunks = zeros(num_files,1);
+
+    num_trash_chunks = zeros(num_files,1);
+    
     for i = 1:num_files
 
         num_ramp_up_points(i) = num_ramp_up_points(i) - 1;
@@ -317,41 +324,21 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
         
         num_trash_points(i) = num_trash_points(i) -1;
 
-    end    
-
-    num_up_chunks = zeros(num_files,1);
-
-    num_down_chunks = zeros(num_files,1);
-
-    num_trash_chunks = zeros(num_files,1);
-
-    for i = 1:num_files
         %count to third to last trash chunk
-        num_trash_chunks(i) = uint8(count_trash_chunks(i) -4);
+%        num_trash_chunks(i) = uint8(count_trash_chunks(i) -4);
+        num_trash_chunks(i) = count_trash_chunks(i) -4;
+%        fprintf('counted %d trash chunks \n',count_trash_chunks(i));
 
         %count to second to last down chunk
-        num_down_chunks(i) = uint8(count_down_chunks(i) - 2);
+%        num_down_chunks(i) = uint8(count_down_chunks(i) - 2);
+        num_down_chunks(i) = count_down_chunks(i) - 2;
+%        fprintf('counted %d down chunks \n',count_down_chunks(i));
 
         %count up to 2nd to last up chunk
-        num_up_chunks(i) = uint8(count_up_chunks(i) - 2);
+%        num_up_chunks(i) = uint8(count_up_chunks(i) - 2);
+        num_up_chunks(i) = count_up_chunks(i) - 2;
+%        fprintf('counted %d up chunks \n',count_up_chunks(i));
 
-        if EDM_sim == 1
-
-%            file_number_str = sprintf('%d',i);
-%             up_chunks_str = sprintf('%d',num_up_chunks(i));
-%             down_chunks_str = sprintf('%d',num_down_chunks);
-%             trash_chunks_str = sprintf('%d',num_trash_chunks);
-%             mes1 = ['file number: ',file_number_str];
-%             mes2 = ['number of up_chunks: ', up_chunks_str];
-%             mes3 = ['number of  down chunks: ', down_chunks_str];
-%             mes4 = ['number of trash chunks: ', trash_chunks_str];
-%             disp(mes1)
-%             disp(mes2)
-%             disp(mes3)
-%             disp(mes4)
-%             disp('the number of trash chunks should be the sum of up and down chunks')                                                  
-
-        end
 
     end
     
@@ -455,14 +442,14 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
             lookfor_start = up_chunk_array_pass(i,2,j) + extra;
             
-            fprintf('num_up_chunks = %d \n',j);
-            fprintf('lookfor_start = up_chunk_array_pass(i,2,j)+extra = %d + %d \n',...
-                up_chunk_array_pass(i,2,j),extra);
+%             fprintf('num_up_chunks = %d \n',j);
+%             fprintf('lookfor_start = up_chunk_array_pass(i,2,j)+extra = %d + %d \n',...
+%                up_chunk_array_pass(i,2,j),extra);
             
             if time_ramp_up(i,lookfor_start+1) > time_ramp_down(i,down_chunk_array(i,1,1)+1)
                 
                 up_chunk_begin = j;
-                fprintf('up_chunk_begin = %d \n',j);
+%                 fprintf('up_chunk_begin = %d \n',j);
                 
                 break;
                 

@@ -112,7 +112,26 @@ function [discharge_times,discharge_times_cutoff, discharge_vals, ...
 %        xavg = x_avg_per_chunk(i);
         xavg = mode(floor(ordered_xdata(1:most_xdata)));
 
-        xstd = x_stdev_per_chunk(i);
+        xmode_index = find(floor(ordered_xdata(1:most_xdata)) == xavg);
+        xmode_middle = xmode_index(floor(length(xmode_index)/2.));
+        
+        
+        one_std = floor(0.34*most_xdata);
+        
+        if most_xdata - xmode_middle + 1 >= one_std
+            
+            xstd = ordered_xdata(xmode_middle + one_std) - xavg;
+            
+        else
+            
+            
+            xstd = xavg - ordered_xdata(xmode_middle - one_std);
+            
+        end
+        
+        %xstd = (ordered_xdata(floor(0.95*most_xdata)) - ordered_xdata(1))/4.0;
+         
+      %  xstd = x_stdev_per_chunk(i);
         
         
         
@@ -223,7 +242,10 @@ function [discharge_times,discharge_times_cutoff, discharge_vals, ...
             % optimize the amplitude and average of the Gaussian for fixed stdev:    
             fun = @(x)gaus_min_amp_avg_stdev(x,opt_x_hist_data,opt_counts);
 
+         %   x0 = [sqrt(0.75*max(counts)) xavg xstd];
+         
             x0 = [sqrt(0.75*max(counts)) xavg xstd];
+            
           %  x0 = [max(counts) xavg 1.5];
 
             bestx = fminsearch(fun,x0,options);
@@ -374,10 +396,11 @@ function [discharge_times,discharge_times_cutoff, discharge_vals, ...
             % Plot
             %plot(xlog,y,'o')
 
-            title_string_full =sprintf('%s %d / %d',title_string,i,num_chunk);
-           % figure1 = figure('visible','off');
-            figure1 = figure;
-                
+            title_string_full =sprintf('%s %d / %d',title_string,i,num_chunk);                      
+            
+            figure1 = figure('visible','off');                       
+%            figure1 = figure;                        
+            
             h2 = histogram(xdata,'BinWidth',bval); hold on;
             max_h2 = max(h2.Values);
 %             fprintf('maximum count from plotted histogram = %d \n',max_h2);

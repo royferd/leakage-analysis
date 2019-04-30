@@ -184,6 +184,11 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 % matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
     figure1 = figure('Units','normalized');
+    
+    fig = gcf;
+    fig.PaperUnits = 'inches';
+    fig.PaperPosition = [0 0 8 6]; 
+    
     errorbar(xdata_1,ydata_1,...
          ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
          'o','Color', 'red','MarkerSize', 10, 'LineWidth', 2.0);
@@ -204,26 +209,26 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     pbaspect([1.33 1 1])
     ax = gca; % current axes
     ax.TickDir = 'out'; % make ticks point out
-    title(title_string,'FontSize',32)
-    xlabel(xlabel_string,'FontSize',24)
-    ylabel(ylabel_string,'FontSize',24)
+    title(title_string,'FontSize',20)
+    xlabel(xlabel_string,'FontSize',16)
+    ylabel(ylabel_string,'FontSize',16)
     if legend_show == 1
               
         l = legend('show'); l.String = legend_string; 
-        l.FontSize = 32; l.Location = 'northeast outside';
+        l.FontSize = 16; l.Location = 'northeast outside';
     
     end
 
     if (length(annote) > 0)
         annotation(figure1,'textbox',outside_plot,'String',annote_string,...
-            'FontSize',24,'BackgroundColor',[1 1 1]);
+            'FontSize',16,'BackgroundColor',[1 1 1]);
     end
     
     if save_fig == 1
         
-        fig = gcf;
-        fig.PaperUnits = 'inches';
-        fig.PaperPosition = [0 0 12 9]; 
+%         fig = gcf;
+%         fig.PaperUnits = 'inches';
+%         fig.PaperPosition = [0 0 12 9]; 
         
         save_file_path = fullfile(savepath,sprintf('%s.png',plotname));
         print (save_file_path,'-dpng');
