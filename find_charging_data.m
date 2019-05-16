@@ -289,6 +289,7 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
         max_length_discharge = max_length_discharge+round(0.09*max_length_discharge+1,0);
 
+%{        
         %make all segments the same length which is determined by the maximum
         %segment size
         for j = 1:num_trash_chunks
@@ -298,30 +299,71 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             discharge_index_pass(i,j,3) = discharge_index_pass(i,j,2) + max_length_discharge;
 
         end
-    
-    end
+%}
+  
+        %make all segments the same length which is determined by the maximum
+        %segment size
+        for j = 1:num_trash_chunks
 
+%            fprintf('j = %d. old charge_index_pass = %d \n',j,charge_index_pass(i,j,2));
+            
+            charge_index_pass(i,j,2) = charge_index_pass(i,j,3) - max_length_charge;
+            
+%            fprintf('new charge_index_pass = %d \n',charge_index_pass(i,j,2));
+
+%            fprintf('j = %d. old discharge_index_pass = %d \n',j,discharge_index_pass(i,j,3));
+            
+            discharge_index_pass(i,j,3) = discharge_index_pass(i,j,2) + max_length_discharge;
+
+%            fprintf('new discharge_index_pass = %d \n',discharge_index_pass(i,j,3));
+
+            
+        end
+        
+    end
+    
+%{
     % simulation should end with a discharge, so omit the last charge
     charge_index = charge_index_pass(:,1:end-1,:);
     
     % simulation should start with a charge, so omit first discharge
-    discharge_index = discharge_index_pass(:,2:end,:);
+    discharge_index = discharge_index_pass(:,2:end,:);    
+%}    
 
-    charge_neg_index_count = 0;
-    charge_neg_index_count_increment = [0];
-    charge_neg_index = zeros(num_files,num_trash_chunks);
+    
+    % Our first charging chunk should be a discharge from positive voltage. 
+    % Our last charging chunk should be a charge to negative voltage. Trim
+    % indexes if necessary.
+    
+%   note: use  time_trash to check correct order of first (dis)charge index
+    
+    find_pos_discharging_segments = find(discharge_index_pass(i,:,1) == 1);
+    
+    find_neg_charging_segments = find(charge_index_pass(i,:,1) == -1);
+    
+    discharge_index = discharge_index_pass(:,...
+        find_pos_discharging_segments(1):find_neg_charging_segments(end),...
+        :); 
 
-    discharge_neg_index_count = 0;
-    discharge_neg_index_count_increment = [0];
-    discharge_neg_index = zeros(num_files,num_trash_chunks);
+%    charge_index = charge_index_pass(:,1:end,:);    
 
-    charge_pos_index_count = 0;
-    charge_pos_index_count_increment = [0];
-    charge_pos_index = zeros(num_files,num_trash_chunks);
+    charge_index = charge_index_pass(:,...
+        find_pos_discharging_segments(1):find_neg_charging_segments(end),...
+        :);
+    
+    % these indices mark the (dis)charging beginnings and ends of their
+    % repective arrays of (dis)charging data. For example. 
+    % charge_neg_index(i,5) is the index of the end of the 5th chunk of
+    % charging-from-negative-voltage data from the array 
+    % lcm1_avg_charge_neg_raw.
+    
+    charge_neg_index = zeros(num_files,1);
 
-    discharge_pos_index_count = 0;
-    discharge_pos_index_count_increment = [0];
-    discharge_pos_index = zeros(num_files,num_trash_chunks);
+    discharge_neg_index = zeros(num_files,1);
+
+    charge_pos_index = zeros(num_files,1);
+
+    discharge_pos_index = zeros(num_files,1);
     
     num_zero_chunks = 0;
     
@@ -341,6 +383,7 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 
         for j = 1:num_trash_chunks -1
 
+%{            
             if discharge_index(i,j,1) == 1
 
                 discharge_pos_index_count = discharge_pos_index_count+1;
@@ -434,9 +477,83 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
             charge_pos_index_count_increment(end+1) = charge_pos_index_count;
                 
             charge_neg_index_count_increment(end+1) = charge_neg_index_count;
+%}            
             
+            %%%
+            if discharge_index(i,j,1) == 1 
+                
+                discharge_pos_index(i,end+1) = discharge_pos_index(i,end) + ...
+                    discharge_index(i,j,3) - discharge_index(i,j,2)+1;
+
+                lcm1_avg_discharge_pos_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+                lcm1_stdev_discharge_pos_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_inv_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+                lcm1_weight_discharge_pos_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+                lcm1_discharge_pos_pass_time(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+            elseif discharge_index(i,j,1) == -1
+                
+                discharge_neg_index(i,end+1) = discharge_neg_index(i,end) + ...
+                    discharge_index(i,j,3) - discharge_index(i,j,2)+1;
+
+                lcm1_avg_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+                lcm1_stdev_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_inv_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+                lcm1_weight_discharge_neg_raw_pass(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    lcm1_weight_avg_trash_raw(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+                lcm1_discharge_neg_pass_time(i,end+1:end+1+discharge_index(i,j,3)-discharge_index(i,j,2)) = ...
+                    time_trash(i,discharge_index(i,j,2):discharge_index(i,j,3));
+
+            end
             
 
+            if charge_index(i,j,1) == 1
+                
+                charge_pos_index(i,end+1) = charge_pos_index(i,end) + ...
+                    charge_index(i,j,3) - charge_index(i,j,2)+1;
+
+                lcm1_avg_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+
+                lcm1_weight_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+
+                lcm1_stdev_charge_pos_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_inv_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+
+                lcm1_charge_pos_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    time_trash(i,charge_index(i,j,2):charge_index(i,j,3));                
+
+            elseif charge_index(i,j,1) == -1
+                
+                charge_neg_index(i,end+1) = charge_neg_index(i,end) + ...
+                    charge_index(i,j,3) - charge_index(i,j,2)+1;
+
+                lcm1_avg_charge_neg_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+
+                lcm1_stdev_charge_neg_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_inv_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+
+                lcm1_weight_charge_neg_raw_pass(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    lcm1_weight_avg_trash_raw(i,charge_index(i,j,2):charge_index(i,j,3));
+
+                lcm1_charge_neg_pass_time(i,end+1:end+1+charge_index(i,j,3)-charge_index(i,j,2)) = ...
+                    time_trash(i,charge_index(i,j,2):charge_index(i,j,3));
+
+            end
+            %%%
+%{
             if j > 1 && charge_index(i,j,2)-1 > discharge_index(i,j-1,3)+1
                 
                 num_zero_chunks = num_zero_chunks + 1;
@@ -444,18 +561,19 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                 length_of_chunk = (charge_index(i,j,2)-1)-(discharge_index(i,j-1,3)+1);
                 
                 zero_chunk_array_pass(1,1,end+1) = zero_chunk_array_pass(1,2,end);
+                
                 zero_chunk_array_pass(1,2,end) = zero_chunk_array_pass(1,1,end) + length_of_chunk;
 
-                lcm1_avg_zero_raw_pass(end+1:end+1+(charge_index(i,j,2)-1)-(discharge_index(i,j-1,3)+1)) = ...
+                lcm1_avg_zero_raw_pass(end+1:end+1+length_of_chunk) = ...
                     lcm1_avg_trash_raw(i,(discharge_index(i,j-1,3)+1):(charge_index(i,j,2)-1));
 
-                lcm1_stdev_zero_raw_pass(end+1:end+1+(charge_index(i,j,2)-1)-(discharge_index(i,j-1,3)+1)) = ...
+                lcm1_stdev_zero_raw_pass(end+1:end+1+length_of_chunk) = ...
                     lcm1_inv_weight_avg_trash_raw(i,(discharge_index(i,j-1,3)+1):(charge_index(i,j,2)-1));
 
-                lcm1_weight_avg_zero_raw_pass(end+1:end+1+(charge_index(i,j,2)-1)-(discharge_index(i,j-1,3)+1)) = ...
-                    lcm1_weight_avg_trash_raw(i,(discharge_index(i,j-1,3)+1):(charge_index(i,j,2)-1));
+                lcm1_weight_avg_zero_raw_pass(end+1:end+1+length_of_chunk) = ...
+                    lcm1_weight_avg_trash_raw(i,(discharge_index(i,j-1,3)+1):(charge_index(i,j,2)-1));                
 
-                lcm1_zero_pass_time(end+1:end+1+(charge_index(i,j,2)-1)-(discharge_index(i,j-1,3)+1)) = ...
+                lcm1_zero_pass_time(end+1:end+1+length_of_chunk) = ...
                     time_trash(i,(discharge_index(i,j-1,3)+1):(charge_index(i,j,2)-1));
 
             elseif j > 1
@@ -463,8 +581,37 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
                 fprintf('at %dth trash chunk, we did not trigger a zero chunk \n',j)
 
             end
+%}        
+            
 
+            
+            if charge_index(i,j,2)-1 > discharge_index(i,j,3)+1
+                
+                num_zero_chunks = num_zero_chunks + 1;
+                
+                length_of_chunk = (charge_index(i,j,2)-1)-(discharge_index(i,j,3)+1);
+                
+                zero_chunk_array_pass(1,1,end+1) = zero_chunk_array_pass(1,2,end);
+                
+                zero_chunk_array_pass(1,2,end) = zero_chunk_array_pass(1,1,end) + length_of_chunk;
 
+                lcm1_avg_zero_raw_pass(end+1:end+1+length_of_chunk) = ...
+                    lcm1_avg_trash_raw(i,(discharge_index(i,j,3)+1):(charge_index(i,j,2)-1));
+
+                lcm1_stdev_zero_raw_pass(end+1:end+1+length_of_chunk) = ...
+                    lcm1_inv_weight_avg_trash_raw(i,(discharge_index(i,j,3)+1):(charge_index(i,j,2)-1));
+
+                lcm1_weight_avg_zero_raw_pass(end+1:end+1+length_of_chunk) = ...
+                    lcm1_weight_avg_trash_raw(i,(discharge_index(i,j,3)+1):(charge_index(i,j,2)-1));                
+
+                lcm1_zero_pass_time(end+1:end+1+length_of_chunk) = ...
+                    time_trash(i,(discharge_index(i,j,3)+1):(charge_index(i,j,2)-1));
+
+            elseif j > 1
+
+                fprintf('at %dth trash chunk, we did not trigger a zero chunk \n',j)
+
+            end
 
 
         end

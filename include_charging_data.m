@@ -68,9 +68,14 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
     %attached to either end of the appropriate ramp segments.
     
     for i = 1:num_files
+        
+%        for j = 1:num_down_chunks(i) - 1 
 
-%        for j = 1:num_down_chunks(i)
-        for j = 1:num_down_chunks(i) - 1 
+        % we omit the first charge_pos chunk (by design), so
+        % charg_pos_index will be 1 smaller than discharge_pos_index. So
+        % loop over the length of the shorter array.
+        
+        for j = 1:length(charge_pos_index(i,:))-1
 
             down_chunk_inc_array_pass(i,1,j) = length(lcm1_avg_ramp_down_inc_raw_pass(i,:));
 
@@ -133,8 +138,13 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
 
         end
 
-%        for j = 1:num_up_chunks(i)
-        for j = 1:num_up_chunks(i) - 1
+%        for j = 1:num_up_chunks(i) - 1
+
+        % we omit the last discharge_neg chunk (by design), so
+        % discharge_neg_index will be shorter than charge_neg_index by 1.
+        % So loop over the shorter array.
+        
+        for j = 1:length(discharge_neg_index(i,:))-1
 
             up_chunk_inc_array_pass(i,1,j) = length(lcm1_avg_ramp_up_inc_raw_pass(i,:));          
 
@@ -166,8 +176,13 @@ function [num_ramp_up_inc_points,num_ramp_down_inc_points,...
                 lcm1_discharge_neg_time(i,discharge_neg_index(i,j)+1:discharge_neg_index(i,j+1));
 
             up_chunk_inc_array_pass(i,2,j) = length(lcm1_avg_ramp_up_inc_raw_pass(i,:));
+            
+%            fprintf('j = %d \n',j);
 
             for k = 1:max_length_discharge
+                                
+%                fprintf('k = %d \n',k);
+                
 
                 lcm1_avg_discharge_neg_sum_current_raw(i,k) = ...
                     (lcm1_avg_discharge_neg_sum_current_raw(i,k) + ...

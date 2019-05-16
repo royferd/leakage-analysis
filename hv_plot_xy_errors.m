@@ -24,20 +24,19 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 % Determine how many datasets to plot. 
     num_total_args = nargin;
     num_var_args = length(varargin);
-    num_total_args_str = sprintf('%d',num_total_args);
-    num_var_args_str = sprintf('%d',num_var_args);
-    mes1 = ['User provided ',num_total_args_str,' total arguments.'];
-    mes2 = ['User provided ',num_var_args_str,' optional arguments.'];
+
     disp('Starting hv_plot_xy_errors');
-    disp(mes1);
-    disp(mes2);
+
+%     fprintf('User provided %d total arguments. \n',num_total_args);
+%     fprintf('User provided %d optional arguments. \n',num_var_args);
+
 
     overplot = 0;
     
     if num_var_args == 0
         disp('User provided one dataset to plot.');
     elseif num_var_args == 3
-        disp('User provided two datasets to plot.');
+%        disp('User provided two datasets to plot.');
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};
@@ -45,7 +44,7 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
         overplot = 1;
         
     elseif num_var_args == 4
-        disp('User provided two datasets to plot.');
+%        disp('User provided two datasets to plot.');
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};
@@ -53,7 +52,7 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
         overplot = 1;
         
     elseif num_var_args == 7
-        disp('User provided three datasets to plot.');
+%        disp('User provided three datasets to plot.');
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};
@@ -65,7 +64,7 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
         overplot = 2;
         
     elseif num_var_args == 8
-        disp('User provided three datasets to plot.');
+%        disp('User provided three datasets to plot.');
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};

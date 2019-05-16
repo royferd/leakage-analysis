@@ -46,7 +46,7 @@ EDM_sim = 1;        % 0 = not an EDM sim
 inclusive_data = 1; % 0 = do not incorporate ramp data points into ramp CHUNKS (exclusive)
 %                      1 = incorporate ramp data (inclusive)
 
-power_supply = 4; % 0 = unipolar Acopian 
+power_supply = 1; % 0 = unipolar Acopian 
 %                   1 = bipolar AK (installed and tested 8-18-2017)
 %                   2 = Ra EDM Spellman power supply for 2016 run
 %                   3 = Ra EDM Spellman power supply for 2018/2019 data
@@ -71,7 +71,7 @@ sample_rate = 1 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
 leakage_sensitivity_test = 0; % 0 = not a sensitivity test
                               % 1 = leakage sensitivity test
 
-file_struct = dir('*059-hv-1.txt');
+file_struct = dir('*202-hv-1.txt');
 %file_struct = dir('*21kv.txt');
 
 % cutoff criteria for finding discharges
