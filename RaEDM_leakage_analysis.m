@@ -2135,9 +2135,15 @@ zeros(1,length(time_ramp_up(up_chunk_array(1,1,1)+1:up_chunk_array(1,2,num_up_ch
 vmon_avg_ramp_up_raw(up_chunk_array(1,1,1)+1:up_chunk_array(1,2,num_up_chunks))*vmon_avg_scale,...
 vmon_avg_ramp_up_stdev_raw(up_chunk_array(1,1,1)+1:up_chunk_array(1,2,num_up_chunks))*abs(vmon_avg_scale));
 
-% save discharge calculations to data file
+% save discharge calculations to data files
 
-text_parameters_path = fullfile(fullpath,'discharge-parameters.txt');
+text_parameters_path = fullfile(fullpath,sprintf('%s-discharge-parameters-summary.txt',current_time));
+
+discharge_rate_pos_path = fullfile(fullpath,sprintf('%s-discharge-rate-pos-5-sig.txt',current_time));
+
+discharge_rate_neg_path = fullfile(fullpath,sprintf('%s-discharge-rate-neg-5-sig.txt',current_time));
+
+discharge_rate_zero_path = fullfile(fullpath,sprintf('%s-discharge-rate-zero-5-sig.txt',current_time));
 
 fileID = fopen(text_parameters_path,'w');
 fprintf(fileID,'datafile name: %s \n',fullfile(file_struct.folder,file_struct.name));
@@ -2225,6 +2231,56 @@ for j = 1:length(zero_stdev_dph_cutoff)
    
     fprintf(fileID,'%d: \t %.1f +/- %.1f dph \t %.1f pA \n',j,zero_stdev_dph_cutoff(j),...
         zero_stdev_dph_std_cutoff(j),zero_stdev_median_discharge_size_cutoff(j));
+    
+end
+
+fclose(fileID);
+
+fileID = fopen(discharge_rate_pos_path,'w');
+
+for j = 1:length(ramp_down_stdev_dph)
+   
+    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f\n',...
+        ramp_down_stdev_dph(j),...
+        ramp_down_stdev_dph_std(j),...
+        ramp_down_stdev_median_discharge_size(j),...
+        ramp_down_stdev_dph_cutoff(j),...
+        ramp_down_stdev_dph_std_cutoff(j),...
+        ramp_down_stdev_median_discharge_size_cutoff(j));
+    
+end
+
+fclose(fileID);
+
+
+
+fileID = fopen(discharge_rate_neg_path,'w');
+
+for j = 1:length(ramp_up_stdev_dph)
+   
+    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f\n',...
+        ramp_up_stdev_dph(j),...
+        ramp_up_stdev_dph_std(j),...
+        ramp_up_stdev_median_discharge_size(j),...
+        ramp_up_stdev_dph_cutoff(j),...
+        ramp_up_stdev_dph_std_cutoff(j),...
+        ramp_up_stdev_median_discharge_size_cutoff(j));
+    
+end
+
+fclose(fileID);
+
+fileID = fopen(discharge_rate_zero_path,'w');
+
+for j = 1:length(zero_stdev_dph)
+   
+    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f\n',...
+        zero_stdev_dph(j),...
+        zero_stdev_dph_std(j),...
+        zero_stdev_median_discharge_size(j),...
+        zero_stdev_dph_cutoff(j),...
+        zero_stdev_dph_std_cutoff(j),...
+        zero_stdev_median_discharge_size_cutoff(j));
     
 end
 
