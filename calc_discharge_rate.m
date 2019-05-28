@@ -11,6 +11,8 @@ leftover_time = 0.0;
 
 hour_number = 1;
 
+live_time = 0.0;
+
     start_time_index = 1;
     
     dph = [];
@@ -59,17 +61,22 @@ hour_number = 1;
             
             time_delta = discharge_times(1,i) - start_time;
             
-            time_since_last_hour = discharge_times(1,i) - first_discharge_time - 60.0*hour_number;
+            live_time = live_time + time_length_of_chunk(discharge_times(2,i)); 
+            
+%             time_since_last_hour = discharge_times(1,i) - first_discharge_time - 60.0*hour_number;
             
             time_since_last_hour = discharge_times(1,i) - first_discharge_time + ...
                 leftover_time - 60.0*hour_number;
-
-%            if time_delta > 60.0*hour_number
-                
+            
+            % if time_since_last_hour > 0, than over an hour has elapsed
+            % since the first discharge in this sequence of discharges, and
+            % we compute a new discharge rate
+            
             if time_since_last_hour > 0.0       
                 
                 % if more than an hour passes between discharges, we need
                 % to record that zero discharges occurred
+                
                 if time_since_last_hour > 60.0
                     
                     while time_since_last_hour > 60.0
@@ -90,20 +97,27 @@ hour_number = 1;
                         
                     end
                     
+%                 end
+                else
+
+                    %discharges per hour
+
+                    avg_discharges_this_hour = ...
+                        length(discharge_times(1,start_time_index:i))*60.0/live_time;
+
+                    std_this_hour = sqrt(avg_discharges_this_hour);
+
+                    median_discharge_size_this_hour = ...
+                        median(discharge_stdevs(1,start_time_index:i));
+
+                    dph = [dph avg_discharges_this_hour];
+
+                    dph_std = [dph_std std_this_hour];
+
+                    median_discharge_size = ...
+                        [median_discharge_size median_discharge_size_this_hour];
+                
                 end
-
-                %discharges per hour
-                avg_discharges_this_hour = length(discharge_times(1,start_time_index:i))*60.0/time_delta;
-                
-                std_this_hour = sqrt(avg_discharges_this_hour);
-                
-                median_discharge_size_this_hour = median(discharge_stdevs(1,start_time_index:i));
-
-                dph = [dph avg_discharges_this_hour];
-                
-                dph_std = [dph_std std_this_hour];
-                
-                median_discharge_size = [median_discharge_size median_discharge_size_this_hour];
 
                 % now redefine start_time and start_time_index so that we can
                 % look for the avg. # of discharges for the next hour.
@@ -120,10 +134,6 @@ hour_number = 1;
                     
                 else
                     
-%                     start_time = discharge_times(i+1);
-% 
-%                     start_time_index = i + 1;
-                    
                     start_time = discharge_times(1,i);
 
                     start_time_index = i;
@@ -131,7 +141,8 @@ hour_number = 1;
                     hour_number = hour_number+1;
                     
                     leftover_time = time_since_last_hour;
-                                        
+                    
+                    live_time = 0.0;                                        
                     
                 end                                
 
@@ -141,17 +152,15 @@ hour_number = 1;
         
         % if we don't get a full last hour, we can extrapolate the last
         % dph
-        %
-        time_delta = discharge_times(1,end) - start_time;
         
-%         if time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
-%                 time_delta > 8.0
+        time_delta = discharge_times(1,end) - start_time;
             
         if time_since_last_hour < 0.0 && start_time_index ~= length(discharge_times(1,:)) && ...
                 time_delta > 8.0
             
-            %avg_discharges_this_hour = length(discharge_times(start_time_index:end))*time_delta/60.0;
-            avg_discharges_this_hour = length(discharge_times(1,start_time_index:end))*60/time_delta;
+%             avg_discharges_this_hour = length(discharge_times(1,start_time_index:end))*60/time_delta;
+            
+            avg_discharges_this_hour = length(discharge_times(1,start_time_index:end))*60/live_time;
             
             std_this_hour = sqrt(avg_discharges_this_hour);
             
@@ -163,13 +172,12 @@ hour_number = 1;
             
             dph_std = [dph_std std_this_hour];
             
-%         elseif time_delta < 60.0 && start_time_index ~= length(discharge_times) && ...
-%                 time_delta < 8.0
-            
         elseif time_since_last_hour < 0.0 && start_time_index ~= length(discharge_times(1,:)) && ...
                 time_delta < 8.0
             
-            avg_discharges_this_hour = length(discharge_times(1,start_time_index:end))*60.0/time_delta;
+%             avg_discharges_this_hour = length(discharge_times(1,start_time_index:end))*60.0/time_delta;
+            
+            avg_discharges_this_hour = length(discharge_times(1,start_time_index:end))*60.0/live_time;
          
             std_this_hour = sqrt(avg_discharges_this_hour);
 
