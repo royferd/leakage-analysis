@@ -283,27 +283,50 @@ function [discharge_times,discharge_times_cutoff, ...
 
                 if ( xdata(j-(chunk_array(:,1,i)+trim)) > gaus_avg + 5*gaus_stdev)
 
-                        count_discharges = count_discharges + 1;
+                    count_discharges = count_discharges + 1;
 
-                        % value of discharge - average leakage current
-                        discharge_values_pass(1,end+1) = ...
-                            xdata(j-(chunk_array(:,1,i)+trim)) - gaus_avg;
-                        
-                        discharge_values_pass(2,end) = i;
+                    % value of discharge - average leakage current
+                    discharge_values_pass(1,end+1) = ...
+                        xdata(j-(chunk_array(:,1,i)+trim)) - gaus_avg;
 
-                        time_of_discharge_pass(1,end+1) = ...
-                            time_this_chunk(j-(chunk_array(:,1,i)+trim));
-                        
-                        time_of_discharge_pass(2,end) = i;
+                    discharge_values_pass(2,end) = i;
 
-                        stdev_discharge_values_pass(1,end+1) = ...
-                            xdata_stdev(j-(chunk_array(:,1,i)+trim)) + gaus_stdev;
-                        
-                        stdev_discharge_values_pass(2,end) = i;
+                    time_of_discharge_pass(1,end+1) = ...
+                        time_this_chunk(j-(chunk_array(:,1,i)+trim));
+
+                    time_of_discharge_pass(2,end) = i;
+
+                    stdev_discharge_values_pass(1,end+1) = ...
+                        xdata_stdev(j-(chunk_array(:,1,i)+trim)) + gaus_stdev;
+
+                    stdev_discharge_values_pass(2,end) = i;
 
                 end
+                
+                % cutoff_test
+                if ( xdata(j-(chunk_array(:,1,i)+trim)) > gaus_avg + stdev_discharge_cutoff)
 
-            else
+                    count_discharges_cutoff = count_discharges_cutoff + 1;
+
+                    % value of discharge - average leakage current
+                    discharge_values_cutoff_pass(1,end+1) = ...
+                        xdata(j-(chunk_array(:,1,i)+trim)) - gaus_avg;
+
+                    discharge_values_cutoff_pass(2,end) = i;
+
+                    time_of_discharge_cutoff_pass(1,end+1) = ...
+                        time_this_chunk(j-(chunk_array(:,1,i)+trim));
+
+                    time_of_discharge_cutoff_pass(2,end) = i;
+
+                    stdev_discharge_values_cutoff_pass(1,end+1) = ...
+                        xdata_stdev(j-(chunk_array(:,1,i)+trim)) + gaus_stdev;
+
+                    stdev_discharge_values_cutoff_pass(2,end) = i;
+                        
+                end
+
+            elseif tail ==2
 
                 if ( xdata(j-(chunk_array(:,1,i)+trim)) < gaus_avg - 5*gaus_stdev || ...
                         xdata(j-(chunk_array(:,1,i)+trim)) > gaus_avg + 5*gaus_stdev)
@@ -331,7 +354,9 @@ function [discharge_times,discharge_times_cutoff, ...
         end               
 
         discharge_values = discharge_values_pass(:,2:end);
+        
         time_of_discharge = time_of_discharge_pass(:,2:end);
+        
         stdev_discharge_values = stdev_discharge_values_pass(:,2:end);
 
 %         fprintf('chunk no: %d \n',i);
@@ -339,6 +364,7 @@ function [discharge_times,discharge_times_cutoff, ...
 %         fprintf('%.2f pA at %.2f m \n',discharge_values,time_of_discharge);
 
 
+%{
         %%%%% Find discharges with stdev cutoff test
         
         for j = (chunk_array(:,1,i)+1)+trim:chunk_array(:,2,i) - trim
@@ -370,10 +396,14 @@ function [discharge_times,discharge_times_cutoff, ...
 
             end
 
-        end               
+        end 
+%}              
+
 
         discharge_values_cutoff = discharge_values_cutoff_pass(:,2:end);
+        
         time_of_discharge_cutoff = time_of_discharge_cutoff_pass(:,2:end);
+        
         stdev_discharge_values_cutoff = stdev_discharge_values_cutoff_pass(:,2:end);
         
         %%%%% cutoff test end
@@ -507,45 +537,46 @@ function [discharge_times,discharge_times_cutoff, ...
         end
 
         % check if we had zero discharges this chunk
-        if isempty(time_of_discharge)
-%{            
-            discharge_times = [discharge_times time_this_chunk(end)];
-            discharge_times_cutoff = [discharge_times_cutoff time_this_chunk(end)];
-            
-            discharge_vals = [discharge_vals 0.0];
-            discharge_vals_cutoff = [discharge_vals_cutoff 0.0];
-            
-            discharge_stdevs = [discharge_stdevs 0.0];
-            discharge_stdevs_cutoff = [discharge_stdevs_cutoff 0.0];
-
-            discharges_per_chunk = [ discharges_per_chunk 0];
-            discharges_per_chunk_cutoff = [ discharges_per_chunk_cutoff 0];
-%}            
+        if count_discharges == 0        
 
             discharge_times = [discharge_times [time_this_chunk(end) ; i]];
-            discharge_times_cutoff = [discharge_times_cutoff [time_this_chunk(end) ; i]];
             
             discharge_vals = [discharge_vals [0.0 ; i]];
-            discharge_vals_cutoff = [discharge_vals_cutoff [0.0 ; i]];
             
             discharge_stdevs = [discharge_stdevs [0.0 ; i]];
-            discharge_stdevs_cutoff = [discharge_stdevs_cutoff [0.0 ; i]];
 
             discharges_per_chunk = [ discharges_per_chunk [0 ; i]];
-            discharges_per_chunk_cutoff = [ discharges_per_chunk_cutoff [0 ; i]];            
         
         else   
             
             discharge_times = [discharge_times time_of_discharge];
-            discharge_times_cutoff = [discharge_times_cutoff time_of_discharge_cutoff];
 
             discharge_vals = [discharge_vals discharge_values];
-            discharge_vals_cutoff = [discharge_vals_cutoff discharge_values_cutoff];
 
             discharge_stdevs = [discharge_stdevs stdev_discharge_values];
-            discharge_stdevs_cutoff = [discharge_stdevs_cutoff stdev_discharge_values_cutoff];
 
             discharges_per_chunk = [ discharges_per_chunk [count_discharges ; i]];
+        
+        end
+        
+        if count_discharges_cutoff == 0        
+
+            discharge_times_cutoff = [discharge_times_cutoff [time_this_chunk(end) ; i]];
+            
+            discharge_vals_cutoff = [discharge_vals_cutoff [0.0 ; i]];
+            
+            discharge_stdevs_cutoff = [discharge_stdevs_cutoff [0.0 ; i]];
+
+            discharges_per_chunk_cutoff = [ discharges_per_chunk_cutoff [0 ; i]];            
+        
+        else   
+            
+            discharge_times_cutoff = [discharge_times_cutoff time_of_discharge_cutoff];
+
+            discharge_vals_cutoff = [discharge_vals_cutoff discharge_values_cutoff];
+
+            discharge_stdevs_cutoff = [discharge_stdevs_cutoff stdev_discharge_values_cutoff];
+
             discharges_per_chunk_cutoff = ...
                 [ discharges_per_chunk_cutoff [count_discharges_cutoff ; i ]];
         
