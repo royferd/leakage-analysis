@@ -25,7 +25,7 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     num_total_args = nargin;
     num_var_args = length(varargin);
 
-    disp('Starting hv_plot_xy_errors');
+%    disp('Starting hv_plot_xy_errors');
 
 %     fprintf('User provided %d total arguments. \n',num_total_args);
 %     fprintf('User provided %d optional arguments. \n',num_var_args);
