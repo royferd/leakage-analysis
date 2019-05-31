@@ -1,3 +1,5 @@
+function = RaEDM_leakage_analysis(datafile)
+
 clearvars -except masterlist binsize
 close all
 %clc
@@ -71,8 +73,9 @@ sample_rate = 1 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
 leakage_sensitivity_test = 0; % 0 = not a sensitivity test
                               % 1 = leakage sensitivity test
 
-file_struct = dir('*202-hv-1.txt');
-%file_struct = dir('*21kv.txt');
+%file_struct = dir('*202-hv-1.txt');
+
+file_struct = dir(datafile);
 
 % cutoff criteria for finding discharges
 discharge_cutoff = 100.0;  % pA
