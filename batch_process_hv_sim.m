@@ -3,7 +3,7 @@ close all
 
 RaEDM_leakage_analysis('2017-10-16-180518-hv-1.txt');
  
-% RaEDM_leakage_analysis('2017-10-17-105238-hv-1.txt');
+RaEDM_leakage_analysis('2017-10-17-105238-hv-1.txt');
 
 RaEDM_leakage_analysis('2017-10-17-165207-hv-1.txt');
 
