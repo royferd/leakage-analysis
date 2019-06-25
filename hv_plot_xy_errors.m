@@ -24,6 +24,7 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 % Determine how many datasets to plot. 
     num_total_args = nargin;
     num_var_args = length(varargin);
+    legend_names = {'plot 1'};
 
 %    disp('Starting hv_plot_xy_errors');
 
@@ -33,26 +34,33 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 
     overplot = 0;
     
+    num_series = 1;
+    
     if num_var_args == 0
         disp('User provided one dataset to plot.');
     elseif num_var_args == 3
 %        disp('User provided two datasets to plot.');
+        num_series = 2;
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};
         ydata_stdev_2 = zeros(length(ydata_2));
         overplot = 1;
+        legend_names(end+1) = {'plot 2'};
         
     elseif num_var_args == 4
 %        disp('User provided two datasets to plot.');
+        num_series = 2;
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};
         ydata_stdev_2 = varargin{4};
         overplot = 1;
+        legend_names(end+1) = {'plot 2'};
         
     elseif num_var_args == 7
 %        disp('User provided three datasets to plot.');
+        num_series = 3;
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};
@@ -62,9 +70,12 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
         ydata_3 = varargin{7};
         ydata_stdev_3 = zeros(length(ydata_3));
         overplot = 2;
+        legend_names(end+1) = {'plot 2'};
+        legend_names(end+1) = {'plot 3'};
         
     elseif num_var_args == 8
 %        disp('User provided three datasets to plot.');
+        num_series = 3;
         xdata_2 = varargin{1};
         xdata_stdev_2 = varargin{2};
         ydata_2 = varargin{3};
@@ -74,10 +85,96 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
         ydata_3 = varargin{7};
         ydata_stdev_3 = varargin{8};
         overplot = 2;
-    
-    else
-        disp('User provided incorrect number of optional arguments. Ignoring all optional arguments...');
+        legend_names(end+1) = {'plot 2'};
+        legend_names(end+1) = {'plot 3'};
+        
     end
+        
+    if num_var_args >= 12
+        % 4 datasets
+        num_series = 4;
+        xdata_2 = varargin{1};
+        xdata_stdev_2 = varargin{2};
+        ydata_2 = varargin{3};
+        ydata_stdev_2 = varargin{4};
+        xdata_3 = varargin{5};
+        xdata_stdev_3 = varargin{6};
+        ydata_3 = varargin{7};
+        ydata_stdev_3 = varargin{8};
+        xdata_4 = varargin{9};
+        xdata_stdev_4 = varargin{10};
+        ydata_4 = varargin{11};
+        ydata_stdev_4 = varargin{12};
+        overplot = 3;
+        legend_names(end+1) = {'plot 2'};
+        legend_names(end+1) = {'plot 3'};
+        legend_names(end+1) = {'plot 4'};
+        
+    end
+        
+    if num_var_args >= 16
+        % 5 datasets
+        num_series = 5;
+        xdata_5 = varargin{13};
+        xdata_stdev_5 = varargin{14};
+        ydata_5 = varargin{15};
+        ydata_stdev_5 = varargin{16};
+        overplot = 4;
+        legend_names(end+1) = {'plot 5'};
+        
+    end
+        
+    if num_var_args >= 20
+        % 6 datasets
+        num_series = 6;
+        xdata_6 = varargin{17};
+        xdata_stdev_6 = varargin{18};
+        ydata_6 = varargin{19};
+        ydata_stdev_6 = varargin{20};
+        overplot = 5;
+        legend_names(end+1) = {'plot 6'};
+        
+    end
+        
+    if num_var_args >= 24
+        % 7 datasets
+        num_series = 7;
+        xdata_7 = varargin{21};
+        xdata_stdev_7 = varargin{22};
+        ydata_7 = varargin{23};
+        ydata_stdev_7 = varargin{24};
+        overplot = 6;
+        legend_names(end+1) = {'plot 7'};
+        
+    end
+        
+    if num_var_args >= 28
+        % 8 datasets
+        num_series = 8;
+        xdata_8 = varargin{25};
+        xdata_stdev_8 = varargin{26};
+        ydata_8 = varargin{27};
+        ydata_stdev_8 = varargin{28};
+        overplot = 7;
+        legend_names(end+1) = {'plot 8'};
+        
+    end
+        
+    if num_var_args >= 32
+        % 9 datasets
+        num_series = 9;
+        xdata_9 = varargin{29};
+        xdata_stdev_9 = varargin{30};
+        ydata_9 = varargin{31};
+        ydata_stdev_9 = varargin{32};
+        overplot = 8;
+        legend_names(end+1) = {'plot 9'};
+        
+    end
+    
+%     else
+%         disp('User provided incorrect number of optional arguments. Ignoring all optional arguments...');
+    
 
     annote_string = annote;
     xlabel_string = 'xlabel string';
@@ -190,19 +287,62 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     
     errorbar(xdata_1,ydata_1,...
          ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-         'o','Color', 'red','MarkerSize', 10, 'LineWidth', 2.0);
+         'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
      if overplot > 0
          hold on;
         errorbar(xdata_2,ydata_2,...
             ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-             'x','Color', 'blue','MarkerSize', 10, 'LineWidth', 2.0);
+             'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
      end
 
      if overplot > 1
          hold on;
         errorbar(xdata_3,ydata_3,...
             ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-             '^','Color', 'green','MarkerSize', 10, 'LineWidth', 2.0);
+             '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 2
+         hold on;
+        errorbar(xdata_4,ydata_4,...
+            ydata_stdev_4,ydata_stdev_4,xdata_stdev_4,xdata_stdev_4,...
+             's','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 3
+         hold on;
+        errorbar(xdata_5,ydata_5,...
+            ydata_stdev_5,ydata_stdev_5,xdata_stdev_5,xdata_stdev_5,...
+             '>','Color', 'cyan','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 4
+         hold on;
+        errorbar(xdata_6,ydata_6,...
+            ydata_stdev_6,ydata_stdev_6,xdata_stdev_6,xdata_stdev_6,...
+             'x','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 5
+         hold on;
+        errorbar(xdata_7,ydata_7,...
+            ydata_stdev_7,ydata_stdev_7,xdata_stdev_7,xdata_stdev_7,...
+             '^','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 6
+         hold on;
+        errorbar(xdata_8,ydata_8,...
+            ydata_stdev_8,ydata_stdev_8,xdata_stdev_8,xdata_stdev_8,...
+             's','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 7
+         hold on;
+        errorbar(xdata_9,ydata_9,...
+            ydata_stdev_9,ydata_stdev_9,xdata_stdev_9,xdata_stdev_9,...
+            '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+            
      end
 
     pbaspect([1.33 1 1])
@@ -213,9 +353,47 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     ylabel(ylabel_string,'FontSize',16)
     if legend_show == 1
               
-        l = legend('show'); l.String = legend_string; 
-        l.FontSize = 16; l.Location = 'northeast outside';
+%          l = legend('show'); 
+% %        [l,icons] = legend('show');
+%         l.String = legend_string; 
+%          l.FontSize = 16;
+%          l.FontName = get(gca,'FontName');
+% %          l.MarkerSize = 12;
+% %          l.FontSize = 24; 
+%         l.Location = 'northeast outside';
+        
+        
+%         for k = 1:num_series
+%         
+%             icons(k).FontSize = 16;
+%        
+%             icons(k).FontName = get(gca,'FontName');
+%             
+%         end
+        
+%         for k= num_series+1:2*num_series
+            
+           
+%             set(icons(k),'MarkerSize',12);
+%               icons(k).Children.MarkerSize = 12;
+        
+%             icons(k).LineWidth = 12;
+        
+%         end
     
+     [~, objh] = legend(legend_names,'location', 'NorthEastOutside', 'Fontsize', 16);
+%     [~, objh] = legend({'one plot', 'another plot'}, 'location', 'NorthWest');
+    %// set font size as desired
+    objhl = findobj(objh, 'type', 'line'); %// objects of legend of type line
+    set(objhl, 'Markersize', 12); %// set marker size as desired
+    set(objhl, 'Linewidth', 2.0);
+%     objh_text= findobj(objh,'type','text');
+%     objh.FontSize = 16;
+%     objh(2)
+%     objh(3)
+%     objh(4)
+    
+
     end
 
     if (length(annote) > 0)
