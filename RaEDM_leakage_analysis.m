@@ -1,6 +1,6 @@
-function RaEDM_leakage_analysis(datafile)
+% function RaEDM_leakage_analysis(datafile)
 
-% datafile = '2017-10-17-105238-hv-1.txt';
+ datafile = '2019-06-06-153104-hv-1.txt';
 
 clearvars -except masterlist binsize datafile
 close all
@@ -51,7 +51,7 @@ EDM_sim = 1;        % 0 = not an EDM sim
 inclusive_data = 0; % 0 = do not incorporate ramp data points into ramp CHUNKS (exclusive)
 %                      1 = incorporate ramp data (inclusive)
 
-power_supply = 1; % 0 = unipolar Acopian 
+power_supply = 4; % 0 = unipolar Acopian 
 %                   1 = bipolar AK (installed and tested 8-18-2017)
 %                   2 = Ra EDM Spellman power supply for 2016 run
 %                   3 = Ra EDM Spellman power supply for 2018/2019 data
@@ -67,7 +67,7 @@ sample_size_setting = 1; % # samples taken per measurement
                             % 1: fast data, 1 
                             %sample = # samples / sampling frequency.
 
-sample_rate = 1 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
+sample_rate = 3 ; % 0 = data saved every 0.02 min (8192 samples / 8 kHz)
                   % 1 = data saved every 0.01 min (8192 samples / 16 kHz)
                   % 2 = data saved every 0.056 min ( guessing 1024 samples 
                   %     / 18 kHz) Ra EDM system

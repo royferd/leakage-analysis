@@ -238,8 +238,15 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
         grn_list_rgb(i,:,:) = hsv2rgb(grn_list_hsv(i,:,:));
     end
 
-    num_colors = 3*length(redhsv(:,1));
-    join_list_rgb = zeros(num_colors,3);
+    num_colors_rgb = 3*length(redhsv(:,1));
+
+    join_list_rgb = zeros(num_colors_rgb,3);
+    
+    % remove middle third of jet colors
+    
+    jet_set = num_series + (3 - mod(num_series,3));
+    
+    jet_color_mod = jet(num_series);
 
     for i =1:num_sets + 1
         join_list_rgb(i,:,:) = red_list_rgb(i,:,:);
@@ -284,10 +291,112 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     fig = gcf;
     fig.PaperUnits = 'inches';
     fig.PaperPosition = [0 0 8 6]; 
+
+%%%    
+    plot(xdata_1,ydata_1,...
+        'o','Color', jet_color_mod(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
+         %'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+    
+    
+     if overplot > 0
+         hold on;
+        plot(xdata_2,ydata_2,...
+            'x','Color', jet_color_mod(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+
+     if overplot > 1
+         hold on;
+        plot(xdata_3,ydata_3,...
+            '^','Color', jet_color_mod(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 2
+         hold on;
+        plot(xdata_4,ydata_4,...
+            's','Color', jet_color_mod(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             's','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 3
+         hold on;
+        plot(xdata_5,ydata_5,...
+            '>','Color', jet_color_mod(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             '>','Color', 'cyan','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 4
+         hold on;
+        plot(xdata_6,ydata_6,...
+            'x','Color', jet_color_mod(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             'x','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 5
+         hold on;
+        plot(xdata_7,ydata_7,...
+            '^','Color', jet_color_mod(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             '^','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+     end
+     
+     if overplot > 6
+         hold on;
+        plot(xdata_8,ydata_8,...
+            's','Color', jet_color_mod(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             's','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+        
+     end
+     
+     if overplot > 7
+         hold on;
+        plot(xdata_9,ydata_9,...
+            '>','Color', jet_color_mod(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
+%             '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+            
+     end
+     
+%%%
+
+    
+
+    pbaspect([1.33 1 1])
+    ax = gca; % current axes
+    ax.TickDir = 'out'; % make ticks point out
+    title(title_string,'FontSize',20)
+    xlabel(xlabel_string,'FontSize',16)
+    ylabel(ylabel_string,'FontSize',16)
+    if legend_show == 1
+              
+         l = legend('show'); 
+%        [l,icons] = legend('show');
+        l.String = legend_string; 
+         l.FontSize = 16;
+%          l.FontName = get(gca,'FontName');
+%          l.MarkerSize = 12;
+%          l.FontSize = 24; 
+        l.Location = 'northeast outside';
+
+    
+%      [~, objh] = legend(legend_names,'location', 'NorthEastOutside', 'Fontsize', 16);
+% %     [~, objh] = legend({'one plot', 'another plot'}, 'location', 'NorthWest');
+%     %// set font size as desired
+%     objhl = findobj(objh, 'type', 'line'); %// objects of legend of type line
+%     set(objhl, 'Markersize', 12); %// set marker size as desired
+%     set(objhl, 'Linewidth', 2.0);
+% %     objh_text= findobj(objh,'type','text');
+% %     objh.FontSize = 16;
+% %     objh(2)
+% %     objh(3)
+% %     objh(4)
+    
+
+    end
     
     errorbar(xdata_1,ydata_1,...
          ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
          'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+    
      if overplot > 0
          hold on;
         errorbar(xdata_2,ydata_2,...
@@ -344,57 +453,7 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
             '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
             
      end
-
-    pbaspect([1.33 1 1])
-    ax = gca; % current axes
-    ax.TickDir = 'out'; % make ticks point out
-    title(title_string,'FontSize',20)
-    xlabel(xlabel_string,'FontSize',16)
-    ylabel(ylabel_string,'FontSize',16)
-    if legend_show == 1
-              
-%          l = legend('show'); 
-% %        [l,icons] = legend('show');
-%         l.String = legend_string; 
-%          l.FontSize = 16;
-%          l.FontName = get(gca,'FontName');
-% %          l.MarkerSize = 12;
-% %          l.FontSize = 24; 
-%         l.Location = 'northeast outside';
-        
-        
-%         for k = 1:num_series
-%         
-%             icons(k).FontSize = 16;
-%        
-%             icons(k).FontName = get(gca,'FontName');
-%             
-%         end
-        
-%         for k= num_series+1:2*num_series
-            
-           
-%             set(icons(k),'MarkerSize',12);
-%               icons(k).Children.MarkerSize = 12;
-        
-%             icons(k).LineWidth = 12;
-        
-%         end
     
-     [~, objh] = legend(legend_names,'location', 'NorthEastOutside', 'Fontsize', 16);
-%     [~, objh] = legend({'one plot', 'another plot'}, 'location', 'NorthWest');
-    %// set font size as desired
-    objhl = findobj(objh, 'type', 'line'); %// objects of legend of type line
-    set(objhl, 'Markersize', 12); %// set marker size as desired
-    set(objhl, 'Linewidth', 2.0);
-%     objh_text= findobj(objh,'type','text');
-%     objh.FontSize = 16;
-%     objh(2)
-%     objh(3)
-%     objh(4)
-    
-
-    end
 
     if (length(annote) > 0)
         annotation(figure1,'textbox',outside_plot,'String',annote_string,...

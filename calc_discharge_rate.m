@@ -396,7 +396,9 @@ live_time = 0.0;
 
             dph(end) = (dph(end) + (live_time/60.0)*avg_discharges_this_hour)/(1.0+live_time/60.0);
             
-            dph_std(end) = sqrt(dph_std(end));
+%             dph_std(end) = sqrt(dph_std(end));
+            
+            dph_std(end) = sqrt(dph(end));
             
             median_discharge_size(end) = median_discharge_size_this_hour;
     
