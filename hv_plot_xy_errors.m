@@ -242,11 +242,7 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 
     join_list_rgb = zeros(num_colors_rgb,3);
     
-    % remove middle third of jet colors
     
-    jet_set = num_series + (3 - mod(num_series,3));
-    
-    jet_color_mod = jet(num_series);
 
     for i =1:num_sets + 1
         join_list_rgb(i,:,:) = red_list_rgb(i,:,:);
@@ -256,6 +252,22 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     end
 
     cmap = colormap(join_list_rgb);
+    
+    % remove middle third of jet colors to get rid of the lighter blues and
+    % yellows
+    
+    a_third = ceil(num_series /3);
+    
+    middle_ish = floor((num_series+0.5*a_third)/2);
+    
+    jet_set = jet(num_series+a_third);
+    
+    jet_subset = zeros(num_series,3);
+    
+    jet_subset(1:middle_ish,:) = jet_set(1:middle_ish,:);
+    
+    jet_subset(middle_ish+1:end,:) = jet_set(middle_ish+a_third+1:end,:);
+        
 
     %titles and shit
 
@@ -293,65 +305,101 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     fig.PaperPosition = [0 0 8 6]; 
 
 %%%    
-    plot(xdata_1,ydata_1,...
-        'o','Color', jet_color_mod(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
-         %'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+    
+    if num_series <= 3
+
+    plot(xdata_1(1),ydata_1(1),...
+        'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+         
+    else
+        
+        plot(xdata_1(1),ydata_1(1),...
+        'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        
+    end
     
     
      if overplot > 0
          hold on;
-        plot(xdata_2,ydata_2,...
-            'x','Color', jet_color_mod(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+         
+         if num_series <= 3
+             
+             plot(xdata_2(1),ydata_2(1),...
+                 'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+             
+         else             
+             
+             plot(xdata_2(1),ydata_2(1),...
+                 'x','Color', jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
+             
+         end
+        
      end
 
      if overplot > 1
+         
          hold on;
-        plot(xdata_3,ydata_3,...
-            '^','Color', jet_color_mod(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+         
+         if num_series <= 3
+             
+             plot(xdata_3(1),ydata_3(1),...
+                 '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+             
+         else
+             
+             plot(xdata_3(1),ydata_3(1),...
+            '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
+             
+         end
+        
      end
      
      if overplot > 2
+         
          hold on;
-        plot(xdata_4,ydata_4,...
-            's','Color', jet_color_mod(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        plot(xdata_4(1),ydata_4(1),...
+            's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
 %             's','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 3
+         
          hold on;
-        plot(xdata_5,ydata_5,...
-            '>','Color', jet_color_mod(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        plot(xdata_5(1),ydata_5(1),...
+            '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
 %             '>','Color', 'cyan','MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 4
+         
          hold on;
-        plot(xdata_6,ydata_6,...
-            'x','Color', jet_color_mod(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        plot(xdata_6(1),ydata_6(1),...
+            'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
 %             'x','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 5
+         
          hold on;
-        plot(xdata_7,ydata_7,...
-            '^','Color', jet_color_mod(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        plot(xdata_7(1),ydata_7(1),...
+            '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
 %             '^','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 6
+         
          hold on;
-        plot(xdata_8,ydata_8,...
-            's','Color', jet_color_mod(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        plot(xdata_8(1),ydata_8(1),...
+            's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
 %             's','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
         
      end
      
      if overplot > 7
+         
          hold on;
-        plot(xdata_9,ydata_9,...
-            '>','Color', jet_color_mod(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        plot(xdata_9(1),ydata_9(1),...
+            '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
 %             '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
             
      end
@@ -393,64 +441,101 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 
     end
     
-    errorbar(xdata_1,ydata_1,...
-         ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-         'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+    if num_series <= 3
+        
+        errorbar(xdata_1,ydata_1,...
+            ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
+            'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+        
+    else
+        
+        errorbar(xdata_1,ydata_1,...
+            ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
+            'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        
+    end
+    
     
      if overplot > 0
+         
          hold on;
-        errorbar(xdata_2,ydata_2,...
-            ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-             'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+         
+         if num_series <= 3
+             
+             errorbar(xdata_2,ydata_2,...
+                 ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
+                 'x','Color','blue' ,'MarkerSize', 12, 'LineWidth', 2.0);
+             
+         else
+             
+             errorbar(xdata_2,ydata_2,...
+                 ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
+                 'x','Color',jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
+             
+         end
+        
      end
 
      if overplot > 1
+         
          hold on;
-        errorbar(xdata_3,ydata_3,...
-            ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-             '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+         
+         if num_series <= 3
+             
+             errorbar(xdata_3,ydata_3,...
+                 ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
+                 '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+             
+         else
+             
+             errorbar(xdata_3,ydata_3,...
+                 ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
+                 '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
+             
+         end
+        
      end
      
      if overplot > 2
          hold on;
         errorbar(xdata_4,ydata_4,...
             ydata_stdev_4,ydata_stdev_4,xdata_stdev_4,xdata_stdev_4,...
-             's','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+             's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 3
          hold on;
         errorbar(xdata_5,ydata_5,...
             ydata_stdev_5,ydata_stdev_5,xdata_stdev_5,xdata_stdev_5,...
-             '>','Color', 'cyan','MarkerSize', 12, 'LineWidth', 2.0);
+             '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 4
          hold on;
         errorbar(xdata_6,ydata_6,...
             ydata_stdev_6,ydata_stdev_6,xdata_stdev_6,xdata_stdev_6,...
-             'x','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+             'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 5
          hold on;
         errorbar(xdata_7,ydata_7,...
             ydata_stdev_7,ydata_stdev_7,xdata_stdev_7,xdata_stdev_7,...
-             '^','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+             '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 6
          hold on;
         errorbar(xdata_8,ydata_8,...
             ydata_stdev_8,ydata_stdev_8,xdata_stdev_8,xdata_stdev_8,...
-             's','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+             's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
      end
      
      if overplot > 7
          hold on;
         errorbar(xdata_9,ydata_9,...
             ydata_stdev_9,ydata_stdev_9,xdata_stdev_9,xdata_stdev_9,...
-            '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+            '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
             
      end
     
