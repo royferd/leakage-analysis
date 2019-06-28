@@ -197,7 +197,7 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                     down_array_count(i) = down_array_count(i) + 1;
 
                     if (time_ramp_down_pass(i,num_ramp_down_points(i)) - ...
-                            time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time)                
+                            time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time)    
 
                         count_down_chunks(i) = count_down_chunks(i) + 1;
                         
