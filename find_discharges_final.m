@@ -425,6 +425,8 @@ function [discharge_times,discharge_times_cutoff, ...
             gaus_fit(l,2) = gaus_a*exp(-((fit_x - gaus_avg)/(sqrt(2)*gaus_stdev))^2);
 
         end
+        
+        
 
 
 %         fprintf('loop: %d \n',i);
@@ -467,6 +469,10 @@ function [discharge_times,discharge_times_cutoff, ...
             h2 = histogram(xdata,'BinWidth',bval); hold on;
             max_h2 = max(h2.Values);
 %             fprintf('maximum count from plotted histogram = %d \n',max_h2);
+
+            % find the biggest value on the histogram so we can scale correctly
+            graph_max = max([max_count max_h2 gaus_a]);
+
                                             
             
             
@@ -486,11 +492,15 @@ function [discharge_times,discharge_times_cutoff, ...
 
             if ((gaus_avg - 6*gaus_stdev)/5.0 > 1.0)
 
-                axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*(max_h2)/5.)]);
+%                 axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*(max_h2)/5.)]);
+                
+                axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*(graph_max)/5.)]);
 
             else
                
-                axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*(max_h2)/5.)]);
+%                 axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*(max_h2)/5.)]);
+                
+                axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*(graph_max)/5.)]);
 
             end
 
