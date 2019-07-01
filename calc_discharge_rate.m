@@ -328,6 +328,8 @@ live_time = 0.0;
                 length(find(discharge_vals(1,start_time_index:end)))*60/...
                 ((extrapolate_last_hour+1)*live_time);
             
+%             fprintf('avg discharges this hour = %f\n',avg_discharges_this_hour);
+            
             std_this_hour = sqrt(avg_discharges_this_hour);
 
             if isempty(find(discharge_vals(1,start_time_index:end),1))
@@ -394,13 +396,33 @@ live_time = 0.0;
 %             
 %             median_discharge_size(end) = median_discharge_size_this_hour;
 
-            dph(end) = (dph(end) + (live_time/60.0)*avg_discharges_this_hour)/(1.0+live_time/60.0);
-            
-%             dph_std(end) = sqrt(dph_std(end));
-            
-            dph_std(end) = sqrt(dph(end));
-            
-            median_discharge_size(end) = median_discharge_size_this_hour;
+            if length(dph) > 0
+
+%                 fprintf('dph(end) = %f\n',dph(end));
+% 
+%                 fprintf('live_time = %f\n',live_time);
+% 
+%                 fprintf('avg_discharges_this_hour = %f\n',avg_discharges_this_hour);            
+
+                dph(end) = (dph(end) + (live_time/60.0)*avg_discharges_this_hour)/(1.0+live_time/60.0);
+
+%                 fprintf('dph(end) after extrapolation = %f\n',dph(end));
+
+    %             dph_std(end) = sqrt(dph_std(end));
+
+                dph_std(end) = sqrt(dph(end));
+
+                median_discharge_size(end) = median_discharge_size_this_hour;
+                
+            else
+                
+                dph = [dph (live_time/60.0)*avg_discharges_this_hour/(1.0+live_time/60.0)];
+
+                dph_std = [ dph_std sqrt(dph(end))];
+
+                median_discharge_size = [ median_discharge_size median_discharge_size_this_hour];
+                
+            end
     
         end
     

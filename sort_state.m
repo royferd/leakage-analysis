@@ -92,8 +92,11 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
     fprintf('high positive voltage = %.1f +/- %.1f kV \n',vmon_ramp_low(i),vmon_ramp_low_deviation(i));
     %ramp_deviation = 0.05;
 
-    time_ramp_up_pass = zeros(num_files,num_rows,1);
-    time_ramp_down_pass = zeros(num_files,num_rows,1);
+%     time_ramp_up_pass = zeros(num_files,num_rows,1);
+%     time_ramp_down_pass = zeros(num_files,num_rows,1);
+    
+    time_ramp_up_pass = zeros(2,num_rows);
+    time_ramp_down_pass = zeros(2,num_rows);
 
     lcm1_avg_ramp_up_raw_pass = zeros(num_files,num_rows,1);
     lcm1_avg_ramp_down_raw_pass = zeros(num_files,num_rows,1);
@@ -101,7 +104,15 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
     lcm1_weight_avg_ramp_up_raw_pass = zeros(num_files,num_rows,1);
     lcm1_weight_avg_ramp_down_raw_pass = zeros(num_files,num_rows,1);
 
-    time_trash_pass = zeros(num_files,num_rows,1);    
+%     time_trash_pass = zeros(num_files,num_rows,1); 
+    
+    time_trash_pass = zeros(2,num_rows);
+    
+    % the number of points of points back in time to check to see if a new
+    % chunk has been reached
+    
+    switch_setting_pt_buffer = 3;
+    
     lcm1_avg_trash_raw_pass = zeros(num_files,num_rows,1);    
     lcm1_weight_avg_trash_raw_pass = zeros(num_files,num_rows,1);
 
@@ -161,16 +172,24 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                         vmon_ramp_high(i) + vmon_ramp_high_deviation(i)
 
                     index_up_chunk_data_pass(i,end+1) = j;
+                    
                     num_ramp_up_points(i) = num_ramp_up_points(i) + 1;
 
                     lcm1_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_avg_raw(i,j);
+                    
                     lcm1_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = lcm1_weight_raw(i,j);
 
-                    time_ramp_up_pass(i,num_ramp_up_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+                    time_ramp_up_pass(1,num_ramp_up_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+                    
+                    time_ramp_up_pass(2,num_ramp_up_points(i)) = j;
+                
                     up_array_count(i) = up_array_count(i)+1;
 
-                    if (time_ramp_up_pass(i,num_ramp_up_points(i)) - ...
-                            time_ramp_up_pass(i,num_ramp_up_points(i)-1) > sampling_time)                
+%                     if (time_ramp_up_pass(i,num_ramp_up_points(i)) - ...
+%                             time_ramp_up_pass(i,num_ramp_up_points(i)-1) > sampling_time)
+                        
+                    if (time_ramp_up_pass(2,num_ramp_up_points(i)) - ...
+                            time_ramp_up_pass(2,num_ramp_up_points(i)-1) > switch_setting_pt_buffer) 
 
                         count_up_chunks(i) = count_up_chunks(i) + 1;
                         up_chunk_array_pass(i,1, count_up_chunks(i)) = count_up_chunks(i);
@@ -192,12 +211,17 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                     
                     lcm1_weight_avg_ramp_down_raw_pass(i,num_ramp_down_points(i)) = lcm1_weight_raw(i,j);
 
-                    time_ramp_down_pass(i,num_ramp_down_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+                    time_ramp_down_pass(1,num_ramp_down_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+                    
+                    time_ramp_down_pass(2,num_ramp_down_points(i)) = j;
                 
                     down_array_count(i) = down_array_count(i) + 1;
 
-                    if (time_ramp_down_pass(i,num_ramp_down_points(i)) - ...
-                            time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time)    
+%                     if (time_ramp_down_pass(i,num_ramp_down_points(i)) - ...
+%                             time_ramp_down_pass(i,num_ramp_down_points(i)-1) > sampling_time)    
+                        
+                    if (time_ramp_down_pass(2,num_ramp_down_points(i)) - ...
+                            time_ramp_down_pass(2,num_ramp_down_points(i)-1) > switch_setting_pt_buffer)
 
                         count_down_chunks(i) = count_down_chunks(i) + 1;
                         
@@ -217,12 +241,17 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
           
                     lcm1_weight_avg_trash_raw_pass(i,num_trash_points(i)) = lcm1_weight_raw(i,j);
 
-                    time_trash_pass(i,num_trash_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+                    time_trash_pass(1,num_trash_points(i)) = time(i,j); % removed time(i,start_point(i)) subtraction
+                    
+                    time_trash_pass(2,num_trash_points(i)) = j;
              
                     trash_array_count(i) = trash_array_count(i) + 1;
 
-                    if (time_trash_pass(i,num_trash_points(i)) - ...
-                            time_trash_pass(i,num_trash_points(i)-1) > sampling_time)                
+%                     if (time_trash_pass(i,num_trash_points(i)) - ...
+%                             time_trash_pass(i,num_trash_points(i)-1) > sampling_time)                
+
+                    if (time_trash_pass(2,num_trash_points(i)) - ...
+                            time_trash_pass(2,num_trash_points(i)-1) > switch_setting_pt_buffer) 
 
                         count_trash_chunks(i) = count_trash_chunks(i) + 1;
                    
@@ -262,13 +291,18 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                     lcm1_weight_avg_ramp_up_raw_pass(i,num_ramp_up_points(i)) = ...
                         lcm1_weight_raw(i,j);
 
-                    time_ramp_up_pass(i,num_ramp_up_points(i)) = time(i,j); 
+                    time_ramp_up_pass(1,num_ramp_up_points(i)) = time(i,j); 
+                    
+                    time_ramp_up_pass(2,num_ramp_up_points(i)) = j;
                     
                     up_array_count(i) = up_array_count(i)+1;
 
-                    if (time_ramp_up_pass(i,num_ramp_up_points(i)) - ...
-                            time_ramp_up_pass(i,num_ramp_up_points(i)-1) > 5*sampling_time)
+%                     if (time_ramp_up_pass(i,num_ramp_up_points(i)) - ...
+%                             time_ramp_up_pass(i,num_ramp_up_points(i)-1) > 5*sampling_time)
 
+                    if (time_ramp_up_pass(2,num_ramp_up_points(i)) - ...
+                            time_ramp_up_pass(2,num_ramp_up_points(i)-1) > switch_setting_pt_buffer)
+                        
                         count_up_chunks(i) = count_up_chunks(i) + 1;
                   
                         up_chunk_array_pass(i,1, count_up_chunks(i)) = count_up_chunks(i);
@@ -278,21 +312,27 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                     end
 
                 else
+                    
 
                     index_trash_data_pass(i,end+1) = j;
                     
-                     num_trash_points(i) = num_trash_points(i) + 1;
+                    num_trash_points(i) = num_trash_points(i) + 1;
 
                     lcm1_avg_trash_raw_pass(i,num_trash_points(i)) = lcm1_avg_raw(i,j);
                     
                     lcm1_weight_avg_trash_raw_pass(i,num_trash_points(i)) = lcm1_weight_raw(i,j);
 
-                     time_trash_pass(i,num_trash_points(i)) = time(i,j);
+                    time_trash_pass(1,num_trash_points(i)) = time(i,j);
+                     
+                    time_trash_pass(2,num_trash_points(i)) = j;
                     
                     trash_array_count(i) = trash_array_count(i) + 1;
 
-                    if (time_trash_pass(i,num_trash_points(i)) - ...
-                            time_trash_pass(i,num_trash_points(i)-1) > 5*sampling_time)
+%                     if (time_trash_pass(i,num_trash_points(i)) - ...
+%                             time_trash_pass(i,num_trash_points(i)-1) > 5*sampling_time)
+                        
+                    if (time_trash_pass(2,num_trash_points(i)) - ...
+                            time_trash_pass(2,num_trash_points(i)-1) > switch_setting_pt_buffer)
 
                         count_trash_chunks(i) = count_trash_chunks(i) + 1;
                         
@@ -396,7 +436,7 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             lcm1_weight_avg_ramp_up_raw(i,j) = lcm1_weight_avg_ramp_up_raw_pass(i,j+1);
             lcm1_inv_weight_avg_ramp_up_raw(i,j) = (lcm1_weight_avg_ramp_up_raw(i,j))^(-1/2);
             
-            time_ramp_up(i,j) = time_ramp_up_pass(i,j+1);
+            time_ramp_up(i,j) = time_ramp_up_pass(1,j+1);
 
         end
 
@@ -408,7 +448,7 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             lcm1_weight_avg_ramp_down_raw(i,j) = lcm1_weight_avg_ramp_down_raw_pass(i,j+1);
             lcm1_inv_weight_avg_ramp_down_raw(i,j) = (lcm1_weight_avg_ramp_down_raw(i,j))^(-1/2);
 
-            time_ramp_down(i,j) = time_ramp_down_pass(i,j+1);
+            time_ramp_down(i,j) = time_ramp_down_pass(1,j+1);
 
 
         end
@@ -422,7 +462,7 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
             lcm1_inv_weight_avg_trash_raw(i,j) = (lcm1_weight_avg_trash_raw(i,j))^(-1/2);
      
-            time_trash(i,j) = time_trash_pass(i,j+1);
+            time_trash(i,j) = time_trash_pass(1,j+1);
 
         end
         
@@ -436,6 +476,8 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             in_this_chunk = down_chunk_array(i,2,j) - down_chunk_array(i,1,j) -1;
 
         end
+        
+        up_chunk_begin = 1;
         
         %start at 2nd up chunk
         for j =1:num_up_chunks(i) + 1
