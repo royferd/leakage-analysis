@@ -115,11 +115,20 @@ function [discharge_times,discharge_times_cutoff, ...
 
         
         min_x = min(xdata);
-        max_x = max(xdata);
+        
+        max_x = max(xdata);                
         
         most_xdata = floor(0.99*length(xdata));
+        
         ordered_xdata = sort(xdata);
+        
         plot_subset_xdata = ordered_xdata(1:most_xdata);
+        
+%         fprintf('chunk no. %d\n',i);
+%         
+%         fprintf('length of xdata: %d\n',length(xdata));
+%         
+%         fprintf('length of most_xdata: %d\n',most_xdata);
         
       %  xavg = 15.;
         
@@ -128,7 +137,19 @@ function [discharge_times,discharge_times_cutoff, ...
         xavg = mode(floor(ordered_xdata(1:most_xdata)));
 
         xmode_index = find(floor(ordered_xdata(1:most_xdata)) == xavg);
-        xmode_middle = xmode_index(floor(length(xmode_index)/2.));
+        
+        % check that the list length is long enough so that the middle of
+        % the index of the mode value isn't less than 1.
+        
+        if xmode_index >= 2
+        
+            xmode_middle = xmode_index(floor(length(xmode_index)/2.));
+            
+        else
+            
+            xmode_middle = 1;
+            
+        end
         
         
         one_std = floor(0.34*most_xdata);
