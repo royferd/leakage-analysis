@@ -106,6 +106,8 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
         
         for j = 1:num_trash_chunks(i)
             
+            fprintf('loop: %d\n num_trash_chunks = %d\n',j,num_trash_chunks(i));
+            
             chunk_begin = trash_chunk_array(i,1,j) + 1;
             
             chunk_end = trash_chunk_array(i,2,j);
