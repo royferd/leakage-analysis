@@ -576,6 +576,8 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                 %trash_chunk_begin = j-1;
                 trash_chunk_begin = j;
                 
+                fprintf('found first trash chunk! = %d \n',j);
+                
                 break;
                 
             end
@@ -611,7 +613,7 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             fprintf('Last up chunk (-V) = %d occurs after last trash chunk (0V) = %d. Reducing number of up and down chunks to correct. \n',...
                 num_up_chunks,num_trash_chunks);
             
-            trash_chunk_end = num_trash_chunks(i)+1;
+            trash_chunk_end = num_trash_chunks(i)+1;                        
                 
             for j = 1:num_up_chunks(i)-1
                 
@@ -629,7 +631,10 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
         end
         
-        num_trash_chunks(i) = trash_chunk_end - trash_chunk_begin + 1;       
+        num_trash_chunks(i) = trash_chunk_end - trash_chunk_begin + 1; 
+        
+        fprintf('num_trash_chunks = %d - %d + 1 = %d\n',trash_chunk_end,...
+            trash_chunk_begin,num_trash_chunks);
         
         
         for j =trash_chunk_begin:num_trash_chunks(i)+1
