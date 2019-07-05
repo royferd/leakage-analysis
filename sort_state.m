@@ -484,6 +484,8 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
             lookfor_start = up_chunk_array_pass(i,2,j) + extra;
             
+            
+            
 %             fprintf('num_up_chunks = %d \n',j);
 %             fprintf('lookfor_start = up_chunk_array_pass(i,2,j)+extra = %d + %d \n',...
 %                up_chunk_array_pass(i,2,j),extra);
@@ -499,14 +501,15 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
         end
         
+        up_chunk_array_pass(1,:,1:50)
         
         % now look for last up chunk, which should occur after the last
         % down chunk. 
         for j = up_chunk_begin:num_up_chunks(i) + 1
             
-       %     lookfor_end = down_chunk_array_pass(i,2,j+1) - extra;
-            %lookfor_end = up_chunk_array_pass(i,2,j+1) - extra;
-            lookfor_end = up_chunk_array_pass(i,2,j) + 1;
+             lookfor_end = up_chunk_array_pass(i,2,j) + 1;
+            
+%             lookfor_end = up_chunk_array_pass(i,1,j) + 1;
             
 %             fprintf('up chunk number = %d \n',j);
 %             fprintf('lookfor_end = %d \n',up_chunk_array_pass(i,2,j) +1);
