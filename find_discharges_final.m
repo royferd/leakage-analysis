@@ -138,6 +138,8 @@ function [discharge_times,discharge_times_cutoff, ...
 
         xmode_index = find(floor(ordered_xdata(1:most_xdata)) == xavg);
         
+%         fprintf('mode = %.1f pA\n',xavg);
+        
         % check that the list length is long enough so that the middle of
         % the index of the mode value isn't less than 1.
         
@@ -164,6 +166,8 @@ function [discharge_times,discharge_times_cutoff, ...
             xstd = xavg - ordered_xdata(xmode_middle - one_std);
             
         end
+        
+%         fprintf('xstd = %.1f\n',xstd);
         
         %xstd = (ordered_xdata(floor(0.95*most_xdata)) - ordered_xdata(1))/4.0;
          
@@ -193,17 +197,24 @@ function [discharge_times,discharge_times_cutoff, ...
 % 
 %         end
         
+%         fprintf('number of bins = %d\n',nbins);
+        
         for k = 1:length(edges)-1
 
             x_hist_data(k) = 0.5*edges(k) + 0.5*edges(k+1);
 
         end
 
+%         disp('x_hist_data(1:22) = ');
+%         x_hist_data(1:22)
 
         % indices of bins that we want to fit our Gaussian to:
 
-      %  [in_range] = find( x_hist_data < xavg + 5*xstd & x_hist_data > xavg - 5*xstd);
         [in_range] = find( x_hist_data < xavg + 10*xstd & x_hist_data > xavg - 10*xstd);
+        
+%         fprintf('xavg - 10*xstd = %.1f\n xavg+10*xstd = %.1f\n',xavg-10*xstd,xavg+10*xstd);
+        
+%         in_range
 
 
         % the counts in the bins of interest:
@@ -223,6 +234,10 @@ function [discharge_times,discharge_times_cutoff, ...
             opt_x_hist_data = [opt_x_hist_data x_hist_data(in_range(j))];
 
         end
+        
+%         ordered_xdata(1:most_xdata)
+%         
+%         opt_x_hist_data
 
 %         disp('opt_x_hist_data:')
 %         disp(opt_x_hist_data)
@@ -235,7 +250,14 @@ function [discharge_times,discharge_times_cutoff, ...
         options = optimset('FunValCheck','on','TolX',1e-4,'TolFun',1e-4);
 
         max_count = find(max(counts));
+        
+        [in_mid_bin] = find( xdata < xavg + 0.5*bval & xdata > xavg - 0.5*bval);
+        
+%         in_mid_bin
+        
+        guess_amplitude = sqrt(length(in_mid_bin));
 
+%         guess_amplitude
 
         if (minimize == 1)
 
@@ -277,12 +299,10 @@ function [discharge_times,discharge_times_cutoff, ...
 
             % optimize the amplitude and average of the Gaussian for fixed stdev:    
             fun = @(x)gaus_min_amp_avg_stdev(x,opt_x_hist_data,opt_counts);
-
-         %   x0 = [sqrt(0.75*max(counts)) xavg xstd];
          
             x0 = [sqrt(0.75*max(counts)) xavg xstd];
             
-          %  x0 = [max(counts) xavg 1.5];
+            x0 = [guess_amplitude xavg xstd];
 
             bestx = fminsearch(fun,x0,options);
 
@@ -382,43 +402,7 @@ function [discharge_times,discharge_times_cutoff, ...
 
 %         fprintf('chunk no: %d \n',i);
 %         fprintf('# discharges: %d \n',count_discharges);
-%         fprintf('%.2f pA at %.2f m \n',discharge_values,time_of_discharge);
-
-
-%{
-        %%%%% Find discharges with stdev cutoff test
-        
-        for j = (chunk_array(:,1,i)+1)+trim:chunk_array(:,2,i) - trim
-
-            %one tailed test. we only count values greater than xavg + 5 stdev
-            if (tail == 1) 
-
-                if ( xdata(j-(chunk_array(:,1,i)+trim)) > gaus_avg + stdev_discharge_cutoff)
-
-                        count_discharges_cutoff = count_discharges_cutoff + 1;
-
-                        % value of discharge - average leakage current
-                        discharge_values_cutoff_pass(1,end+1) = ...
-                            xdata(j-(chunk_array(:,1,i)+trim)) - gaus_avg;
-                        
-                        discharge_values_cutoff_pass(2,end) = i;
-
-                        time_of_discharge_cutoff_pass(1,end+1) = ...
-                            time_this_chunk(j-(chunk_array(:,1,i)+trim));
-                        
-                        time_of_discharge_cutoff_pass(2,end) = i;
-
-                        stdev_discharge_values_cutoff_pass(1,end+1) = ...
-                            xdata_stdev(j-(chunk_array(:,1,i)+trim)) + gaus_stdev;
-                        
-                        stdev_discharge_values_cutoff_pass(2,end) = i;
-
-                end
-
-            end
-
-        end 
-%}              
+%         fprintf('%.2f pA at %.2f m \n',discharge_values,time_of_discharge);          
 
 
         discharge_values_cutoff = discharge_values_cutoff_pass(:,2:end);

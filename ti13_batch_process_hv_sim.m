@@ -45,7 +45,8 @@ RaEDM_leakage_analysis('2019-04-04-165853-hv-1.txt',4);
 
 RaEDM_leakage_analysis('2019-04-09-165437-hv-1.txt',4);
 
-% RaEDM_leakage_analysis('2019-04-11-171358-hv-1.txt',4); % doesn't run
+RaEDM_leakage_analysis('2019-04-11-171358-hv-1.txt',4); % doesn't run.
+% Update: now runs after fixing sort_state/
 
 RaEDM_leakage_analysis('2019-04-12-162334-hv-1.txt',4);
 
@@ -58,4 +59,6 @@ RaEDM_leakage_analysis('2019-04-18-132346-hv-1.txt',4); % runs, but doesn't
 RaEDM_leakage_analysis('2019-04-26-151416-hv-1.txt',4); % runs, but doesn't
 % finish chunk optimization
 
-RaEDM_leakage_analysis('2019-05-01-171913-hv-1.txt',4); % doesn't run
+RaEDM_leakage_analysis('2019-05-01-171913-hv-1.txt-trimmed',4); % runs, doesn't 
+% correctly identify chunks. Also had to remove the first 50 minutes of off
+% data to get it to run without doing some extensive changing of code.
