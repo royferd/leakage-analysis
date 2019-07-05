@@ -58,4 +58,4 @@ RaEDM_leakage_analysis('2019-04-18-132346-hv-1.txt',4); % runs, but doesn't
 RaEDM_leakage_analysis('2019-04-26-151416-hv-1.txt',4); % runs, but doesn't
 % finish chunk optimization
 
-RaEDM_leakage_analysis('2019-05-01-171913-hv-1.txt',4); f% doesn't run
+RaEDM_leakage_analysis('2019-05-01-171913-hv-1.txt',4); % doesn't run
