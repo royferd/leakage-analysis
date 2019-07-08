@@ -1,9 +1,23 @@
-% function RaEDM_leakage_analysis(datafile,power_supply)
+function RaEDM_leakage_analysis(datafile,power_supply,avg)
 
-datafile = '2019-04-26-151416-hv-1.txt';
-power_supply = 4;
+% datafile = '2018-12-13-144501-hv-1.txt'; power_supply = 4;
 
-clearvars -except masterlist binsize datafile power_supply
+% histogram binning settings
+avg_binwidth = 5.0; % pA
+
+% avg_binwidth = 50.0; % 2/5/2019 data setting
+
+stdev_binwidth = 1.0; % pA (good for 200 nA LCM scale)
+
+% stdev_binwidth = 4.0; % pA (good for 2 uA LCM scale)
+
+% stdev_binwidth = 10.0; % 2/5/2019 data setting
+
+stdev_summed_binwidth = 0.25; % pA
+
+% stdev_summed_binwidth = 2.0;
+
+clearvars -except masterlist binsize datafile power_supply avg_binwidth stdev_binwidth stdev_summed_binwidth
 close all
 %clc
 
@@ -375,21 +389,6 @@ pressure_avg_pkpk = zeros(num_files,num_rows,1);
 % % 
 % % end
 
-% histogram binning settings
-avg_binwidth = 5.0; % pA
-
-% avg_binwidth = 50.0; % 2/5/2019 data setting
-
-stdev_binwidth = 1.0; % pA (good for 200 nA LCM scale)
-
-% stdev_binwidth = 4.0; % pA (good for 2 uA LCM scale)
-
-% stdev_binwidth = 10.0; % 2/5/2019 data setting
-
-stdev_summed_binwidth = 0.25; % pA
-
-% stdev_summed_binwidth = 2.0;
-
 if power_supply == 0
   
     disp('Using -30 kV Acopian power supply')
@@ -760,7 +759,7 @@ elseif power_supply == 1 || power_supply == 4
     
      lcm1_avg_scale = (-2)*1e4; %(pA, 200 nA scale)
     
-%     lcm1_avg_scale = (-2)*1e5; %(pA, 2 uA scale)
+%      lcm1_avg_scale = (-2)*1e5; %(pA, 2 uA scale)
     
     ohm_avg_scale = 1e3; % Mohm
     
