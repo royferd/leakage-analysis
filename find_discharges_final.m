@@ -32,6 +32,10 @@ function [discharge_times,discharge_times_cutoff, ...
     discharges_per_chunk = [];
     discharges_per_chunk_cutoff = [];
     
+    xavg_history = [];
+    xstd_history = [];
+    xamp_history = [];
+    
     time_length_of_chunk = zeros(1,num_chunk);
 
     % the ramping sorting is imperfect and there is usually a point or two that
@@ -118,7 +122,7 @@ function [discharge_times,discharge_times_cutoff, ...
         
         max_x = max(xdata);                
         
-        most_xdata = floor(0.99*length(xdata));
+        most_xdata = floor(0.95*length(xdata));
         
         ordered_xdata = sort(xdata);
         
@@ -130,43 +134,75 @@ function [discharge_times,discharge_times_cutoff, ...
 %         
 %         fprintf('length of most_xdata: %d\n',most_xdata);
         
-      %  xavg = 15.;
-        
-        
-%        xavg = x_avg_per_chunk(i);
-        xavg = mode(floor(ordered_xdata(1:most_xdata)));
+        if i > 1
+            
+%             xavg = median(xavg_history);
+            
+            xstd = median(xstd_history);
+            
+        else
+    %        xavg = x_avg_per_chunk(i);
+%             xmode = mode(floor(ordered_xdata(1:most_xdata)));
+            
+%              xavg = mode(bval*floor(ordered_xdata(1:most_xdata)/bval));
 
-        xmode_index = find(floor(ordered_xdata(1:most_xdata)) == xavg);
+            xstd = std(ordered_xdata(1:most_xdata));
+            
+        end
+        
+        if mode(floor(ordered_xdata(1:most_xdata))) > 0
+            
+            xavg = mode(bval*floor(ordered_xdata(1:most_xdata)/bval));
+            
+        else
+            
+            xavg = mode(bval*ceil(ordered_xdata(1:most_xdata)/bval));
+            
+        end
+
+%         xmode_index = find(floor(ordered_xdata(1:most_xdata)) == xavg);
+        
+        
         
 %         fprintf('mode = %.1f pA\n',xavg);
         
         % check that the list length is long enough so that the middle of
         % the index of the mode value isn't less than 1.
         
-        if xmode_index >= 2
+%         if xmode_index >= 2
+%         
+%             xmode_middle = xmode_index(floor(length(xmode_index)/2.));
+%             
+%         else
+%             
+%             xmode_middle = 1;
+%             
+%         end
         
-            xmode_middle = xmode_index(floor(length(xmode_index)/2.));
-            
-        else
-            
-            xmode_middle = 1;
-            
-        end
+        % if roughly gaussian, one standard deviation should contain
+        % roughly 34% of the data        
         
+%         one_std = floor(0.34*most_xdata);
+%         
+%         xstd = std(ordered_xdata(1:most_xdata));
         
-        one_std = floor(0.34*most_xdata);
-        
-        if most_xdata - xmode_middle + 1 >= one_std
-            
-            xstd = ordered_xdata(xmode_middle + one_std) - xavg;
-            
-        else
-            
-            
-            xstd = xavg - ordered_xdata(xmode_middle - one_std);
-            
-        end
-        
+%%%
+
+%         if most_xdata - xmode_middle + 1 >= one_std
+%             
+%             xstd = ordered_xdata(xmode_middle + one_std) - xavg;
+%             
+%         else
+%             
+%             
+%             xstd = xavg - ordered_xdata(xmode_middle - one_std);
+%             
+%         end
+
+%%%
+
+%         xstd = 2.;
+
 %         fprintf('xstd = %.1f\n',xstd);
         
         %xstd = (ordered_xdata(floor(0.95*most_xdata)) - ordered_xdata(1))/4.0;
@@ -251,11 +287,11 @@ function [discharge_times,discharge_times_cutoff, ...
 
         max_count = find(max(counts));
         
-        [in_mid_bin] = find( xdata < xavg + 0.5*bval & xdata > xavg - 0.5*bval);
+        [in_mid_bin] = find( xdata < xavg + 1.6*bval & xdata > xavg - 1.6*bval);
         
 %         in_mid_bin
         
-        guess_amplitude = sqrt(length(in_mid_bin));
+        guess_amplitude = sqrt(length(in_mid_bin)/3);
 
 %         guess_amplitude
 
@@ -313,7 +349,19 @@ function [discharge_times,discharge_times_cutoff, ...
             gaus_stdev = abs(bestx(3));
             
         end
+        
+        fprintf('xstd: %.2f   gaus_stdev: %.2f\n xavg: %.2f   gaus_avg: %.2f\n amp_guess: %.2f   gaus_a: %.2f\n',...
+            xstd,gaus_stdev,xavg,gaus_avg,guess_amplitude^2,gaus_a);      
 
+        if gaus_stdev > 5*xstd
+            
+            gaus_a = guess_amplitude^2;
+            
+            gaus_avg = xavg;
+            
+            gaus_stdev = xstd;
+            
+        end
 
         %%%%%  Find discharges with 5 sigma test
 
@@ -462,6 +510,9 @@ function [discharge_times,discharge_times_cutoff, ...
         %x(x<0) = x(x<0) + wdth;
         %x = x + wdth;
         
+        %text box assignments
+        inside_plot = [0.1375 0.73 0.5 0.19]; % edges: x y width height
+        
         if save_figs == 1
             % Plot
             %plot(xlog,y,'o')
@@ -478,7 +529,9 @@ function [discharge_times,discharge_times_cutoff, ...
             % find the biggest value on the histogram so we can scale correctly
             graph_max = max([max_count max_h2 gaus_a]);
 
-                                            
+            annotation('textbox',inside_plot,'String',...
+                sprintf('%.1f \\pm %.1f pA',gaus_avg,gaus_stdev),...
+                'FontSize',16,'BackgroundColor',[1 1 1],'FitBoxToText','on');                                
             
             
           %  histogram(xdata,nbins); hold on;
@@ -598,5 +651,31 @@ function [discharge_times,discharge_times_cutoff, ...
         end
         
         time_length_of_chunk(i) = time_this_chunk(end) - time_this_chunk(1);
+
+        if i == 1
+            
+            xavg_history = [xavg_history gaus_avg];
+
+            xstd_history = [xstd_history gaus_stdev];
+
+            xamp_history = [xamp_history gaus_a];
+        
+        elseif gaus_stdev < 3*max(xstd_history)
+            
+            xavg_history = [xavg_history gaus_avg];
+
+            xstd_history = [xstd_history gaus_stdev];
+
+            xamp_history = [xamp_history gaus_a];
+        
+        end
+        
+        if i > 4
+            
+            xavg_history = xavg_history(end-3:end);
+            
+            xstd_history = xstd_history(end-3:end);
+            
+        end
 
     end 
