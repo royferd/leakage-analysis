@@ -100,11 +100,15 @@ function [lcm1_avg_charge_neg_raw, lcm1_stdev_charge_neg_raw,...
 % sample +/- steady_state_range to estimate the steady-state leakage
 % current
 %    steady_state_range = 10;
-    steady_state_range = 20;     
+%     steady_state_range = 20;     
     
     for i =1:num_files
         
         for j = 1:num_trash_chunks(i)
+            
+            % use 34% of the data in a chunk to define steady state 
+            steady_state_range = ...
+                floor(0.34*length(trash_chunk_array(i,1,j)+1:trash_chunk_array(i,2,j)));
             
 %             fprintf('loop: %d\n num_trash_chunks = %d\n',j,num_trash_chunks(i));
             

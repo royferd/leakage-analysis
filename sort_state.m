@@ -129,7 +129,10 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
     
     
     down_chunk_array_pass = zeros(num_files,2,num_rows);
-    trash_chunk_array_pass = zeros(num_files,2,num_rows);
+    
+%     trash_chunk_array_pass = zeros(num_files,2,num_rows);
+    
+    trash_chunk_array_pass = zeros(num_files,2,1);
 
     up_array_count = zeros(num_files,1);
     down_array_count = zeros(num_files,1);
@@ -199,7 +202,8 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
 %                         up_chunk_array_pass(i,1, count_up_chunks(i)) = count_up_chunks(i);
 %                         up_chunk_array_pass(i,2, count_up_chunks(i)) = up_array_count(i) - 1;
                         
-                        up_chunk_array_pass(i,:,count_up_chunks(i)) = [count_up_chunks(i) up_array_count(i) - 1];
+                        up_chunk_array_pass(i,:,count_up_chunks(i)) = ...
+                            [count_up_chunks(i) up_array_count(i) - 1];
 
                     end
 
@@ -261,9 +265,12 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
 
                         count_trash_chunks(i) = count_trash_chunks(i) + 1;
                    
-                        trash_chunk_array_pass(i,1, count_trash_chunks(i)) = count_trash_chunks(i);
-                     
-                        trash_chunk_array_pass(i,2, count_trash_chunks(i)) = trash_array_count(i)-1;
+%                         trash_chunk_array_pass(i,1, count_trash_chunks(i)) = count_trash_chunks(i);
+%                      
+%                         trash_chunk_array_pass(i,2, count_trash_chunks(i)) = trash_array_count(i)-1;
+                        
+                        trash_chunk_array_pass(i,:,count_trash_chunks(i)) = ...
+                            [count_trash_chunks(i) trash_array_count(i) - 1];
 
                     end
 
@@ -273,7 +280,11 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
             % we know the last point in the ramp_up dataset is part of the
             % last chunk.
-            up_chunk_array_pass(i,:,count_up_chunks(i)+1) = [count_up_chunks(i)+1 num_ramp_up_points-1];
+            up_chunk_array_pass(i,:,count_up_chunks(i)+1) = ...
+                [count_up_chunks(i)+1 num_ramp_up_points-1];
+            
+            trash_chunk_array_pass(i,:,count_trash_chunks(i)+1) = ...
+            [count_trash_chunks(i)+1 num_trash_points-1];
 
         end
 
@@ -346,9 +357,12 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
 
                         count_trash_chunks(i) = count_trash_chunks(i) + 1;
                         
-                        trash_chunk_array_pass(i,1, count_trash_chunks(i)) = count_trash_chunks(i);
+%                         trash_chunk_array_pass(i,1, count_trash_chunks(i)) = count_trash_chunks(i);
+%                         
+%                         trash_chunk_array_pass(i,2, count_trash_chunks(i)) = trash_array_count(i)-1;
                         
-                        trash_chunk_array_pass(i,2, count_trash_chunks(i)) = trash_array_count(i)-1;
+                        trash_chunk_array_pass(i,:,count_trash_chunks(i)) = ...
+                            [count_trash_chunks(i) trash_array_count(i) - 1];
 
                     end
 
@@ -361,7 +375,10 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
         % we know the last point in the ramp_up dataset is part of the
         % last chunk.
         up_chunk_array_pass(i,:,count_up_chunks(i)+1) = [count_up_chunks(i)+1 num_ramp_up_points-1];
-
+        
+        trash_chunk_array_pass(i,:,count_trash_chunks(i)+1) = ...
+            [count_trash_chunks(i)+1 num_trash_points-1];
+        
     end
 
     num_up_chunks = zeros(num_files,1);
@@ -524,19 +541,46 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
         end
         
+%         time_ramp_down(1,down_chunk_array(1,1,end))
 %         up_chunk_array_pass(1,:,1:50)
         
         % now look for last up chunk, which should occur after the last
         % down chunk. 
-        for j = up_chunk_begin:num_up_chunks(i) + 1
+        
+%         length(up_chunk_array_pass)
+%         
+%         time_ramp_up(1,up_chunk_array_pass(1,2,end-5:end))
+%         
+%         num_up_chunks
+        
+%         for j = up_chunk_begin:num_up_chunks(i) + 1
+        for j = up_chunk_begin:num_up_chunks(i)
             
-             lookfor_end = up_chunk_array_pass(i,2,j) + 1;
+            
+            if up_chunk_array_pass(i,2,j) + 1 < length(time_ramp_up)
+                
+                lookfor_end = up_chunk_array_pass(i,2,j) + 1;
+                
+            else
+                
+                lookfor_end = length(time_ramp_up);
+                
+%                 disp('Possible issue finding the last up chunk. Check that chunks are properly identified');
+                
+            end
              
-             up_chunk_end = j+1;
+            up_chunk_end = j+1;
             
 %             fprintf('up chunk number = %d \n',j);
 %             fprintf('lookfor_end = %d \n',up_chunk_array_pass(i,2,j) +1);
 %             fprintf('length of time_ramp_up = %d \n',length(time_ramp_up));
+
+%             time_ramp_up(i,lookfor_end)
+            
+%             time_ramp_down(i,down_chunk_array(i,2,num_down_chunks(i)))
+
+%                 lookfor_end
+%                 length(time_ramp_up)
 
             %if time_ramp_up(i,lookfor_end) > time_ramp_down(i,down_chunk_array(i,2,num_down_chunks(i)))
             if time_ramp_up(i,lookfor_end) > time_ramp_down(i,down_chunk_array(i,2,num_down_chunks(i)))
@@ -562,21 +606,29 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                 time_ramp_down(i,down_chunk_array(i,2,end)),time_ramp_up(i,lookfor_end));
             
             disp('Reducing number of down chunks to correct.');
-
+            
+            remove_down_chunks = 0;
             
 %             up_chunk_end = num_up_chunks(i)+1;
                 
             for j = 1:num_down_chunks(i)-1
                 
-                if time_ramp_down(i,down_chunk_array(i,2,num_down_chunks(i)-j)) < time_ramp_up(i,lookfor_end)
+                remove_down_chunks = remove_down_chunks + 1;
                     
-                    num_down_chunks(i) = num_down_chunks(i) - j;
-                    
+                num_down_chunks(i) = num_down_chunks(i) - j;
+                
+                if time_ramp_down(i,down_chunk_array(i,2,num_down_chunks(i))) < time_ramp_up(i,lookfor_end)
+    
                     break;
                     
                 end
                 
-            end
+            end            
+            
+            down_chunk_array = down_chunk_array(:,:,1:end-remove_down_chunks);
+            
+            fprintf('Removed %d down chunks. Now, Last down chunk (+V) = %.2f min and last up chunk (-V) = %.2f min\n',...
+                remove_down_chunks,time_ramp_down(down_chunk_array(i,2,end)),time_ramp_up(lookfor_end));
             
         end
         
@@ -625,8 +677,8 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
         
         % now look for last trash chunk, which should occur after the last
         % up chunk. 
-        for j = trash_chunk_begin:num_trash_chunks(i) + 1
-            
+%         for j = trash_chunk_begin:num_trash_chunks(i) + 1
+        for j = trash_chunk_begin:num_trash_chunks(i)            
 %             fprintf('trash chunk cycle = %d\n',j);
             
             %lookfor_end = trash_chunk_array_pass(i,2,j+1) - extra;
@@ -636,7 +688,8 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
                 
             if time_trash(i,lookfor_end) > time_ramp_up(i,up_chunk_array_pass_pass(i,2,end))
                 
-                trash_chunk_end = j;
+%                 trash_chunk_end = j;
+                trash_chunk_end = j + 1;
                 
 %                 fprintf('found last trash chunk! = %d \n',j);
                 
@@ -679,14 +732,17 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             
         end
         
-        num_trash_chunks(i) = trash_chunk_end - trash_chunk_begin + 1; 
+%         num_trash_chunks(i) = trash_chunk_end - trash_chunk_begin + 1; 
+        num_trash_chunks(i) = trash_chunk_end -1 - trash_chunk_begin + 1;
         
 %         fprintf('num_trash_chunks = %d - %d + 1 = %d\n',trash_chunk_end,...
 %             trash_chunk_begin,num_trash_chunks);
-        
-        
+
 %         for j =trash_chunk_begin:num_trash_chunks(i)+1
-        for j =trash_chunk_begin:trash_chunk_end
+%         for j =trash_chunk_begin:trash_chunk_end
+        
+        for j =trash_chunk_begin:trash_chunk_end-1
+            
             
 %             trash_chunk_array_pass_pass(i,1,end+1) = trash_chunk_array_pass(i,2,j+1) + extra;
 %             
@@ -699,93 +755,6 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
             in_this_chunk = trash_chunk_array_pass_pass(i,2,end) - trash_chunk_array_pass_pass(i,1,end) - 1;
 
         end
-        
-        
-%         %start at third trash chunk
-%         for j =1:num_trash_chunks(i) + 1
-%             
-%             trash_chunk_array(i,1,j) = trash_chunk_array_pass(i,2,j+1);
-%             
-%             trash_chunk_array(i,2,j) = trash_chunk_array_pass(i,2,j+2);
-%             
-%             in_this_chunk = trash_chunk_array(i,2,j) - trash_chunk_array(i,1,j) - 1;
-% 
-%         end
-        
-        
-
-
-%         %start at 2nd down chunk
-%         for j =1:num_down_chunks(i) + 1
-% 
-%             down_chunk_array(i,1,j) = down_chunk_array_pass(i,2,j) + extra;
-%             
-%             down_chunk_array(i,2,j) = down_chunk_array_pass(i,2,j+1) - extra;
-%             
-%             in_this_chunk = down_chunk_array(i,2,j) - down_chunk_array(i,1,j) -1;
-% 
-%         end
-        
-
-        
-%         %start at 2nd up chunk
-%         for j =1:num_up_chunks(i) + 1
-% 
-%             up_chunk_array(i,1,j) = up_chunk_array_pass(i,2,j) + extra;
-%             
-%             up_chunk_array(i,2,j) = up_chunk_array_pass(i,2,j+1) - extra;
-% 
-%             in_this_chunk = up_chunk_array(i,2,j) - up_chunk_array(i,1,j) -1;
-% 
-%         end
-        
-
-        
-        
-%         for j = 1:num_ramp_up_points(i)
-% 
-%             lcm1_avg_ramp_up_raw(i,j) = lcm1_avg_ramp_up_raw_pass(i,j+1);
-%             lcm1_weight_avg_ramp_up_raw(i,j) = lcm1_weight_avg_ramp_up_raw_pass(i,j+1);
-%             lcm1_inv_weight_avg_ramp_up_raw(i,j) = (lcm1_weight_avg_ramp_up_raw(i,j))^(-1/2);
-%             
-%             time_ramp_up(i,j) = time_ramp_up_pass(i,j+1);
-% 
-%         end
-% 
-%        
-% 
-%         for j = 1:num_ramp_down_points(i)
-% 
-%             lcm1_avg_ramp_down_raw(i,j) = lcm1_avg_ramp_down_raw_pass(i,j+1);
-%             lcm1_weight_avg_ramp_down_raw(i,j) = lcm1_weight_avg_ramp_down_raw_pass(i,j+1);
-%             lcm1_inv_weight_avg_ramp_down_raw(i,j) = (lcm1_weight_avg_ramp_down_raw(i,j))^(-1/2);
-% 
-%             time_ramp_down(i,j) = time_ramp_down_pass(i,j+1);
-% 
-% 
-%         end
-% 
-% % 
-%         for j = 1:num_trash_points(i)
-% 
-%             lcm1_avg_trash_raw(i,j) = lcm1_avg_trash_raw_pass(i,j+1);
-%       
-%             lcm1_weight_avg_trash_raw(i,j) = lcm1_weight_avg_trash_raw_pass(i,j+1);
-%             
-%             lcm1_inv_weight_avg_trash_raw(i,j) = (lcm1_weight_avg_trash_raw(i,j))^(-1/2);
-%      
-%             time_trash(i,j) = time_trash_pass(i,j+1);
-% 
-%         end
-
-%         num_ramp_down_points(i) = length(lcm1_avg_ramp_down_raw);
-%         num_ramp_up_points(i) = length(lcm1_avg_ramp_up_raw);      
-%         lcm1_inv_weight_avg_ramp_up_raw = (lcm1_weight_avg_ramp_up_raw(:,:)).^(-1/2); 
-%         lcm1_inv_weight_avg_ramp_down_raw = (lcm1_weight_avg_ramp_down_raw(:,:)).^(-1/2);
-       
-%        lcm1_inv_weight_avg_trash_raw = (lcm1_weight_avg_trash_raw(:,:)).^(-1/2);
-% % %         
-%          num_trash_points(i) = length(lcm1_avg_trash_raw);  
 
     end
     
@@ -796,6 +765,6 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
     fprintf('number of up chunks (-V) = %d \n', num_up_chunks(i));
     fprintf('number of  down chunks (+V) = %d \n', num_down_chunks(i));
     fprintf('number of trash chunks (0V) = %d \n', num_trash_chunks(i));
-    disp('the number of trash chunks should be the sum of up and down chunks') 
+    disp('the number of trash chunks should be the sum of up and down chunks')
     
 end
