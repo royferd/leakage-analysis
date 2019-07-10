@@ -109,6 +109,6 @@ RaEDM_leakage_analysis('2019-04-26-151416-hv-1.txt',4); % runs, but doesn't
 
 close all;
 
-RaEDM_leakage_analysis('2019-05-01-171913-hv-1.txt-trimmed',4); % runs, doesn't 
+RaEDM_leakage_analysis('2019-05-01-171913-hv-1-trimmed.txt',4); % runs, doesn't 
 % correctly identify chunks. Also had to remove the first 50 minutes of off
 % data to get it to run without doing some extensive changing of code.
