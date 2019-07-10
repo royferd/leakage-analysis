@@ -59,9 +59,16 @@ function [discharge_times,discharge_times_cutoff, ...
 %     fprintf('number of output arguments = %d \n',nargout);
 
     for i = 1:num_chunk
+%     for i = 1:1
 
         close(gcf);
 
+        % this will tag chunks whose averages and standard deviations
+        % cannot be optimized, e.g. if the chunk is too noisy.
+        not_optimized = 0;
+        
+        current_bval = bval;
+        
         % we're interested in the number of discharges, the values of the
         % discharges, and the time at which the discharges happened
         count_discharges = 0;
@@ -122,11 +129,24 @@ function [discharge_times,discharge_times_cutoff, ...
         
         max_x = max(xdata);                
         
-        most_xdata = floor(0.95*length(xdata));
+        most_xdata = floor(0.68*length(xdata));
+        
+        trim_points = ceil((length(xdata)-most_xdata)/2.0);
         
         ordered_xdata = sort(xdata);
         
-        plot_subset_xdata = ordered_xdata(1:most_xdata);
+        if min(xdata) < 0
+            
+            subset_xdata = ordered_xdata(trim_points:end-trim_points);
+            
+        else
+        
+            subset_xdata = ordered_xdata(1:most_xdata);
+        
+        end
+        
+        %the minimum number of counts we want in the highest bin
+        peak_ht_goal = floor(0.06*length(xdata));
         
 %         fprintf('chunk no. %d\n',i);
 %         
@@ -134,31 +154,7 @@ function [discharge_times,discharge_times_cutoff, ...
 %         
 %         fprintf('length of most_xdata: %d\n',most_xdata);
         
-        if i > 1
-            
-%             xavg = median(xavg_history);
-            
-            xstd = median(xstd_history);
-            
-        else
-    %        xavg = x_avg_per_chunk(i);
-%             xmode = mode(floor(ordered_xdata(1:most_xdata)));
-            
-%              xavg = mode(bval*floor(ordered_xdata(1:most_xdata)/bval));
 
-            xstd = std(ordered_xdata(1:most_xdata));
-            
-        end
-        
-        if mode(floor(ordered_xdata(1:most_xdata))) > 0
-            
-            xavg = mode(bval*floor(ordered_xdata(1:most_xdata)/bval));
-            
-        else
-            
-            xavg = mode(bval*ceil(ordered_xdata(1:most_xdata)/bval));
-            
-        end
 
 %         xmode_index = find(floor(ordered_xdata(1:most_xdata)) == xavg);
         
@@ -214,10 +210,64 @@ function [discharge_times,discharge_times_cutoff, ...
         %figure0 = figure;
         figure0 = figure('visible','off');
         
-        h1 = histogram(xdata,'BinWidth',bval);
-%       h1 = histcounts(xdata,'BinWidth',bval);
+        h1 = histogram(xdata,'BinWidth',current_bval);
+%       h1 = histcounts(xdata,'BinWidth',current_bval);
         nbins = h1.NumBins;
         [counts,edges] = histcounts(xdata,nbins);
+        
+        close(figure0);
+        
+        for j = 2:11
+            
+            if max(counts) < peak_ht_goal
+                
+                current_bval = j*bval;
+                
+                figure0 = figure('visible','off');
+        
+                h1 = histogram(xdata,'BinWidth',current_bval);
+                
+        %       h1 = histcounts(xdata,'BinWidth',current_bval);
+
+                nbins = h1.NumBins;
+                
+                [counts,edges] = histcounts(xdata,nbins);
+                
+                close(figure0);
+                
+            else break;
+            
+            end
+            
+        end
+        
+%         if i > 2
+        if length(xstd_history) > 2
+            
+%             xavg = median(xavg_history);
+            
+            xstd = median([2.0*std(subset_xdata) xstd_history]);
+            
+        else
+    %        xavg = x_avg_per_chunk(i);
+%             xmode = mode(floor(ordered_xdata(1:most_xdata)));
+            
+%              xavg = mode(current_bval*floor(ordered_xdata(1:most_xdata)/current_bval));
+
+            xstd = 2.0*std(subset_xdata);
+            
+        end
+        
+        if mode(floor(subset_xdata)) > 0
+            
+            xavg = mode(current_bval*floor(subset_xdata/current_bval));
+            
+        else
+            
+            xavg = mode(current_bval*ceil(subset_xdata/current_bval));
+            
+        end
+                
         
 %         fprintf('maximum counts = %d \n',max(counts));        
 %         fprintf('x avg for chunk %d = %f \n',i,xavg);
@@ -229,7 +279,7 @@ function [discharge_times,discharge_times_cutoff, ...
 
 %         for k = 1:nbins
 % 
-%             x_hist_data(k) = min_x+bval*(k-0.5);
+%             x_hist_data(k) = min_x+current_bval*(k-0.5);
 % 
 %         end
         
@@ -287,7 +337,7 @@ function [discharge_times,discharge_times_cutoff, ...
 
         max_count = find(max(counts));
         
-        [in_mid_bin] = find( xdata < xavg + 1.6*bval & xdata > xavg - 1.6*bval);
+        [in_mid_bin] = find( xdata < xavg + 1.6*current_bval & xdata > xavg - 1.6*current_bval);
         
 %         in_mid_bin
         
@@ -350,10 +400,12 @@ function [discharge_times,discharge_times_cutoff, ...
             
         end
         
-        fprintf('xstd: %.2f   gaus_stdev: %.2f\n xavg: %.2f   gaus_avg: %.2f\n amp_guess: %.2f   gaus_a: %.2f\n',...
-            xstd,gaus_stdev,xavg,gaus_avg,guess_amplitude^2,gaus_a);      
+%         fprintf('xstd: %.2f   gaus_stdev: %.2f\n xavg: %.2f   gaus_avg: %.2f\n amp_guess: %.2f   gaus_a: %.2f\n',...
+%             xstd,gaus_stdev,xavg,gaus_avg,guess_amplitude^2,gaus_a);      
 
-        if gaus_stdev > 5*xstd
+        if gaus_stdev > 2.0*xstd || abs(xavg - gaus_avg)/xstd > 2.0
+            
+            not_optimized = 1;
             
             gaus_a = guess_amplitude^2;
             
@@ -516,13 +568,26 @@ function [discharge_times,discharge_times_cutoff, ...
         if save_figs == 1
             % Plot
             %plot(xlog,y,'o')
+            
+            if not_optimized == 1
+                
+                title_string_full =sprintf('%s %d / %d (not optimized)',title_string,i,num_chunk);
+                
+                save_file_path = fullfile(savepath,sprintf('%s_%d_no_opt.png',plotname,i));
+                
+            else
 
-            title_string_full =sprintf('%s %d / %d',title_string,i,num_chunk);                      
+                title_string_full =sprintf('%s %d / %d',title_string,i,num_chunk);
+                
+                save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
+            %print (sprintf('%s_%d',plotname,i),'-dpng');
+            
+            end
             
             figure1 = figure('visible','off');                       
 %            figure1 = figure;                        
             
-            h2 = histogram(xdata,'BinWidth',bval); hold on;
+            h2 = histogram(xdata,'BinWidth',current_bval); hold on;
             max_h2 = max(h2.Values);
 %             fprintf('maximum count from plotted histogram = %d \n',max_h2);
 
@@ -535,8 +600,8 @@ function [discharge_times,discharge_times_cutoff, ...
             
             
           %  histogram(xdata,nbins); hold on;
-           % histogram(xdata,'BinWidth',bval); hold on;
-            %histogram(opt_x_hist_data,'BinWidth',bval); hold on;
+           % histogram(xdata,'BinWidth',current_bval); hold on;
+            %histogram(opt_x_hist_data,'BinWidth',current_bval); hold on;
             
             plot(gaus_fit(:,1),gaus_fit(:,2),'r-','LineWidth',2.0);
             
@@ -549,16 +614,16 @@ function [discharge_times,discharge_times_cutoff, ...
 %             fprintf(' y range max = %f \n',5.*ceil(1.1*max(counts)/5.));
 
             if ((gaus_avg - 6*gaus_stdev)/5.0 > 1.0)
-
-%                 axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*(max_h2)/5.)]);
                 
-                axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*(graph_max)/5.)]);
-
-            else
-               
-%                 axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*(max_h2)/5.)]);
+%                 axis ([ 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0) 5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) 0 5.*ceil(1.1*(graph_max)/5.)]);
                 
-                axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*(graph_max)/5.)]);
+                axis ([ min([subset_xdata(1) 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0)]) max([5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) subset_xdata(end)]) 0 5.*ceil(1.1*(graph_max)/5.)]);
+
+            else               
+                
+%                 axis ([ floor(gaus_avg - 6*gaus_stdev) ceil(gaus_avg + 6*gaus_stdev) 0 5.*ceil(1.1*(graph_max)/5.)]);
+                
+                axis ([ min([subset_xdata(1) floor(gaus_avg - 6*gaus_stdev)]) max([ceil(gaus_avg + 6*gaus_stdev) subset_xdata(end)]) 0 5.*ceil(1.1*(graph_max)/5.)]);
 
             end
 
@@ -597,9 +662,8 @@ function [discharge_times,discharge_times_cutoff, ...
             % Update tick labels
             %set(gca,'XTickLabel',tcklbl)
             
-            save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
-            %print (sprintf('%s_%d',plotname,i),'-dpng');
-            print (save_file_path,'-dpng');
+            
+            print(save_file_path,'-dpng');
             
             
         end
@@ -652,15 +716,17 @@ function [discharge_times,discharge_times_cutoff, ...
         
         time_length_of_chunk(i) = time_this_chunk(end) - time_this_chunk(1);
 
-        if i == 1
-            
-            xavg_history = [xavg_history gaus_avg];
-
-            xstd_history = [xstd_history gaus_stdev];
-
-            xamp_history = [xamp_history gaus_a];
-        
-        elseif gaus_stdev < 3*max(xstd_history)
+%         if i == 1
+%             
+%             xavg_history = [xavg_history gaus_avg];
+% 
+%             xstd_history = [xstd_history gaus_stdev];
+% 
+%             xamp_history = [xamp_history gaus_a];
+%         
+% %         elseif gaus_stdev < 3*max(xstd_history)
+%         elseif not_optimized == 0
+        if not_optimized == 0
             
             xavg_history = [xavg_history gaus_avg];
 
@@ -670,11 +736,11 @@ function [discharge_times,discharge_times_cutoff, ...
         
         end
         
-        if i > 4
+        if length(xavg_history) > 2
             
-            xavg_history = xavg_history(end-3:end);
+            xavg_history = xavg_history(end-2:end);
             
-            xstd_history = xstd_history(end-3:end);
+            xstd_history = xstd_history(end-2:end);
             
         end
 
