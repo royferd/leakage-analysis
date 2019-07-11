@@ -1,22 +1,34 @@
 % % create a folder to place all saved images in
 
+analysis_folder_name_parent = 'nb56-all-simulation-analysis';
+
+analysis_folder_name = '2019-07-11';
+
 current_time = datetime('now','Format','yyyy-MM-dd-HHmmss');
 
 newfolder = sprintf('%s-cumulative-discharge-rate-plotter',current_time(1));
 
 current_directory = sprintf('%s',pwd);
 
+path_to_analysis_files = fullfile(current_directory,analysis_folder_name_parent,analysis_folder_name);
+
 fullpath = fullfile(current_directory,newfolder);
 
-sim_filenames = [string('2019-06-25-182633-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-182928-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-183234-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-183455-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-183745-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-184050-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-184341-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-184650-discharge-rate-pos-5-sig.txt');
-    string('2019-06-25-184930-discharge-rate-pos-5-sig.txt')];
+cd(path_to_analysis_files);
+
+sim_filenames = dir('*discharge-rate-pos*');
+
+cd(current_directory);
+
+% sim_filenames = [string('2019-06-25-182633-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-182928-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-183234-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-183455-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-183745-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-184050-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-184341-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-184650-discharge-rate-pos-5-sig.txt');
+%     string('2019-06-25-184930-discharge-rate-pos-5-sig.txt')];
 
 num_files = length(sim_filenames);
 
@@ -52,6 +64,24 @@ for i=1:num_files
    this_set_indices(end+1,:) = [(number_rows - number_rows_this_set + 1) number_rows];
     
 end
+
+for i = 1:num_files
+    
+    one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),1),...
+        zeros(length(one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),1)),1),...
+        one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),5),...
+        zeros(length(one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),7)),1),...
+        one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),1),...
+        zeros(length(one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),1)),1),...
+        one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),5),...
+        zeros(length(one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),7)),1)
+
+end
+
+
+
+
+
 
 % row 3 = dph (5 sigma)
 % row 4 = dph_std (5 sigma)
