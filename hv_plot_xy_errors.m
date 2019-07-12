@@ -1,24 +1,27 @@
-function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
+function f = hv_plot_xy_errors(plot_title,x_axis_title,y_axis_title,input_style,annote,legend_show,...
     save_fig,savepath,plotname,...
     xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
 
-% Properties of plot_x_y_errors:
-%
-% hv_plot_xy_errors(annote,legend_show,...
-%    xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
-%
-% annote: set to "1" to generate an annotation box
-%
-% legend_show: set to "1" to generate a legend
-%
-% x_data_i, xdata_stdev_i,ydata_i,ydata_stdev_i: arrays of x and y data and
-% their standard deviations. Enter up to three sets of data
-%
-% This plots up to three full error bar (x and y errors) datasets, assuming 
-% the error is symmetric for x and y. Error bars for x (or y, for that 
-% matter)can be ignored by setting x_data-stdev_i to an array of zeros.
-%
-%
+%{
+
+Properties of plot_x_y_errors:
+
+hv_plot_xy_errors(annote,legend_show,...
+   xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
+
+annote: set to "1" to generate an annotation box
+
+legend_show: set to "1" to generate a legend
+
+x_data_i, xdata_stdev_i,ydata_i,ydata_stdev_i: arrays of x and y data and
+their standard deviations. Enter up to three sets of data
+
+This plots up to three full error bar (x and y errors) datasets, assuming 
+the error is symmetric for x and y. Error bars for x (or y, for that 
+matter)can be ignored by setting x_data-stdev_i to an array of zeros.
+
+%}
+
 
     legend_string = '';
 % Determine how many datasets to plot. 
@@ -36,150 +39,200 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     
     num_series = 1;
     
-    if num_var_args == 0
-        disp('User provided one dataset to plot.');
-    elseif num_var_args == 3
-%        disp('User provided two datasets to plot.');
-        num_series = 2;
-        xdata_2 = varargin{1};
-        xdata_stdev_2 = varargin{2};
-        ydata_2 = varargin{3};
-        ydata_stdev_2 = zeros(length(ydata_2));
-        overplot = 1;
-        legend_names(end+1) = {'plot 2'};
-        
-    elseif num_var_args == 4
-%        disp('User provided two datasets to plot.');
-        num_series = 2;
-        xdata_2 = varargin{1};
-        xdata_stdev_2 = varargin{2};
-        ydata_2 = varargin{3};
-        ydata_stdev_2 = varargin{4};
-        overplot = 1;
-        legend_names(end+1) = {'plot 2'};
-        
-    elseif num_var_args == 7
-%        disp('User provided three datasets to plot.');
-        num_series = 3;
-        xdata_2 = varargin{1};
-        xdata_stdev_2 = varargin{2};
-        ydata_2 = varargin{3};
-        ydata_stdev_2 = varargin{4};
-        xdata_3 = varargin{5};
-        xdata_stdev_3 = varargin{6};
-        ydata_3 = varargin{7};
-        ydata_stdev_3 = zeros(length(ydata_3));
-        overplot = 2;
-        legend_names(end+1) = {'plot 2'};
-        legend_names(end+1) = {'plot 3'};
-        
-    elseif num_var_args == 8
-%        disp('User provided three datasets to plot.');
-        num_series = 3;
-        xdata_2 = varargin{1};
-        xdata_stdev_2 = varargin{2};
-        ydata_2 = varargin{3};
-        ydata_stdev_2 = varargin{4};
-        xdata_3 = varargin{5};
-        xdata_stdev_3 = varargin{6};
-        ydata_3 = varargin{7};
-        ydata_stdev_3 = varargin{8};
-        overplot = 2;
-        legend_names(end+1) = {'plot 2'};
-        legend_names(end+1) = {'plot 3'};
-        
-    end
-        
-    if num_var_args >= 12
-        % 4 datasets
-        num_series = 4;
-        xdata_2 = varargin{1};
-        xdata_stdev_2 = varargin{2};
-        ydata_2 = varargin{3};
-        ydata_stdev_2 = varargin{4};
-        xdata_3 = varargin{5};
-        xdata_stdev_3 = varargin{6};
-        ydata_3 = varargin{7};
-        ydata_stdev_3 = varargin{8};
-        xdata_4 = varargin{9};
-        xdata_stdev_4 = varargin{10};
-        ydata_4 = varargin{11};
-        ydata_stdev_4 = varargin{12};
-        overplot = 3;
-        legend_names(end+1) = {'plot 2'};
-        legend_names(end+1) = {'plot 3'};
-        legend_names(end+1) = {'plot 4'};
-        
-    end
-        
-    if num_var_args >= 16
-        % 5 datasets
-        num_series = 5;
-        xdata_5 = varargin{13};
-        xdata_stdev_5 = varargin{14};
-        ydata_5 = varargin{15};
-        ydata_stdev_5 = varargin{16};
-        overplot = 4;
-        legend_names(end+1) = {'plot 5'};
-        
-    end
-        
-    if num_var_args >= 20
-        % 6 datasets
-        num_series = 6;
-        xdata_6 = varargin{17};
-        xdata_stdev_6 = varargin{18};
-        ydata_6 = varargin{19};
-        ydata_stdev_6 = varargin{20};
-        overplot = 5;
-        legend_names(end+1) = {'plot 6'};
-        
-    end
-        
-    if num_var_args >= 24
-        % 7 datasets
-        num_series = 7;
-        xdata_7 = varargin{21};
-        xdata_stdev_7 = varargin{22};
-        ydata_7 = varargin{23};
-        ydata_stdev_7 = varargin{24};
-        overplot = 6;
-        legend_names(end+1) = {'plot 7'};
-        
-    end
-        
-    if num_var_args >= 28
-        % 8 datasets
-        num_series = 8;
-        xdata_8 = varargin{25};
-        xdata_stdev_8 = varargin{26};
-        ydata_8 = varargin{27};
-        ydata_stdev_8 = varargin{28};
-        overplot = 7;
-        legend_names(end+1) = {'plot 8'};
-        
-    end
-        
-    if num_var_args >= 32
-        % 9 datasets
-        num_series = 9;
-        xdata_9 = varargin{29};
-        xdata_stdev_9 = varargin{30};
-        ydata_9 = varargin{31};
-        ydata_stdev_9 = varargin{32};
-        overplot = 8;
-        legend_names(end+1) = {'plot 9'};
-        
-    end
+    if input_style == 1
     
-%     else
-%         disp('User provided incorrect number of optional arguments. Ignoring all optional arguments...');
+        if num_var_args == 0
+            disp('User provided one dataset to plot.');
+        elseif num_var_args == 3
+    %        disp('User provided two datasets to plot.');
+            num_series = 2;
+            xdata_2 = varargin{1};
+            xdata_stdev_2 = varargin{2};
+            ydata_2 = varargin{3};
+            ydata_stdev_2 = zeros(length(ydata_2));
+            overplot = 1;
+            legend_names(end+1) = {'plot 2'};
+
+        elseif num_var_args == 4
+    %        disp('User provided two datasets to plot.');
+            num_series = 2;
+            xdata_2 = varargin{1};
+            xdata_stdev_2 = varargin{2};
+            ydata_2 = varargin{3};
+            ydata_stdev_2 = varargin{4};
+            overplot = 1;
+            legend_names(end+1) = {'plot 2'};
+
+        elseif num_var_args == 7
+    %        disp('User provided three datasets to plot.');
+            num_series = 3;
+            xdata_2 = varargin{1};
+            xdata_stdev_2 = varargin{2};
+            ydata_2 = varargin{3};
+            ydata_stdev_2 = varargin{4};
+            xdata_3 = varargin{5};
+            xdata_stdev_3 = varargin{6};
+            ydata_3 = varargin{7};
+            ydata_stdev_3 = zeros(length(ydata_3));
+            overplot = 2;
+            legend_names(end+1) = {'plot 2'};
+            legend_names(end+1) = {'plot 3'};
+
+        elseif num_var_args == 8
+    %        disp('User provided three datasets to plot.');
+            num_series = 3;
+            xdata_2 = varargin{1};
+            xdata_stdev_2 = varargin{2};
+            ydata_2 = varargin{3};
+            ydata_stdev_2 = varargin{4};
+            xdata_3 = varargin{5};
+            xdata_stdev_3 = varargin{6};
+            ydata_3 = varargin{7};
+            ydata_stdev_3 = varargin{8};
+            overplot = 2;
+            legend_names(end+1) = {'plot 2'};
+            legend_names(end+1) = {'plot 3'};
+
+        end
+
+        if num_var_args >= 12
+            % 4 datasets
+            num_series = 4;
+            xdata_2 = varargin{1};
+            xdata_stdev_2 = varargin{2};
+            ydata_2 = varargin{3};
+            ydata_stdev_2 = varargin{4};
+            xdata_3 = varargin{5};
+            xdata_stdev_3 = varargin{6};
+            ydata_3 = varargin{7};
+            ydata_stdev_3 = varargin{8};
+            xdata_4 = varargin{9};
+            xdata_stdev_4 = varargin{10};
+            ydata_4 = varargin{11};
+            ydata_stdev_4 = varargin{12};
+            overplot = 3;
+            legend_names(end+1) = {'plot 2'};
+            legend_names(end+1) = {'plot 3'};
+            legend_names(end+1) = {'plot 4'};
+
+        end
+
+        if num_var_args >= 16
+            % 5 datasets
+            num_series = 5;
+            xdata_5 = varargin{13};
+            xdata_stdev_5 = varargin{14};
+            ydata_5 = varargin{15};
+            ydata_stdev_5 = varargin{16};
+            overplot = 4;
+            legend_names(end+1) = {'plot 5'};
+
+        end
+
+        if num_var_args >= 20
+            % 6 datasets
+            num_series = 6;
+            xdata_6 = varargin{17};
+            xdata_stdev_6 = varargin{18};
+            ydata_6 = varargin{19};
+            ydata_stdev_6 = varargin{20};
+            overplot = 5;
+            legend_names(end+1) = {'plot 6'};
+
+        end
+
+        if num_var_args >= 24
+            % 7 datasets
+            num_series = 7;
+            xdata_7 = varargin{21};
+            xdata_stdev_7 = varargin{22};
+            ydata_7 = varargin{23};
+            ydata_stdev_7 = varargin{24};
+            overplot = 6;
+            legend_names(end+1) = {'plot 7'};
+
+        end
+
+        if num_var_args >= 28
+            % 8 datasets
+            num_series = 8;
+            xdata_8 = varargin{25};
+            xdata_stdev_8 = varargin{26};
+            ydata_8 = varargin{27};
+            ydata_stdev_8 = varargin{28};
+            overplot = 7;
+            legend_names(end+1) = {'plot 8'};
+
+        end
+
+        if num_var_args >= 32
+            % 9 datasets
+            num_series = 9;
+            xdata_9 = varargin{29};
+            xdata_stdev_9 = varargin{30};
+            ydata_9 = varargin{31};
+            ydata_stdev_9 = varargin{32};
+            overplot = 8;
+            legend_names(end+1) = {'plot 9'};
+
+        end
     
+    elseif input_style == 2
+        
+        this_set_indices = varargin{1};
+        
+        num_series = length(this_set_indices);
+         
+        for i = 2:num_series
+            
+            legend_names(end+1) = {sprintf('plot %d',i)};
+             
+        end
+        
+        legend_names = {'-14.9 kV','-17.8 kV','-19.4 kV','-17.8','-0.7 kV','-9.8 kV',...
+            '-17.8 kV','-17.8 kV','-16.1 kV','-17.9 kV','-19.5 kV',...
+            '-20.5 kV','-20.5 kV','-21.9 kV','-21.9 kV','-21.9 kV',...
+            '-23.3 kV','-24.8 kV','-26.2 kV','-26.2 kV','-26.2 kV',...
+            '-26.2 kV','-27.6 kV','-27.6 kV','-29.1 kV','-14.7 kV'};
+        
+        color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
+        
+%         legend_names = {'-12 kV','-13 kV','-14 kV','-15 kV','-16 kV',...
+%             '-17 kV','-18 kV','-19 kV','-20 kV'};
+        
+        xrange = max(xdata_1) - min(xdata_1);
+        yrange = max(ydata_1) - min(ydata_1);
+        
+        xmin = 0.0;
+        xrange_padded = 5*ceil((xmin+xrange)*1.15/5);
+        
+        xmax = xmin + xrange_padded;
+        
+        ymin = -2;
+        yrange_padded = 20*ceil((yrange)*1.2/20);
+        
+        ymax = yrange_padded;
+        
+            % marker pattern
+        marker_pattern_one_sequence = ['o','x','^','s','>'];
+        marker_pattern = marker_pattern_one_sequence;
+
+        for j = 1:ceil(length(this_set_indices)/length(marker_pattern))
+
+            marker_pattern = [marker_pattern marker_pattern_one_sequence];
+
+        end
+        
+    end
 
     annote_string = annote;
-    xlabel_string = 'xlabel string';
-    ylabel_string = 'ylabel string';
+    
+    xlabel_string = x_axis_title;
+    
+    ylabel_string = y_axis_title;
+    
     title_string = plot_title;
+    
     num_sets = 1;
     
     %text box assignments
@@ -256,18 +309,24 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     % remove middle third of jet colors to get rid of the lighter blues and
     % yellows
     
-    a_third = ceil(num_series /3);
+    num_colors = num_series;
     
-    middle_ish = floor((num_series+0.5*a_third)/2);
+%     num_colors = 16;
     
-    jet_set = jet(num_series+a_third);
+    a_third = ceil(num_colors /3);
     
-    jet_subset = zeros(num_series,3);
+    middle_ish = floor((num_colors+0.5*a_third)/2);
+    
+    jet_set = jet(num_colors+a_third);
+    
+    jet_subset = zeros(num_colors,3);
     
     jet_subset(1:middle_ish,:) = jet_set(1:middle_ish,:);
     
     jet_subset(middle_ish+1:end,:) = jet_set(middle_ish+a_third+1:end,:);
         
+    
+
 
     %titles and shit
 
@@ -276,20 +335,17 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     y_label = 'y label';
     xtick_numbers = [ 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75];
     ytick_numbers = [-125 -100 -75 -50 -25 0 25 50 75 100 125];
-    xmin = 0.0;
-    xmax = +40.0;
-    ymin = 0.5;
-    ymax = +5.5;
-    plot_bounds = [xmin xmax ymin ymax];
+    
 
-    ymin_right = -30;
-    ymax_right = 30;
-    plot_bounds_right = [xmin xmax ymin_right ymax_right];
 
-    % y = 0 line
-    zero_line = zeros(2,2);
-    zero_line(1,1) = xmin;
-    zero_line(2,1) = xmax;
+%     ymin_right = -30;
+%     ymax_right = 30;
+%     plot_bounds_right = [xmin xmax ymin_right ymax_right];
+% 
+%     % y = 0 line
+%     zero_line = zeros(2,2);
+%     zero_line(1,1) = xmin;
+%     zero_line(2,1) = xmax;
 
 
 %%%%%%%%%%%%%%%%%%%% psvoltage v. pscurrent %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -306,103 +362,122 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 
 %%%    
     
-    if num_series <= 3
+    % this sequence is only for generating the legend icons without the
+    % error bars.
+    
+    if input_style == 1
 
-    plot(xdata_1(1),ydata_1(1),...
-        'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
-         
-    else
-        
+        if num_series <= 3
+
         plot(xdata_1(1),ydata_1(1),...
-        'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
-        
-    end
-    
-    
-     if overplot > 0
-         hold on;
-         
-         if num_series <= 3
-             
-             plot(xdata_2(1),ydata_2(1),...
-                 'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
-             
-         else             
-             
-             plot(xdata_2(1),ydata_2(1),...
-                 'x','Color', jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
-             
-         end
-        
-     end
+            'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
 
-     if overplot > 1
-         
-         hold on;
-         
-         if num_series <= 3
-             
-             plot(xdata_3(1),ydata_3(1),...
-                 '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
-             
-         else
-             
-             plot(xdata_3(1),ydata_3(1),...
-            '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
-             
+        else
+
+            plot(xdata_1(1),ydata_1(1),...
+            'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
+
+        end
+
+
+         if overplot > 0
+             hold on;
+
+             if num_series <= 3
+
+                 plot(xdata_2(1),ydata_2(1),...
+                     'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+
+             else             
+
+                 plot(xdata_2(1),ydata_2(1),...
+                     'x','Color', jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
+
+             end
+
          end
+
+         if overplot > 1
+
+             hold on;
+
+             if num_series <= 3
+
+                 plot(xdata_3(1),ydata_3(1),...
+                     '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+
+             else
+
+                 plot(xdata_3(1),ydata_3(1),...
+                '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
+
+             end
+
+         end
+
+         if overplot > 2
+
+             hold on;
+            plot(xdata_4(1),ydata_4(1),...
+                's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
+    %             's','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 3
+
+             hold on;
+            plot(xdata_5(1),ydata_5(1),...
+                '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
+    %             '>','Color', 'cyan','MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 4
+
+             hold on;
+            plot(xdata_6(1),ydata_6(1),...
+                'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
+    %             'x','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 5
+
+             hold on;
+            plot(xdata_7(1),ydata_7(1),...
+                '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
+    %             '^','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 6
+
+             hold on;
+            plot(xdata_8(1),ydata_8(1),...
+                's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
+    %             's','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+
+         end
+
+         if overplot > 7
+
+             hold on;
+            plot(xdata_9(1),ydata_9(1),...
+                '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
+    %             '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+
+         end
+     
+    elseif input_style == 2
         
-     end
-     
-     if overplot > 2
-         
-         hold on;
-        plot(xdata_4(1),ydata_4(1),...
-            's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             's','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 3
-         
-         hold on;
-        plot(xdata_5(1),ydata_5(1),...
-            '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             '>','Color', 'cyan','MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 4
-         
-         hold on;
-        plot(xdata_6(1),ydata_6(1),...
-            'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             'x','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 5
-         
-         hold on;
-        plot(xdata_7(1),ydata_7(1),...
-            '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             '^','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 6
-         
-         hold on;
-        plot(xdata_8(1),ydata_8(1),...
-            's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             's','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+        for i = 1:length(this_set_indices)
         
-     end
-     
-     if overplot > 7
-         
-         hold on;
-        plot(xdata_9(1),ydata_9(1),...
-            '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
-%             '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+            hold on;
+            plot(xdata_1(this_set_indices(i,1)),...
+                ydata_1(this_set_indices(i,1)),...
+                marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
+                'MarkerSize',7,...
+                'LineWidth', 1.0);
+        end
             
-     end
+    end
      
 %%%
 
@@ -414,130 +489,137 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
     title(title_string,'FontSize',20)
     xlabel(xlabel_string,'FontSize',16)
     ylabel(ylabel_string,'FontSize',16)
+    
     if legend_show == 1
-              
-         l = legend('show'); 
-%        [l,icons] = legend('show');
-        l.String = legend_string; 
-         l.FontSize = 16;
-%          l.FontName = get(gca,'FontName');
-%          l.MarkerSize = 12;
-%          l.FontSize = 24; 
-        l.Location = 'northeast outside';
-
-    
-%      [~, objh] = legend(legend_names,'location', 'NorthEastOutside', 'Fontsize', 16);
-% %     [~, objh] = legend({'one plot', 'another plot'}, 'location', 'NorthWest');
-%     %// set font size as desired
-%     objhl = findobj(objh, 'type', 'line'); %// objects of legend of type line
-%     set(objhl, 'Markersize', 12); %// set marker size as desired
-%     set(objhl, 'Linewidth', 2.0);
-% %     objh_text= findobj(objh,'type','text');
-% %     objh.FontSize = 16;
-% %     objh(2)
-% %     objh(3)
-% %     objh(4)
-    
+                      
+        l = legend('show'); 
+%         l.String = legend_string; 
+        l.String = legend_names; 
+        l.FontSize = 16;
+        l.Location = 'northeast outside';    
 
     end
     
-    if num_series <= 3
-        
-        errorbar(xdata_1,ydata_1,...
-            ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-            'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
-        
-    else
-        
-        errorbar(xdata_1,ydata_1,...
-            ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-            'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
-        
-    end
+    % this section actually plots the data
     
-    
-     if overplot > 0
-         
-         hold on;
-         
-         if num_series <= 3
-             
-             errorbar(xdata_2,ydata_2,...
-                 ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-                 'x','Color','blue' ,'MarkerSize', 12, 'LineWidth', 2.0);
-             
-         else
-             
-             errorbar(xdata_2,ydata_2,...
-                 ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-                 'x','Color',jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
-             
-         end
+    if input_style == 1
         
-     end
+        if num_series <= 3
 
-     if overplot > 1
-         
-         hold on;
-         
-         if num_series <= 3
-             
-             errorbar(xdata_3,ydata_3,...
-                 ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-                 '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
-             
-         else
-             
-             errorbar(xdata_3,ydata_3,...
-                 ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-                 '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
-             
+            errorbar(xdata_1,ydata_1,...
+                ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
+                'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+
+        else
+
+            errorbar(xdata_1,ydata_1,...
+                ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
+                'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
+
+        end
+
+
+         if overplot > 0
+
+             hold on;
+
+             if num_series <= 3
+
+                 errorbar(xdata_2,ydata_2,...
+                     ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
+                     'x','Color','blue' ,'MarkerSize', 12, 'LineWidth', 2.0);
+
+             else
+
+                 errorbar(xdata_2,ydata_2,...
+                     ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
+                     'x','Color',jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
+
+             end
+
          end
+
+         if overplot > 1
+
+             hold on;
+
+             if num_series <= 3
+
+                 errorbar(xdata_3,ydata_3,...
+                     ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
+                     '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+
+             else
+
+                 errorbar(xdata_3,ydata_3,...
+                     ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
+                     '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
+
+             end
+
+         end
+
+         if overplot > 2
+             hold on;
+            errorbar(xdata_4,ydata_4,...
+                ydata_stdev_4,ydata_stdev_4,xdata_stdev_4,xdata_stdev_4,...
+                 's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 3
+             hold on;
+            errorbar(xdata_5,ydata_5,...
+                ydata_stdev_5,ydata_stdev_5,xdata_stdev_5,xdata_stdev_5,...
+                 '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 4
+             hold on;
+            errorbar(xdata_6,ydata_6,...
+                ydata_stdev_6,ydata_stdev_6,xdata_stdev_6,xdata_stdev_6,...
+                 'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 5
+             hold on;
+            errorbar(xdata_7,ydata_7,...
+                ydata_stdev_7,ydata_stdev_7,xdata_stdev_7,xdata_stdev_7,...
+                 '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 6
+             hold on;
+            errorbar(xdata_8,ydata_8,...
+                ydata_stdev_8,ydata_stdev_8,xdata_stdev_8,xdata_stdev_8,...
+                 's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
+         end
+
+         if overplot > 7
+             hold on;
+            errorbar(xdata_9,ydata_9,...
+                ydata_stdev_9,ydata_stdev_9,xdata_stdev_9,xdata_stdev_9,...
+                '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
+
+         end
+     
+    elseif input_style == 2
         
-     end
-     
-     if overplot > 2
-         hold on;
-        errorbar(xdata_4,ydata_4,...
-            ydata_stdev_4,ydata_stdev_4,xdata_stdev_4,xdata_stdev_4,...
-             's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 3
-         hold on;
-        errorbar(xdata_5,ydata_5,...
-            ydata_stdev_5,ydata_stdev_5,xdata_stdev_5,xdata_stdev_5,...
-             '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 4
-         hold on;
-        errorbar(xdata_6,ydata_6,...
-            ydata_stdev_6,ydata_stdev_6,xdata_stdev_6,xdata_stdev_6,...
-             'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 5
-         hold on;
-        errorbar(xdata_7,ydata_7,...
-            ydata_stdev_7,ydata_stdev_7,xdata_stdev_7,xdata_stdev_7,...
-             '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 6
-         hold on;
-        errorbar(xdata_8,ydata_8,...
-            ydata_stdev_8,ydata_stdev_8,xdata_stdev_8,xdata_stdev_8,...
-             's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
-     end
-     
-     if overplot > 7
-         hold on;
-        errorbar(xdata_9,ydata_9,...
-            ydata_stdev_9,ydata_stdev_9,xdata_stdev_9,xdata_stdev_9,...
-            '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
+        for i = 1:length(this_set_indices)
+        
+            hold on;
             
-     end
+            errorbar(xdata_1(this_set_indices(i,1):this_set_indices(i,2)),...
+                ydata_1(this_set_indices(i,1):this_set_indices(i,2)),...
+                ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+                ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+                xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+                xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+                marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
+                'MarkerSize', 7,...
+                'LineWidth', 1.0);
+        end
+        
+    end
     
 
     if (length(annote) > 0)
@@ -550,19 +632,25 @@ function f = hv_plot_xy_errors(plot_title,annote,legend_show,...
 %         fig = gcf;
 %         fig.PaperUnits = 'inches';
 %         fig.PaperPosition = [0 0 12 9]; 
+
+        title(title_string,'FontSize',16);
+        
+        xlabel(xlabel_string,'FontSize',14);
+        
+        ylabel(ylabel_string,'FontSize',14);
+    
+        if legend_show == 1
+            
+            l.FontSize = 10;   
+
+        end
+
+
+%         axis([0 120 0 1000]);
+        ax.Box = 'on';
         
         save_file_path = fullfile(savepath,sprintf('%s.png',plotname));
         print (save_file_path,'-dpng');
     end
-        
     
-%     left_color = cmap(num_sets+1+0*num_sets+2,:);
-%     right_color = cmap(num_sets+1+2*num_sets+2,:);
-    % set(fig,'defaultAxesColorOrder',[left_color; right_color]);
-
-%     figure2= figure('Units','normalized')
-%     plot(1:1:35,1:1:35,...
-%         '^','Color', 'blue','MarkerSize', 8, 'LineWidth', 2.0);
-    
-
 end

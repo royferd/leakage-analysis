@@ -1,8 +1,13 @@
 % % create a folder to place all saved images in
+electrodes = 'Ti13';
+sim_dates = '12/13/2018--5/1/2019';
 
-analysis_folder_name_parent = 'nb56-all-simulation-analysis';
+analysis_file_patterns = {'*discharge-rate-pos*','*discharge-rate-neg*',...
+    '*discharge-rate-zero*'};
 
-analysis_folder_name = '2019-07-11';
+analysis_folder_name_parent = 'ti13-sim-analysis-files';
+
+analysis_folder_name = '.';
 
 current_time = datetime('now','Format','yyyy-MM-dd-HHmmss');
 
@@ -14,74 +19,100 @@ path_to_analysis_files = fullfile(current_directory,analysis_folder_name_parent,
 
 fullpath = fullfile(current_directory,newfolder);
 
-cd(path_to_analysis_files);
-
-sim_filenames = dir('*discharge-rate-pos*');
-
-cd(current_directory);
-
-% sim_filenames = [string('2019-06-25-182633-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-182928-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-183234-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-183455-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-183745-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-184050-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-184341-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-184650-discharge-rate-pos-5-sig.txt');
-%     string('2019-06-25-184930-discharge-rate-pos-5-sig.txt')];
-
-num_files = length(sim_filenames);
-
 sizeset = [6 Inf];
 
 formatSpec = '%f %f %f %f %f %f';
 
-one_big_data_set = [];
+mkdir(fullpath);
 
-this_set_indices = [];
+% for i = 1:length(analysis_file_patterns)
+for i = 2:2
+    cd(path_to_analysis_files);
 
-number_rows = 0;
+%     sim_filenames = dir('*discharge-rate-pos*');
+    sim_filenames = dir(cell2mat(analysis_file_patterns(i)));
 
-for i=1:num_files
-    
-    fileID = fopen(fullfile(current_directory,'nb56-discharge-rates-all-sims',...
-        sprintf('%s',sim_filenames(i))),'r');
+    num_files = length(sim_filenames);
 
-    data_set = fscanf(fileID, formatSpec, sizeset);
+    one_big_data_set = [];
 
-    data_set = data_set';
-    
-    number_rows_this_set = length(data_set(:,1));
-    
-    for j = 1:number_rows_this_set
-        
-        number_rows = number_rows + 1;
-        
-        one_big_data_set(end+1,:) = [number_rows i data_set(j,:)];
-        
+    this_set_indices = [];
+
+    number_rows = 0;
+
+    for j=1:num_files
+
+        fileID = fopen(fullfile(current_directory,analysis_folder_name_parent,...
+            analysis_folder_name,sprintf('%s',sim_filenames(j).name)),'r');
+
+        data_set = fscanf(fileID, formatSpec, sizeset);
+
+        data_set = data_set';
+
+        number_rows_this_set = length(data_set(:,1));
+
+        for k = 1:number_rows_this_set
+
+            number_rows = number_rows + 1;
+
+            one_big_data_set(end+1,:) = [number_rows j data_set(k,:)];
+
+        end
+
+       this_set_indices(end+1,:) = [(number_rows - number_rows_this_set + 1) number_rows];
+
+       fclose(fileID);
+
     end
     
-   this_set_indices(end+1,:) = [(number_rows - number_rows_this_set + 1) number_rows];
+    dph_sigma = zeros(number_rows,2);
+    dph_cutoff = zeros(number_rows,2);
+    median_sigma = zeros(number_rows,1);
+    median_cutoff = zeros(number_rows,1);
+
+    for j = 1:number_rows
+
+        dph_sigma(j,1) = one_big_data_set(j,3);
+
+        dph_sigma(j,2) = one_big_data_set(j,4);
+        
+        median_sigma(j) = one_big_data_set(j,5);
+        
+        dph_cutoff(j,1) = one_big_data_set(j,6);
+        
+        dph_cutoff(j,2) = one_big_data_set(j,7);
+        
+        median_cutoff(j) = one_big_data_set(j,8);
+
+    end
     
-end
+    cd(current_directory);
 
-for i = 1:num_files
+    hv_plot_xy_errors(sprintf('%s %s 5\\sigma discharge rates',sim_dates,electrodes),...
+        'cumulative EDM simulation time (hr)','discharges per hour',...
+        2,'',1,1,fullpath,sprintf('%s-discharge-rates-sigma-%d',electrodes,i),...
+        1:number_rows,zeros(length(1:number_rows),1),...
+        dph_sigma(:,1),dph_sigma(:,2),this_set_indices);
     
-    one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),1),...
-        zeros(length(one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),1)),1),...
-        one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),5),...
-        zeros(length(one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),7)),1),...
-        one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),1),...
-        zeros(length(one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),1)),1),...
-        one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),5),...
-        zeros(length(one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),7)),1)
+    hv_plot_xy_errors(sprintf('%s %s 5\\sigma  median discharge sizes',sim_dates,electrodes),...
+        'cumulative EDM simulation time (hr)','median discharge size (pA)',...
+        2,'',1,1,fullpath,sprintf('%s-median-discharges-sigma-%d',electrodes,i),...
+        1:number_rows,zeros(length(1:number_rows),1),...
+        median_sigma,zeros(length(median_sigma),1),this_set_indices);
+    
+    hv_plot_xy_errors(sprintf('%s %s 100 pA cutoff discharge rates',sim_dates,electrodes),...
+        'cumulative EDM simulation time (hr)','discharges per hour',...
+        2,'',1,1,fullpath,sprintf('%s-discharge-rates-cutoff-%d',electrodes,i),...
+        1:number_rows,zeros(length(1:number_rows),1),...
+        dph_cutoff(:,1),dph_cutoff(:,2),this_set_indices);
+    
+    hv_plot_xy_errors(sprintf('%s %s 100 pA cutoff median discharge sizes',sim_dates,electrodes),...
+        'cumulative EDM simulation time (hr)','median discharge size (pA)',...
+        2,'',1,1,fullpath,sprintf('%s-median-discharges-cutoff-%d',electrodes,i),...
+        1:number_rows,zeros(length(1:number_rows),1),...
+        median_cutoff,zeros(length(median_cutoff),1),this_set_indices);
 
 end
-
-
-
-
-
 
 % row 3 = dph (5 sigma)
 % row 4 = dph_std (5 sigma)
@@ -90,41 +121,4 @@ end
 % row 7 = dph_std (cutoff)
 % row 8 = median discharge size (cutoff)
 
-hv_plot_xy_errors('ramp simulation (dis)charging voltage plotted over all','',...
-    1,0,fullpath,sprintf('nb56-discharge-rates-all-sims'),...
-    one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),1)),1),...
-    one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(1,1):this_set_indices(1,2),7)),1),...
-    one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),1)),1),...
-    one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(2,1):this_set_indices(2,2),7)),1),...
-    one_big_data_set(this_set_indices(3,1):this_set_indices(3,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(3,1):this_set_indices(3,2),1)),1),...
-    one_big_data_set(this_set_indices(3,1):this_set_indices(3,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(3,1):this_set_indices(3,2),7)),1),...
-    one_big_data_set(this_set_indices(4,1):this_set_indices(4,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(4,1):this_set_indices(4,2),1)),1),...
-    one_big_data_set(this_set_indices(4,1):this_set_indices(4,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(4,1):this_set_indices(4,2),7)),1),...
-    one_big_data_set(this_set_indices(5,1):this_set_indices(5,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(5,1):this_set_indices(5,2),1)),1),...
-    one_big_data_set(this_set_indices(5,1):this_set_indices(5,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(5,1):this_set_indices(5,2),7)),1),...
-    one_big_data_set(this_set_indices(6,1):this_set_indices(6,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(6,1):this_set_indices(6,2),1)),1),...
-    one_big_data_set(this_set_indices(6,1):this_set_indices(6,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(6,1):this_set_indices(6,2),7)),1),...
-    one_big_data_set(this_set_indices(7,1):this_set_indices(7,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(7,1):this_set_indices(7,2),1)),1),...
-    one_big_data_set(this_set_indices(7,1):this_set_indices(7,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(7,1):this_set_indices(7,2),7)),1),...
-    one_big_data_set(this_set_indices(8,1):this_set_indices(8,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(8,1):this_set_indices(8,2),1)),1),...
-    one_big_data_set(this_set_indices(8,1):this_set_indices(8,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(8,1):this_set_indices(8,2),7)),1),...
-    one_big_data_set(this_set_indices(9,1):this_set_indices(9,2),1),...
-    zeros(length(one_big_data_set(this_set_indices(9,1):this_set_indices(9,2),1)),1),...
-    one_big_data_set(this_set_indices(9,1):this_set_indices(9,2),5),...
-    zeros(length(one_big_data_set(this_set_indices(9,1):this_set_indices(9,2),7)),1));
+% value, stdev
