@@ -5,7 +5,7 @@ sim_dates = '12/13/2018--5/1/2019';
 analysis_file_patterns = {'*discharge-rate-pos*','*discharge-rate-neg*',...
     '*discharge-rate-zero*'};
 
-analysis_folder_name_parent = 'ti13-sim-analysis-files';
+analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
 
 analysis_folder_name = '.';
 
@@ -26,7 +26,7 @@ formatSpec = '%f %f %f %f %f %f';
 mkdir(fullpath);
 
 % for i = 1:length(analysis_file_patterns)
-for i = 2:2
+for i = 1:1
     cd(path_to_analysis_files);
 
 %     sim_filenames = dir('*discharge-rate-pos*');
