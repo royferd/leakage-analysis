@@ -310,8 +310,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     % yellows
     
     num_colors = num_series;
-    
-%     num_colors = 16;
+ 
+    %for the Ti13 12/2018 -- 5/2019 datasets
+     num_colors = 16;
     
     a_third = ceil(num_colors /3);
     
@@ -358,7 +359,11 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
     fig = gcf;
     fig.PaperUnits = 'inches';
-    fig.PaperPosition = [0 0 8 6]; 
+%    fig.PaperPosition = [0 0 8 6];
+    fig.PaperPosition = [0 0 5.33 4];
+    
+    markersize = 8.0;
+    linewidth = 1.125;
 
 %%%    
     
@@ -370,12 +375,12 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         if num_series <= 3
 
         plot(xdata_1(1),ydata_1(1),...
-            'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+            'o','Color', 'red','MarkerSize', markersize, 'LineWidth', linewidth);
 
         else
 
             plot(xdata_1(1),ydata_1(1),...
-            'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
+            'o','Color', jet_subset(1,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
         end
 
@@ -386,12 +391,12 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
              if num_series <= 3
 
                  plot(xdata_2(1),ydata_2(1),...
-                     'x','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+                     'x','Color', 'blue','MarkerSize', markersize, 'LineWidth', linewidth);
 
              else             
 
                  plot(xdata_2(1),ydata_2(1),...
-                     'x','Color', jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                     'x','Color', jet_subset(2,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
              end
 
@@ -404,12 +409,12 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
              if num_series <= 3
 
                  plot(xdata_3(1),ydata_3(1),...
-                     '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+                     '^','Color', 'green','MarkerSize', markersize, 'LineWidth', linewidth);
 
              else
 
                  plot(xdata_3(1),ydata_3(1),...
-                '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                '^','Color', jet_subset(3,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
              end
 
@@ -419,40 +424,35 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
              hold on;
             plot(xdata_4(1),ydata_4(1),...
-                's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
-    %             's','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+                's','Color', jet_subset(4,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 3
 
              hold on;
             plot(xdata_5(1),ydata_5(1),...
-                '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
-    %             '>','Color', 'cyan','MarkerSize', 12, 'LineWidth', 2.0);
+                '>','Color', jet_subset(5,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 4
 
              hold on;
             plot(xdata_6(1),ydata_6(1),...
-                'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
-    %             'x','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+                'x','Color', jet_subset(6,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 5
 
              hold on;
             plot(xdata_7(1),ydata_7(1),...
-                '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
-    %             '^','Color', 'blue','MarkerSize', 12, 'LineWidth', 2.0);
+                '^','Color', jet_subset(7,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 6
 
              hold on;
             plot(xdata_8(1),ydata_8(1),...
-                's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
-    %             's','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+                's','Color', jet_subset(8,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
          end
 
@@ -460,8 +460,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
              hold on;
             plot(xdata_9(1),ydata_9(1),...
-                '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
-    %             '>','Color', 'magenta','MarkerSize', 12, 'LineWidth', 2.0);
+                '>','Color', jet_subset(9,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
          end
      
@@ -473,7 +472,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             plot(xdata_1(this_set_indices(i,1)),...
                 ydata_1(this_set_indices(i,1)),...
                 marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
-                'MarkerSize',7,...
+                'MarkerSize',markersize,...
                 'LineWidth', 1.0);
         end
             
@@ -485,17 +484,23 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
     pbaspect([1.33 1 1])
     ax = gca; % current axes
+    ax.FontSize = 8;
     ax.TickDir = 'out'; % make ticks point out
-    title(title_string,'FontSize',20)
-    xlabel(xlabel_string,'FontSize',16)
-    ylabel(ylabel_string,'FontSize',16)
+    %title(title_string,'FontSize',20)
+    title(title_string,'FontSize',12)
+%    xlabel(xlabel_string,'FontSize',16)
+%    ylabel(ylabel_string,'FontSize',16)
+    xlabel(xlabel_string,'FontSize',10)
+    ylabel(ylabel_string,'FontSize',10)
     
     if legend_show == 1
                       
         l = legend('show'); 
 %         l.String = legend_string; 
         l.String = legend_names; 
-        l.FontSize = 16;
+%        l.FontSize = 16;
+%        l.FontSize = 12;
+        l.FontSize = 7;
         l.Location = 'northeast outside';    
 
     end
@@ -508,13 +513,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
             errorbar(xdata_1,ydata_1,...
                 ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-                'o','Color', 'red','MarkerSize', 12, 'LineWidth', 2.0);
+                'o','Color', 'red','MarkerSize', markersize, 'LineWidth', linewidth);
 
         else
 
             errorbar(xdata_1,ydata_1,...
                 ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-                'o','Color', jet_subset(1,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                'o','Color', jet_subset(1,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
         end
 
@@ -527,13 +532,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
                  errorbar(xdata_2,ydata_2,...
                      ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-                     'x','Color','blue' ,'MarkerSize', 12, 'LineWidth', 2.0);
+                     'x','Color','blue' ,'MarkerSize', markersize, 'LineWidth', linewidth);
 
              else
 
                  errorbar(xdata_2,ydata_2,...
                      ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-                     'x','Color',jet_subset(2,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                     'x','Color',jet_subset(2,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
              end
 
@@ -547,13 +552,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
                  errorbar(xdata_3,ydata_3,...
                      ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-                     '^','Color', 'green','MarkerSize', 12, 'LineWidth', 2.0);
+                     '^','Color', 'green','MarkerSize', markersize, 'LineWidth', linewidth);
 
              else
 
                  errorbar(xdata_3,ydata_3,...
                      ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-                     '^','Color', jet_subset(3,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                     '^','Color', jet_subset(3,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
              end
 
@@ -563,46 +568,52 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
              hold on;
             errorbar(xdata_4,ydata_4,...
                 ydata_stdev_4,ydata_stdev_4,xdata_stdev_4,xdata_stdev_4,...
-                 's','Color', jet_subset(4,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                 's','Color', jet_subset(4,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 3
              hold on;
             errorbar(xdata_5,ydata_5,...
                 ydata_stdev_5,ydata_stdev_5,xdata_stdev_5,xdata_stdev_5,...
-                 '>','Color', jet_subset(5,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                 '>','Color', jet_subset(5,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 4
              hold on;
             errorbar(xdata_6,ydata_6,...
                 ydata_stdev_6,ydata_stdev_6,xdata_stdev_6,xdata_stdev_6,...
-                 'x','Color', jet_subset(6,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                 'x','Color', jet_subset(6,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 5
              hold on;
             errorbar(xdata_7,ydata_7,...
                 ydata_stdev_7,ydata_stdev_7,xdata_stdev_7,xdata_stdev_7,...
-                 '^','Color', jet_subset(7,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                 '^','Color', jet_subset(7,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 6
              hold on;
             errorbar(xdata_8,ydata_8,...
                 ydata_stdev_8,ydata_stdev_8,xdata_stdev_8,xdata_stdev_8,...
-                 's','Color', jet_subset(8,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                 's','Color', jet_subset(8,:),'MarkerSize', markersize, 'LineWidth', linewidth);
          end
 
          if overplot > 7
              hold on;
             errorbar(xdata_9,ydata_9,...
                 ydata_stdev_9,ydata_stdev_9,xdata_stdev_9,xdata_stdev_9,...
-                '>','Color', jet_subset(9,:),'MarkerSize', 12, 'LineWidth', 2.0);
+                '>','Color', jet_subset(9,:),'MarkerSize', markersize, 'LineWidth', linewidth);
 
          end
      
     elseif input_style == 2
+        
+        hold on;
+        
+        plot(xdata_1(this_set_indices(1,1):this_set_indices(end,2)),...
+                ydata_1(this_set_indices(1,1):this_set_indices(end,2)),...
+                '-k','LineWidth', 0.5);
         
         for i = 1:length(this_set_indices)
         
@@ -615,8 +626,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
                 xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
                 xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
                 marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
-                'MarkerSize', 7,...
-                'LineWidth', 1.0);
+                'MarkerSize', markersize,...
+                'LineWidth', linewidth);
         end
         
     end
@@ -624,7 +635,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
     if (length(annote) > 0)
         annotation(figure1,'textbox',outside_plot,'String',annote_string,...
-            'FontSize',16,'BackgroundColor',[1 1 1]);
+            'FontSize',10,'BackgroundColor',[1 1 1]);
     end
     
     if save_fig == 1
@@ -633,17 +644,17 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         fig.PaperUnits = 'inches';
 %         fig.PaperPosition = [0 0 12 9]; 
 
-        title(title_string,'FontSize',16);
-        
-        xlabel(xlabel_string,'FontSize',14);
-        
-        ylabel(ylabel_string,'FontSize',14);
+%         title(title_string,'FontSize',16);
+%         
+%         xlabel(xlabel_string,'FontSize',14);
+%         
+%         ylabel(ylabel_string,'FontSize',14);
     
-        if legend_show == 1
-            
-            l.FontSize = 10;   
-
-        end
+%         if legend_show == 1
+%             
+%             l.FontSize = 10;   
+% 
+%         end
 
 
 %         axis([0 120 0 1000]);
@@ -651,6 +662,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
         save_file_path = fullfile(savepath,sprintf('%s.png',plotname));
         print (save_file_path,'-dpng');
+        
+        save_file_path = fullfile(savepath,sprintf('%s.emf',plotname));
+        print (save_file_path,'-dmeta');
     end
     
 end
