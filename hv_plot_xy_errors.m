@@ -188,17 +188,21 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             legend_names(end+1) = {sprintf('plot %d',i)};
              
         end
+
+% titanium electrode legend entries.        
+%         legend_names = {'+14.9 kV','+17.8 kV','+19.4 kV','+17.8','+0.7 kV','+9.8 kV',...
+%             '+17.8 kV','+17.8 kV','+16.1 kV','+17.9 kV','+19.5 kV',...
+%             '+20.5 kV','+20.5 kV','+21.9 kV','+21.9 kV','+21.9 kV',...
+%             '+23.3 kV','+24.8 kV','+26.2 kV','+26.2 kV','+26.2 kV',...
+%             '+26.2 kV','+27.6 kV','+27.6 kV','+29.1 kV','+14.7 kV'};
         
-        legend_names = {'+14.9 kV','+17.8 kV','+19.4 kV','+17.8','+0.7 kV','+9.8 kV',...
-            '+17.8 kV','+17.8 kV','+16.1 kV','+17.9 kV','+19.5 kV',...
-            '+20.5 kV','+20.5 kV','+21.9 kV','+21.9 kV','+21.9 kV',...
-            '+23.3 kV','+24.8 kV','+26.2 kV','+26.2 kV','+26.2 kV',...
-            '+26.2 kV','+27.6 kV','+27.6 kV','+29.1 kV','+14.7 kV'};
         
-        color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
+%         color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
         
-%         legend_names = {'-12 kV','-13 kV','-14 kV','-15 kV','-16 kV',...
-%             '-17 kV','-18 kV','-19 kV','-20 kV'};
+        legend_names = {'+12 kV','+13 kV','+14 kV','+15 kV','+16 kV',...
+            '+17 kV','+18 kV','+19 kV','+20 kV'};
+        
+        color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -312,7 +316,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     num_colors = num_series;
  
     %for the Ti13 12/2018 -- 5/2019 datasets
-     num_colors = 16;
+%      num_colors = 16;
     
     a_third = ceil(num_colors /3);
     
@@ -609,11 +613,12 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
      
     elseif input_style == 2
         
-        hold on;
-        
-        plot(xdata_1(this_set_indices(1,1):this_set_indices(end,2)),...
-                ydata_1(this_set_indices(1,1):this_set_indices(end,2)),...
-                '-k','LineWidth', 0.5);
+        % option for adding a solid black line to connect the data points.
+%         hold on;
+%         
+%         plot(xdata_1(this_set_indices(1,1):this_set_indices(end,2)),...
+%                 ydata_1(this_set_indices(1,1):this_set_indices(end,2)),...
+%                 '-k','LineWidth', 0.5);
         
         for i = 1:length(this_set_indices)
         

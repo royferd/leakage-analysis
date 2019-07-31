@@ -1,13 +1,13 @@
 % % create a folder to place all saved images in
-electrodes = 'Ti13';
+electrodes = 'Nb56';
 sim_dates = '12/13/2018--5/1/2019';
 
 analysis_file_patterns = {'*discharge-rate-pos*','*discharge-rate-neg*',...
     '*discharge-rate-zero*'};
 
-analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
+analysis_folder_name_parent = 'nb56-all-simulation-analysis';
 
-analysis_folder_name = '.';
+analysis_folder_name = '2019-07-11';
 
 current_time = datetime('now','Format','yyyy-MM-dd-HHmmss');
 
