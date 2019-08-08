@@ -643,7 +643,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             'FontSize',10,'BackgroundColor',[1 1 1]);
     end
     
-    if save_fig == 1
+    if save_fig >= 1
         
 %         fig = gcf;
 %         fig.PaperUnits = 'inches';
@@ -668,8 +668,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         save_file_path = fullfile(savepath,sprintf('%s.png',plotname));
         print (save_file_path,'-dpng');
         
-        save_file_path = fullfile(savepath,sprintf('%s.emf',plotname));
-        print (save_file_path,'-dmeta');
+        if save_fig == 2
+        
+            save_file_path = fullfile(savepath,sprintf('%s.emf',plotname));
+            print (save_file_path,'-dmeta');
+            
+        end
+        
     end
     
 end
