@@ -364,7 +364,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     fig = gcf;
     fig.PaperUnits = 'inches';
 %    fig.PaperPosition = [0 0 8 6];
-    fig.PaperPosition = [0 0 5.33 4];
+%     fig.PaperPosition = [0 0 5.33 4];
+    fig.PaperPosition = [0 0 5.33 2.5];
     
     markersize = 8.0;
     linewidth = 1.125;
@@ -486,7 +487,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
     
 
-    pbaspect([1.33 1 1])
+%     pbaspect([1.33 1 1])
     ax = gca; % current axes
     ax.FontSize = 8;
     ax.TickDir = 'out'; % make ticks point out
@@ -661,6 +662,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 % 
 %         end
 
+        disp(save_fig);
 
 %          axis([0 120 0 1000]);
         ax.Box = 'on';
