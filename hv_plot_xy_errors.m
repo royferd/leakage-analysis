@@ -1,5 +1,6 @@
-function f = hv_plot_xy_errors(plot_title,x_axis_title,y_axis_title,input_style,annote,legend_show,...
-    save_fig,savepath,plotname,...
+function f = hv_plot_xy_errors(plot_title,x_axis_title,y_axis_title,...
+    input_style,annote,legend_show,...
+    save_fig,savepath,plotname,bounds,...
     xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
 
 %{
@@ -367,7 +368,14 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %     fig.PaperPosition = [0 0 5.33 4];
     fig.PaperPosition = [0 0 5.33 2.5];
     
-    markersize = 8.0;
+    if length(bounds) == 4
+        
+        axis(bounds)
+        
+    end
+    
+%     markersize = 8.0;
+    markersize = 7.0;
     linewidth = 1.125;
 
 %%%    
@@ -487,7 +495,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
     
 
-%     pbaspect([1.33 1 1])
+%      pbaspect([1.33 1 1])
     ax = gca; % current axes
     ax.FontSize = 8;
     ax.TickDir = 'out'; % make ticks point out
@@ -497,6 +505,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %    ylabel(ylabel_string,'FontSize',16)
     xlabel(xlabel_string,'FontSize',10)
     ylabel(ylabel_string,'FontSize',10)
+    
     
     if legend_show == 1
                       
@@ -661,8 +670,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %             l.FontSize = 10;   
 % 
 %         end
-
-        disp(save_fig);
 
 %          axis([0 120 0 1000]);
         ax.Box = 'on';
