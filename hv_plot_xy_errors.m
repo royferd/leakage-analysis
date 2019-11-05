@@ -200,8 +200,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
 %         color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
         
-        legend_names = {'+12 kV','+13 kV','+14 kV','+15 kV','+16 kV',...
-            '+17 kV','+18 kV','+19 kV','+20 kV'};
+        legend_names = {'12 kV','13 kV','14 kV','15 kV','16 kV',...
+            '17 kV','18 kV','19 kV','20 kV'};
         
         color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
         
