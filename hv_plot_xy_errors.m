@@ -190,20 +190,21 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
              
         end
 
-% titanium electrode legend entries.        
-%         legend_names = {'+14.9 kV','+17.8 kV','+19.4 kV','+17.8','+0.7 kV','+9.8 kV',...
-%             '+17.8 kV','+17.8 kV','+16.1 kV','+17.9 kV','+19.5 kV',...
-%             '+20.5 kV','+20.5 kV','+21.9 kV','+21.9 kV','+21.9 kV',...
-%             '+23.3 kV','+24.8 kV','+26.2 kV','+26.2 kV','+26.2 kV',...
-%             '+26.2 kV','+27.6 kV','+27.6 kV','+29.1 kV','+14.7 kV'};
+% Ti13 legend entries and color code        
+        legend_names = {'14.9 kV','17.8 kV','19.4 kV','17.8','0.7 kV','9.8 kV',...
+            '17.8 kV','17.8 kV','16.1 kV','17.9 kV','19.5 kV',...
+            '20.5 kV','20.5 kV','21.9 kV','21.9 kV','21.9 kV',...
+            '23.3 kV','24.8 kV','26.2 kV','26.2 kV','26.2 kV',...
+            '+6.2 kV','27.6 kV','27.6 kV','29.1 kV','14.7 kV'};
         
+        color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
+
+% Nb56 legend entries and color code
+
+%         legend_names = {'12 kV','13 kV','14 kV','15 kV','16 kV',...
+%             '17 kV','18 kV','19 kV','20 kV'};
         
-%         color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
-        
-        legend_names = {'12 kV','13 kV','14 kV','15 kV','16 kV',...
-            '17 kV','18 kV','19 kV','20 kV'};
-        
-        color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
+%         color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -314,10 +315,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     % remove middle third of jet colors to get rid of the lighter blues and
     % yellows
     
-    num_colors = num_series;
+%    num_colors = num_series;
  
     %for the Ti13 12/2018 -- 5/2019 datasets
-%      num_colors = 16;
+      num_colors = 16;
     
     a_third = ceil(num_colors /3);
     
@@ -365,8 +366,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     fig = gcf;
     fig.PaperUnits = 'inches';
 %    fig.PaperPosition = [0 0 8 6];
-%     fig.PaperPosition = [0 0 5.33 4];
-    fig.PaperPosition = [0 0 5.33 2.5];
+
+
+%     fig.PaperPosition = [0 0 5.33 2.5]; % 2 x 2 grid
+    fig.PaperPosition = [0 0 5.33 3.50];
     
     if length(bounds) == 4
         
@@ -374,8 +377,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
     end
     
-%     markersize = 8.0;
-    markersize = 7.0;
+%     markersize = 7.0;
+    markersize = 5.0;
     linewidth = 1.125;
 
 %%%    
