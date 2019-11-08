@@ -1,7 +1,9 @@
 % % create a folder to place all saved images in
 
 % electrodes = 'Nb56';
-electrodes = 'Ti13';
+% electrodes = 'Ti13';
+electrodes = 'Nb78';
+
 sim_dates = '12/13/2018--5/1/2019';
 
 analysis_file_patterns = {'*discharge-rate-pos*','*discharge-rate-neg*',...
@@ -13,10 +15,12 @@ plot_polarity_name = {'+HV', '-HV', '0HV'};
 file_polarity_name = {'pos','neg','zero'};
 
 % analysis_folder_name_parent = 'nb56-all-simulation-analysis';
-analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
+% analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
+analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
 
 % analysis_folder_name = '2019-07-11'; % latest nb56 analysis
 analysis_folder_name = ''; % latest ti13 analysis
+
 
 
 
@@ -109,13 +113,22 @@ for i = 1:2
 %     discharge_size_cutoff_bounds = [0 35 -40 800];
 
 % Ti13 bounds
-    discharge_rate_sigma_bounds = [-5 120 -100 4500];
+%     discharge_rate_sigma_bounds = [-5 120 -100 4500];
+%     
+%     discharge_size_sigma_bounds = [-5 120 -25 700];
+%     
+%     discharge_rate_cutoff_bounds = [-5 120 -100 4500];
+%     
+%     discharge_size_cutoff_bounds = [-5 120 -50 2000];
     
-    discharge_size_sigma_bounds = [-5 120 -25 700];
+% Nb78 bounds
+    discharge_rate_sigma_bounds = [0 31 -0.25 10];
     
-    discharge_rate_cutoff_bounds = [-5 120 -100 4500];
+    discharge_size_sigma_bounds = [0 31 -0.5 14];
     
-    discharge_size_cutoff_bounds = [-5 120 -50 2000];
+    discharge_rate_cutoff_bounds = [0 31 -1 1];
+    
+    discharge_size_cutoff_bounds = [0 31 -1 1];    
     
     hv_plot_xy_errors(sprintf('%s 5\\sigma discharge rates (%s)',electrodes,string(plot_polarity_name(i))),...
         'simulation time (hr)','discharges  per  hour',...

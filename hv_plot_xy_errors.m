@@ -191,13 +191,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         end
 
 % Ti13 legend entries and color code        
-        legend_names = {'14.9 kV','17.8 kV','19.4 kV','17.8','0.7 kV','9.8 kV',...
-            '17.8 kV','17.8 kV','16.1 kV','17.9 kV','19.5 kV',...
-            '20.5 kV','20.5 kV','21.9 kV','21.9 kV','21.9 kV',...
-            '23.3 kV','24.8 kV','26.2 kV','26.2 kV','26.2 kV',...
-            '+6.2 kV','27.6 kV','27.6 kV','29.1 kV','14.7 kV'};
-        
-        color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
+%         legend_names = {'14.9 kV','17.8 kV','19.4 kV','17.8','0.7 kV','9.8 kV',...
+%             '17.8 kV','17.8 kV','16.1 kV','17.9 kV','19.5 kV',...
+%             '20.5 kV','20.5 kV','21.9 kV','21.9 kV','21.9 kV',...
+%             '23.3 kV','24.8 kV','26.2 kV','26.2 kV','26.2 kV',...
+%             '+6.2 kV','27.6 kV','27.6 kV','29.1 kV','14.7 kV'};
+%         
+%         color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
 
 % Nb56 legend entries and color code
 
@@ -205,6 +205,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %             '17 kV','18 kV','19 kV','20 kV'};
         
 %         color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
+
+% Nb78 legend entries and color code
+
+        legend_names = {'12 kV','13.0 kV','14.0 kV','14.0 kV','15 kV',...
+            '16 kV','17.0 kV','17.0 kV','17.0 kV','17.5 kV','18.0 kV'};
+        
+        color_code_by_voltage = [1 2 3 3 4 5 6 6 6 7 8];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -318,7 +325,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %    num_colors = num_series;
  
     %for the Ti13 12/2018 -- 5/2019 datasets
-      num_colors = 16;
+%       num_colors = 16;
+
+    % For Nb78
+    num_colors = 8;
     
     a_third = ceil(num_colors /3);
     
@@ -379,7 +389,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
 %     markersize = 7.0;
     markersize = 5.0;
-    linewidth = 1.125;
+%     linewidth = 1.125;
+    linewidth = 0.875;
 
 %%%    
     
@@ -489,7 +500,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
                 ydata_1(this_set_indices(i,1)),...
                 marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
                 'MarkerSize',markersize,...
-                'LineWidth', 1.0);
+                'LineWidth', linewidth);
+%                 'LineWidth', 1.0);
         end
             
     end
@@ -637,15 +649,55 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
             hold on;
             
-            errorbar(xdata_1(this_set_indices(i,1):this_set_indices(i,2)),...
-                ydata_1(this_set_indices(i,1):this_set_indices(i,2)),...
-                ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
-                ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
-                xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
-                xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+            xdata_temp = xdata_1(this_set_indices(i,1):this_set_indices(i,2));
+            
+            xdata_stdev_temp = xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2));
+            
+            ydata_temp = ydata_1(this_set_indices(i,1):this_set_indices(i,2));
+            
+            ydata_stdev_temp = ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2));
+            
+            
+            [zero_error] = find(ydata_stdev_temp == 0.0);
+           
+            [nonzero_error] = find(ydata_stdev_temp ~= 0.0);
+            
+%             errorbar(xdata_1(this_set_indices(i,1):this_set_indices(i,2)),...
+%                 ydata_1(this_set_indices(i,1):this_set_indices(i,2)),...
+%                 ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+%                 ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+%                 xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+%                 xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
+%                 marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
+%                 'MarkerSize', markersize,...
+%                 'LineWidth', linewidth);
+            
+            if length(nonzero_error) > 0
+                
+                errorbar(xdata_temp(nonzero_error),...
+                ydata_temp(nonzero_error),...
+                ydata_stdev_temp(nonzero_error),...
+                ydata_stdev_temp(nonzero_error),...
+                xdata_stdev_temp(nonzero_error),...
+                xdata_stdev_temp(nonzero_error),...
                 marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
                 'MarkerSize', markersize,...
                 'LineWidth', linewidth);
+            
+            end
+            
+            if length(zero_error) > 0
+                
+                plot(xdata_temp(zero_error),...
+                ydata_temp(zero_error),...
+                marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
+                'MarkerSize', markersize,...
+                'LineWidth', linewidth);
+            
+            end
+            
+            
+            
         end
         
     end
