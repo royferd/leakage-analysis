@@ -322,13 +322,17 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     % remove middle third of jet colors to get rid of the lighter blues and
     % yellows
     
-%    num_colors = num_series;
+    if input_style == 1
+        
+        num_colors = num_series;
  
-    %for the Ti13 12/2018 -- 5/2019 datasets
-%       num_colors = 16;
+    elseif input_style == 2
+        %for the Ti13 12/2018 -- 5/2019 datasets
+    %       num_colors = 16;
 
-    % For Nb78
-    num_colors = 8;
+        % For Nb78
+        num_colors = 8;
+    end
     
     a_third = ceil(num_colors /3);
     
@@ -340,29 +344,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
     jet_subset(1:middle_ish,:) = jet_set(1:middle_ish,:);
     
-    jet_subset(middle_ish+1:end,:) = jet_set(middle_ish+a_third+1:end,:);
-        
-    
-
-
-    %titles and shit
-
-    approximate_time_points = 4800;
-    x_label = 'x label';
-    y_label = 'y label';
-    xtick_numbers = [ 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75];
-    ytick_numbers = [-125 -100 -75 -50 -25 0 25 50 75 100 125];
-    
-
-
-%     ymin_right = -30;
-%     ymax_right = 30;
-%     plot_bounds_right = [xmin xmax ymin_right ymax_right];
-% 
-%     % y = 0 line
-%     zero_line = zeros(2,2);
-%     zero_line(1,1) = xmin;
-%     zero_line(2,1) = xmax;
+    jet_subset(middle_ish+1:end,:) = jet_set(middle_ish+a_third+1:end,:);        
 
 
 %%%%%%%%%%%%%%%%%%%% psvoltage v. pscurrent %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
