@@ -1,6 +1,6 @@
 % function RaEDM_leakage_analysis(datafile,power_supply)
 
-datafile = '2019-11-26-171435-hv-1.txt'; power_supply = 4;
+datafile = '2019-12-04-171229-hv-1.txt'; power_supply = 4;
 
 % histogram binning settings
 avg_binwidth = 5.0; % pA
