@@ -1,5 +1,5 @@
 function f = hv_plot_xy_errors(plot_title,x_axis_title,y_axis_title,...
-    input_style,annote,legend_show,...
+    input_style,annote,legend_show,legend_names,...
     save_fig,savepath,plotname,bounds,...
     xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
 
@@ -28,7 +28,15 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 % Determine how many datasets to plot. 
     num_total_args = nargin;
     num_var_args = length(varargin);
-    legend_names = {'plot 1'};
+    
+    generic_names = 0;
+    
+    if isempty(legend_names)
+        
+        generic_names = 1;
+        legend_names = {'plot 1'};
+        
+    end
 
 %    disp('Starting hv_plot_xy_errors');
 
@@ -52,7 +60,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_2 = varargin{3};
             ydata_stdev_2 = zeros(length(ydata_2));
             overplot = 1;
-            legend_names(end+1) = {'plot 2'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 2'};
+            end
 
         elseif num_var_args == 4
     %        disp('User provided two datasets to plot.');
@@ -62,7 +72,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_2 = varargin{3};
             ydata_stdev_2 = varargin{4};
             overplot = 1;
-            legend_names(end+1) = {'plot 2'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 2'};
+            end
 
         elseif num_var_args == 7
     %        disp('User provided three datasets to plot.');
@@ -76,8 +88,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_3 = varargin{7};
             ydata_stdev_3 = zeros(length(ydata_3));
             overplot = 2;
-            legend_names(end+1) = {'plot 2'};
-            legend_names(end+1) = {'plot 3'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 2'};
+                legend_names(end+1) = {'plot 3'};
+            end
 
         elseif num_var_args == 8
     %        disp('User provided three datasets to plot.');
@@ -91,8 +105,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_3 = varargin{7};
             ydata_stdev_3 = varargin{8};
             overplot = 2;
-            legend_names(end+1) = {'plot 2'};
-            legend_names(end+1) = {'plot 3'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 2'};
+                legend_names(end+1) = {'plot 3'};
+            end
 
         end
 
@@ -112,9 +128,11 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_4 = varargin{11};
             ydata_stdev_4 = varargin{12};
             overplot = 3;
-            legend_names(end+1) = {'plot 2'};
-            legend_names(end+1) = {'plot 3'};
-            legend_names(end+1) = {'plot 4'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 2'};
+                legend_names(end+1) = {'plot 3'};
+                legend_names(end+1) = {'plot 4'};
+            end
 
         end
 
@@ -126,7 +144,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_5 = varargin{15};
             ydata_stdev_5 = varargin{16};
             overplot = 4;
-            legend_names(end+1) = {'plot 5'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 5'};
+            end
 
         end
 
@@ -138,7 +158,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_6 = varargin{19};
             ydata_stdev_6 = varargin{20};
             overplot = 5;
-            legend_names(end+1) = {'plot 6'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 6'};
+            end
 
         end
 
@@ -150,7 +172,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_7 = varargin{23};
             ydata_stdev_7 = varargin{24};
             overplot = 6;
-            legend_names(end+1) = {'plot 7'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 7'};
+            end
 
         end
 
@@ -162,7 +186,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_8 = varargin{27};
             ydata_stdev_8 = varargin{28};
             overplot = 7;
-            legend_names(end+1) = {'plot 8'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 8'};
+            end
 
         end
 
@@ -174,7 +200,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_9 = varargin{31};
             ydata_stdev_9 = varargin{32};
             overplot = 8;
-            legend_names(end+1) = {'plot 9'};
+            if generic_names == 1
+                legend_names(end+1) = {'plot 9'};
+            end
 
         end
     
@@ -183,11 +211,15 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         this_set_indices = varargin{1};
         
         num_series = length(this_set_indices);
-         
-        for i = 2:num_series
+        
+        if generic_names == 1
             
-            legend_names(end+1) = {sprintf('plot %d',i)};
-             
+            for i = 2:num_series
+
+                legend_names(end+1) = {sprintf('plot %d',i)};
+
+            end
+            
         end
 
 % Ti13 legend entries and color code        
@@ -644,15 +676,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
            
             [nonzero_error] = find(ydata_stdev_temp ~= 0.0);
             
-%             errorbar(xdata_1(this_set_indices(i,1):this_set_indices(i,2)),...
-%                 ydata_1(this_set_indices(i,1):this_set_indices(i,2)),...
-%                 ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
-%                 ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
-%                 xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
-%                 xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)),...
-%                 marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
-%                 'MarkerSize', markersize,...
-%                 'LineWidth', linewidth);
             
             if length(nonzero_error) > 0
                 
