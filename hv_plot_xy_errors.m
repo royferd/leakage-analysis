@@ -29,14 +29,14 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     num_total_args = nargin;
     num_var_args = length(varargin);
     
-    generic_names = 0;
-    
-    if isempty(legend_names)
-        
-        generic_names = 1;
-        legend_names = {'plot 1'};
-        
-    end
+%     generic_names = 0;
+%     
+%     if isempty(legend_names)
+%         
+%         generic_names = 1;
+%         legend_names = {'plot 1'};
+%         
+%     end
 
 %    disp('Starting hv_plot_xy_errors');
 
@@ -60,9 +60,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_2 = varargin{3};
             ydata_stdev_2 = zeros(length(ydata_2));
             overplot = 1;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 2'};
-            end
 
         elseif num_var_args == 4
     %        disp('User provided two datasets to plot.');
@@ -72,9 +69,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_2 = varargin{3};
             ydata_stdev_2 = varargin{4};
             overplot = 1;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 2'};
-            end
 
         elseif num_var_args == 7
     %        disp('User provided three datasets to plot.');
@@ -88,10 +82,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_3 = varargin{7};
             ydata_stdev_3 = zeros(length(ydata_3));
             overplot = 2;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 2'};
-                legend_names(end+1) = {'plot 3'};
-            end
 
         elseif num_var_args == 8
     %        disp('User provided three datasets to plot.');
@@ -105,10 +95,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_3 = varargin{7};
             ydata_stdev_3 = varargin{8};
             overplot = 2;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 2'};
-                legend_names(end+1) = {'plot 3'};
-            end
 
         end
 
@@ -128,11 +114,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_4 = varargin{11};
             ydata_stdev_4 = varargin{12};
             overplot = 3;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 2'};
-                legend_names(end+1) = {'plot 3'};
-                legend_names(end+1) = {'plot 4'};
-            end
 
         end
 
@@ -144,9 +125,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_5 = varargin{15};
             ydata_stdev_5 = varargin{16};
             overplot = 4;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 5'};
-            end
 
         end
 
@@ -158,9 +136,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_6 = varargin{19};
             ydata_stdev_6 = varargin{20};
             overplot = 5;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 6'};
-            end
 
         end
 
@@ -172,9 +147,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_7 = varargin{23};
             ydata_stdev_7 = varargin{24};
             overplot = 6;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 7'};
-            end
 
         end
 
@@ -186,9 +158,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_8 = varargin{27};
             ydata_stdev_8 = varargin{28};
             overplot = 7;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 8'};
-            end
 
         end
 
@@ -200,9 +169,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             ydata_9 = varargin{31};
             ydata_stdev_9 = varargin{32};
             overplot = 8;
-            if generic_names == 1
-                legend_names(end+1) = {'plot 9'};
-            end
 
         end
     
@@ -212,15 +178,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
         num_series = length(this_set_indices);
         
-        if generic_names == 1
-            
-            for i = 2:num_series
-
-                legend_names(end+1) = {sprintf('plot %d',i)};
-
-            end
-            
-        end
+        
 
 % Ti13 legend entries and color code        
 %         legend_names = {'14.9 kV','17.8 kV','19.4 kV','17.8','0.7 kV','9.8 kV',...
@@ -257,19 +215,33 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         yrange_padded = 20*ceil((yrange)*1.2/20);
         
         ymax = yrange_padded;
+                
+    end % end input_style == 1
+
+
+                % marker pattern
+    marker_pattern_one_sequence = ['o','x','^','s','>'];
+    marker_pattern = marker_pattern_one_sequence;
+
+    for j = 1:num_series
+
+        marker_pattern = [marker_pattern marker_pattern_one_sequence];
+
+    end
+    
+    if isempty(legend_names)
         
-            % marker pattern
-        marker_pattern_one_sequence = ['o','x','^','s','>'];
-        marker_pattern = marker_pattern_one_sequence;
+        legend_names = {'data 1'};
+            
+        for i = 2:num_series
 
-        for j = 1:ceil(length(this_set_indices)/length(marker_pattern))
-
-            marker_pattern = [marker_pattern marker_pattern_one_sequence];
+            legend_names(end+1) = {sprintf('data %d',i)};
 
         end
-        
-    end
 
+    end
+    
+    
     annote_string = annote;
     
     xlabel_string = x_axis_title;
@@ -352,7 +324,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     cmap = colormap(join_list_rgb);
     
     % remove middle third of jet colors to get rid of the lighter blues and
-    % yellows
+    % yellows, which don't show up well.
     
     if input_style == 1
         
@@ -376,14 +348,26 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
     jet_subset(1:middle_ish,:) = jet_set(1:middle_ish,:);
     
-    jet_subset(middle_ish+1:end,:) = jet_set(middle_ish+a_third+1:end,:);        
+    jet_subset(middle_ish+1:end,:) = jet_set(middle_ish+a_third+1:end,:);
+    
+    red_blue_green_hsv = zeros(3,3);
+    
+    red_blue_green_hsv(1,:) = [0 1 1];
+    red_blue_green_hsv(2,:) = [0.667 1 1];
+    red_blue_green_hsv(3,:) = [0.333 1 1];
+    red_blue_green_rgb = hsv2rgb(red_blue_green_hsv);
+    
+    if input_style == 1 && num_series <= 3
+        
+        color_palette = red_blue_green_rgb;
+        
+    else 
+        
+        color_palette = jet_subset;
+        
+    end
+    
 
-
-%%%%%%%%%%%%%%%%%%%% psvoltage v. pscurrent %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% This plots up to three full error bar (x and y errors) datasets, assuming 
-% the error is symmetric for x and y. Error bars for x (or y, for that 
-% matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
     figure1 = figure('Units','normalized');
     
@@ -413,97 +397,18 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
     if input_style == 1
 
-        if num_series <= 3
-
-        plot(xdata_1(1),ydata_1(1),...
-            'o','Color', 'red','MarkerSize', markersize, 'LineWidth', linewidth);
-
-        else
-
-            plot(xdata_1(1),ydata_1(1),...
-            'o','Color', jet_subset(1,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
+        for i = 1:overplot+1
+            
+            hold on;
+            
+            var_xdata = eval(sprintf('xdata_%i',i));
+            var_ydata = eval(sprintf('ydata_%i',i));
+            
+            plot(var_xdata(1),var_ydata(1),...
+            marker_pattern(i),'Color', color_palette(i,:),...
+            'MarkerSize', markersize, 'LineWidth', linewidth);
+        
         end
-
-
-         if overplot > 0
-             hold on;
-
-             if num_series <= 3
-
-                 plot(xdata_2(1),ydata_2(1),...
-                     'x','Color', 'blue','MarkerSize', markersize, 'LineWidth', linewidth);
-
-             else             
-
-                 plot(xdata_2(1),ydata_2(1),...
-                     'x','Color', jet_subset(2,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
-             end
-
-         end
-
-         if overplot > 1
-
-             hold on;
-
-             if num_series <= 3
-
-                 plot(xdata_3(1),ydata_3(1),...
-                     '^','Color', 'green','MarkerSize', markersize, 'LineWidth', linewidth);
-
-             else
-
-                 plot(xdata_3(1),ydata_3(1),...
-                '^','Color', jet_subset(3,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
-             end
-
-         end
-
-         if overplot > 2
-
-             hold on;
-            plot(xdata_4(1),ydata_4(1),...
-                's','Color', jet_subset(4,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 3
-
-             hold on;
-            plot(xdata_5(1),ydata_5(1),...
-                '>','Color', jet_subset(5,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 4
-
-             hold on;
-            plot(xdata_6(1),ydata_6(1),...
-                'x','Color', jet_subset(6,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 5
-
-             hold on;
-            plot(xdata_7(1),ydata_7(1),...
-                '^','Color', jet_subset(7,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 6
-
-             hold on;
-            plot(xdata_8(1),ydata_8(1),...
-                's','Color', jet_subset(8,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
-         end
-
-         if overplot > 7
-
-             hold on;
-            plot(xdata_9(1),ydata_9(1),...
-                '>','Color', jet_subset(9,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
-         end
      
     elseif input_style == 2
         
@@ -512,7 +417,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             hold on;
             plot(xdata_1(this_set_indices(i,1)),...
                 ydata_1(this_set_indices(i,1)),...
-                marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
+                marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
                 'MarkerSize',markersize,...
                 'LineWidth', linewidth);
 %                 'LineWidth', 1.0);
@@ -551,104 +456,39 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     % this section actually plots the data
     
     if input_style == 1
+
+        for i = 1:overplot+1
+            
+            hold on;
+            
+            var_xdata = eval(sprintf('xdata_%i',i));
+            var_xdata_stdev = eval(sprintf('xdata_stdev_%i',i));
+            var_ydata = eval(sprintf('ydata_%i',i));
+            var_ydata_stdev = eval(sprintf('ydata_stdev_%i',i));
         
-        if num_series <= 3
+            [zero_error] = find(var_ydata_stdev == 0.0);
 
-            errorbar(xdata_1,ydata_1,...
-                ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-                'o','Color', 'red','MarkerSize', markersize, 'LineWidth', linewidth);
+            [nonzero_error] = find(var_ydata_stdev ~= 0.0);
 
-        else
+            if length(nonzero_error) > 0
 
-            errorbar(xdata_1,ydata_1,...
-                ydata_stdev_1,ydata_stdev_1,xdata_stdev_1,xdata_stdev_1,...
-                'o','Color', jet_subset(1,:),'MarkerSize', markersize, 'LineWidth', linewidth);
+                errorbar(var_xdata(nonzero_error),var_ydata(nonzero_error),...
+                    var_ydata_stdev(nonzero_error),var_ydata_stdev(nonzero_error),...
+                    var_xdata_stdev(nonzero_error),var_xdata_stdev(nonzero_error),...
+                    marker_pattern(i),'Color', color_palette(i,:),...
+                    'MarkerSize', markersize, 'LineWidth', linewidth);
 
+            end
+
+            if length(zero_error) > 0
+
+                plot(var_xdata(zero_error),var_ydata(zero_error),...
+                    marker_pattern(i),'Color', color_palette(i,:),...
+                    'MarkerSize', markersize, 'LineWidth', linewidth);
+
+            end
+         
         end
-
-
-         if overplot > 0
-
-             hold on;
-
-             if num_series <= 3
-
-                 errorbar(xdata_2,ydata_2,...
-                     ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-                     'x','Color','blue' ,'MarkerSize', markersize, 'LineWidth', linewidth);
-
-             else
-
-                 errorbar(xdata_2,ydata_2,...
-                     ydata_stdev_2,ydata_stdev_2,xdata_stdev_2,xdata_stdev_2,...
-                     'x','Color',jet_subset(2,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
-             end
-
-         end
-
-         if overplot > 1
-
-             hold on;
-
-             if num_series <= 3
-
-                 errorbar(xdata_3,ydata_3,...
-                     ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-                     '^','Color', 'green','MarkerSize', markersize, 'LineWidth', linewidth);
-
-             else
-
-                 errorbar(xdata_3,ydata_3,...
-                     ydata_stdev_3,ydata_stdev_3,xdata_stdev_3,xdata_stdev_3,...
-                     '^','Color', jet_subset(3,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
-             end
-
-         end
-
-         if overplot > 2
-             hold on;
-            errorbar(xdata_4,ydata_4,...
-                ydata_stdev_4,ydata_stdev_4,xdata_stdev_4,xdata_stdev_4,...
-                 's','Color', jet_subset(4,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 3
-             hold on;
-            errorbar(xdata_5,ydata_5,...
-                ydata_stdev_5,ydata_stdev_5,xdata_stdev_5,xdata_stdev_5,...
-                 '>','Color', jet_subset(5,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 4
-             hold on;
-            errorbar(xdata_6,ydata_6,...
-                ydata_stdev_6,ydata_stdev_6,xdata_stdev_6,xdata_stdev_6,...
-                 'x','Color', jet_subset(6,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 5
-             hold on;
-            errorbar(xdata_7,ydata_7,...
-                ydata_stdev_7,ydata_stdev_7,xdata_stdev_7,xdata_stdev_7,...
-                 '^','Color', jet_subset(7,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 6
-             hold on;
-            errorbar(xdata_8,ydata_8,...
-                ydata_stdev_8,ydata_stdev_8,xdata_stdev_8,xdata_stdev_8,...
-                 's','Color', jet_subset(8,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-         end
-
-         if overplot > 7
-             hold on;
-            errorbar(xdata_9,ydata_9,...
-                ydata_stdev_9,ydata_stdev_9,xdata_stdev_9,xdata_stdev_9,...
-                '>','Color', jet_subset(9,:),'MarkerSize', markersize, 'LineWidth', linewidth);
-
-         end
      
     elseif input_style == 2
         
@@ -685,7 +525,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
                 ydata_stdev_temp(nonzero_error),...
                 xdata_stdev_temp(nonzero_error),...
                 xdata_stdev_temp(nonzero_error),...
-                marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
+                marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
                 'MarkerSize', markersize,...
                 'LineWidth', linewidth);
             
@@ -695,7 +535,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
                 
                 plot(xdata_temp(zero_error),...
                 ydata_temp(zero_error),...
-                marker_pattern(i),'Color', jet_subset(color_code_by_voltage(i),:),...
+                marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
                 'MarkerSize', markersize,...
                 'LineWidth', linewidth);
             
