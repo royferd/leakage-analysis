@@ -2,9 +2,10 @@
 
 % electrodes = 'Nb56';
 % electrodes = 'Ti13';
-electrodes = 'Nb78';
+% electrodes = 'Nb78';
+electrodes = 'Nb23';
 
-sim_dates = '12/13/2018--5/1/2019';
+% sim_dates = '12/13/2018--5/1/2019';
 
 analysis_file_patterns = {'*discharge-rate-pos*','*discharge-rate-neg*',...
     '*discharge-rate-zero*'};
@@ -16,12 +17,47 @@ file_polarity_name = {'pos','neg','zero'};
 
 % analysis_folder_name_parent = 'nb56-all-simulation-analysis';
 % analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
-analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
+% analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
+analysis_folder_name_parent = '2020-01-27-nb23-analysis-files';
 
 % analysis_folder_name = '2019-07-11'; % latest nb56 analysis
 analysis_folder_name = ''; % latest ti13 analysis
 
+% Nb56 bounds    
+%     discharge_rate_sigma_bounds = [0 35 0 500];
+%     
+%     discharge_size_sigma_bounds = [0 35 0 100];
+%     
+%     discharge_rate_cutoff_bounds = [0 35 -3 70];
+%     
+%     discharge_size_cutoff_bounds = [0 35 -40 800];
 
+% Ti13 bounds
+%     discharge_rate_sigma_bounds = [-5 120 -100 4500];
+%     
+%     discharge_size_sigma_bounds = [-5 120 -25 700];
+%     
+%     discharge_rate_cutoff_bounds = [-5 120 -100 4500];
+%     
+%     discharge_size_cutoff_bounds = [-5 120 -50 2000];
+    
+% Nb78 bounds
+%     discharge_rate_sigma_bounds = [0 31 -0.25 10];
+%     
+%     discharge_size_sigma_bounds = [0 31 -0.5 14];
+%     
+%     discharge_rate_cutoff_bounds = [0 31 -1 1];
+%     
+%     discharge_size_cutoff_bounds = [0 31 -1 1];  
+    
+% Nb23 bounds
+    discharge_rate_sigma_bounds = [-1 72 0 600];
+    
+    discharge_size_sigma_bounds = [-1 72 0 1600];
+    
+    discharge_rate_cutoff_bounds = [-1 72 0 300];
+    
+    discharge_size_cutoff_bounds = [-1 72 0 2000];  
 
 
 current_time = datetime('now','Format','yyyy-MM-dd-HHmmss');
@@ -103,54 +139,29 @@ for i = 1:2
     
     cd(current_directory);
 
-% Nb56 bounds    
-%     discharge_rate_sigma_bounds = [0 35 0 500];
-%     
-%     discharge_size_sigma_bounds = [0 35 0 100];
-%     
-%     discharge_rate_cutoff_bounds = [0 35 -3 70];
-%     
-%     discharge_size_cutoff_bounds = [0 35 -40 800];
 
-% Ti13 bounds
-%     discharge_rate_sigma_bounds = [-5 120 -100 4500];
-%     
-%     discharge_size_sigma_bounds = [-5 120 -25 700];
-%     
-%     discharge_rate_cutoff_bounds = [-5 120 -100 4500];
-%     
-%     discharge_size_cutoff_bounds = [-5 120 -50 2000];
-    
-% Nb78 bounds
-    discharge_rate_sigma_bounds = [0 31 -0.25 10];
-    
-    discharge_size_sigma_bounds = [0 31 -0.5 14];
-    
-    discharge_rate_cutoff_bounds = [0 31 -1 1];
-    
-    discharge_size_cutoff_bounds = [0 31 -1 1];    
     
     hv_plot_xy_errors(sprintf('%s 5\\sigma discharge rates (%s)',electrodes,string(plot_polarity_name(i))),...
         'simulation time (hr)','discharges  per  hour',...
-        2,'',1,2,fullpath,sprintf('%s-discharge-rates-sigma-%s',electrodes,string(file_polarity_name(i))),...
+        2,'',1,2,2,fullpath,sprintf('%s-discharge-rates-sigma-%s',electrodes,string(file_polarity_name(i))),...
         discharge_rate_sigma_bounds,1:number_rows,zeros(length(1:number_rows),1),...
         dph_sigma(:,1),dph_sigma(:,2),this_set_indices);
     
     hv_plot_xy_errors(sprintf('%s 5\\sigma discharge sizes (%s)',electrodes,string(plot_polarity_name(i))),...
         'simulation time (hr)','median discharge size (pA)',...
-        2,'',1,2,fullpath,sprintf('%s-median-discharges-sigma-%s',electrodes,string(file_polarity_name(i))),...
+        2,'',1,2,2,fullpath,sprintf('%s-median-discharges-sigma-%s',electrodes,string(file_polarity_name(i))),...
         discharge_size_sigma_bounds,1:number_rows,zeros(length(1:number_rows),1),...
         median_sigma,zeros(length(median_sigma),1),this_set_indices);
     
     hv_plot_xy_errors(sprintf('%s 100 pA cutoff discharge rates (%s)',electrodes,string(plot_polarity_name(i))),...
         'simulation time (hr)','discharges  per  hour',...
-        2,'',1,2,fullpath,sprintf('%s-discharge-rates-cutoff-%s',electrodes,string(file_polarity_name(i))),...
+        2,'',1,2,2,fullpath,sprintf('%s-discharge-rates-cutoff-%s',electrodes,string(file_polarity_name(i))),...
         discharge_rate_cutoff_bounds,1:number_rows,zeros(length(1:number_rows),1),...
         dph_cutoff(:,1),dph_cutoff(:,2),this_set_indices);
     
     hv_plot_xy_errors(sprintf('%s 100 pA cutoff discharge sizes (%s)',electrodes,string(plot_polarity_name(i))),...
         'simulation time (hr)','median discharge size (pA)',...
-        2,'',1,2,fullpath,sprintf('%s-median-discharges-cutoff-%s',electrodes,string(file_polarity_name(i))),...
+        2,'',1,2,2,fullpath,sprintf('%s-median-discharges-cutoff-%s',electrodes,string(file_polarity_name(i))),...
         discharge_size_cutoff_bounds,1:number_rows,zeros(length(1:number_rows),1),...
         median_cutoff,zeros(length(median_cutoff),1),this_set_indices);
 

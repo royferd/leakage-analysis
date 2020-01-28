@@ -198,10 +198,18 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 % Nb78 legend entries and color code
 
-        legend_names = {'12 kV','13.0 kV','14.0 kV','14.0 kV','15 kV',...
-            '16 kV','17.0 kV','17.0 kV','17.0 kV','17.5 kV','18.0 kV'};
+%         legend_names = {'12 kV','13.0 kV','14.0 kV','14.0 kV','15 kV',...
+%             '16 kV','17.0 kV','17.0 kV','17.0 kV','17.5 kV','18.0 kV'};
+%         
+%         color_code_by_voltage = [1 2 3 3 4 5 6 6 6 7 8];
         
-        color_code_by_voltage = [1 2 3 3 4 5 6 6 6 7 8];
+% Nb23 legend entries and color code
+
+        legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
+            '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
+            '19 kV','19 kV'};
+        
+        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -335,7 +343,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     %       num_colors = 16;
 
         % For Nb78
-        num_colors = 8;
+%         num_colors = 8;
+        
+        % For Nb23
+        num_colors = 5;
     end
     
     a_third = ceil(num_colors /3);
