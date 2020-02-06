@@ -207,9 +207,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
-            '19 kV','19 kV'};
+            '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV'};
         
-        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5];
+        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -346,7 +346,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         num_colors = 8;
         
         % For Nb23
-        num_colors = 5;
+        %num_colors = 5;
+        
+        num_colors = max(color_code_by_voltage);
     end
     
     a_third = ceil(num_colors /3);
