@@ -204,12 +204,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         color_code_by_voltage = [1 2 3 3 4 5 6 6 6 7 8];
         
 % Nb23 legend entries and color code
-
+        
+        voltages = [12.0 13.0 15.0 17.0 19.0 20.0];
         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
-            '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV'};
+            '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
         
-        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6];
+        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -339,14 +340,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         num_colors = num_series;
  
     elseif input_style == 2
-        %for the Ti13 12/2018 -- 5/2019 datasets
-    %       num_colors = 16;
-
-        % For Nb78
-%         num_colors = 8;
-        
-        % For Nb23
-        %num_colors = 5;
         
         num_colors = max(color_code_by_voltage);
     end
@@ -398,17 +391,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
     end
     
-%     markersize = 7.0;
-    markersize = 5.0;
-%     linewidth = 1.125;
-    linewidth = 0.875;
-
-%%%    
-    
     % this sequence is only for generating the legend icons without the
     % error bars.
     
     if input_style == 1
+        
+        markersize = 5.0;
+        linewidth = 0.875;
 
         for i = 1:overplot+1
             
@@ -425,15 +414,24 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
      
     elseif input_style == 2
         
+        markersize = 2.0;
+%         linewidth = 1.125;
+        linewidth = 0.5;
+        
         for i = 1:length(this_set_indices)
         
             hold on;
+%             plot(xdata_1(this_set_indices(i,1)),...
+%                 ydata_1(this_set_indices(i,1)),...
+%                 marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
+%                 'MarkerSize',markersize,...
+%                 'LineWidth', linewidth);
+            
             plot(xdata_1(this_set_indices(i,1)),...
                 ydata_1(this_set_indices(i,1)),...
-                marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
-                'MarkerSize',markersize,...
+                '-','Color', color_palette(color_code_by_voltage(i),:),...
                 'LineWidth', linewidth);
-%                 'LineWidth', 1.0);
+            
         end
             
     end
@@ -455,14 +453,36 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
     
     if legend_show == 1
+        
+        if input_style == 1
                       
-        l = legend('show'); 
-%         l.String = legend_string; 
-        l.String = legend_names; 
-%        l.FontSize = 16;
-%        l.FontSize = 12;
-        l.FontSize = 7;
-        l.Location = 'northeast outside';    
+            l = legend('show'); 
+
+            l.String = legend_names; 
+
+            l.FontSize = 7;
+            l.Location = 'northeast outside';  
+            
+        else if input_style == 2
+        
+            colormap(cmap);
+            colormap(color_palette);
+            c = colorbar
+            c.Ticks = linspace(0.5/color_code_by_voltage(end),...
+                (color_code_by_voltage(end)-0.5)/(color_code_by_voltage(end)),...
+                color_code_by_voltage(end));
+
+            colorbar_ticklabel_string = cell(1,color_code_by_voltage(end));
+
+            for i = 1:color_code_by_voltage(end)
+
+                colorbar_ticklabel_string{i} = sprintf('%.1f kV',voltages(i));
+
+            end
+            
+            c.TickLabels = colorbar_ticklabel_string;
+            
+        end
 
     end
     
@@ -512,45 +532,88 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %                 ydata_1(this_set_indices(1,1):this_set_indices(end,2)),...
 %                 '-k','LineWidth', 0.5);
         
+        last_set_xdata_temp = [];
+        
+        last_set_xdata_stdev_temp = [];
+        
+        last_set_ydata_temp = [];
+        
+        last_set_ydata_stdev_temp = [];
+
         for i = 1:length(this_set_indices)
+            
+%         for i = 1:1
         
             hold on;
             
-            xdata_temp = xdata_1(this_set_indices(i,1):this_set_indices(i,2));
+            xdata_temp = transpose([last_set_xdata_temp xdata_1(this_set_indices(i,1):this_set_indices(i,2))]);
             
-            xdata_stdev_temp = xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2));
+            xdata_stdev_temp = transpose([last_set_xdata_stdev_temp xdata_stdev_1(this_set_indices(i,1):this_set_indices(i,2))]);
             
-            ydata_temp = ydata_1(this_set_indices(i,1):this_set_indices(i,2));
+            ydata_temp = transpose([last_set_ydata_temp transpose(ydata_1(this_set_indices(i,1):this_set_indices(i,2)))]);
             
-            ydata_stdev_temp = ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2));
-            
-            
+            ydata_stdev_temp = transpose([last_set_ydata_stdev_temp transpose(ydata_stdev_1(this_set_indices(i,1):this_set_indices(i,2)))]);
+                        
             [zero_error] = find(ydata_stdev_temp == 0.0);
            
             [nonzero_error] = find(ydata_stdev_temp ~= 0.0);
             
             
+            % need this to connect the lines of multiple series on the
+            % plot!
+            last_set_xdata_temp = xdata_temp(end);
+            
+            last_set_xdata_stdev_temp = xdata_stdev_temp(end); 
+            
+            last_set_ydata_temp = ydata_temp(end);
+            
+            last_set_ydata_stdev_temp = ydata_stdev_temp(end);
+            
+            
             if length(nonzero_error) > 0
+
                 
-                errorbar(xdata_temp(nonzero_error),...
-                ydata_temp(nonzero_error),...
-                ydata_stdev_temp(nonzero_error),...
-                ydata_stdev_temp(nonzero_error),...
-                xdata_stdev_temp(nonzero_error),...
-                xdata_stdev_temp(nonzero_error),...
-                marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
-                'MarkerSize', markersize,...
-                'LineWidth', linewidth);
+%                 errorbar(xdata_temp(nonzero_error),...
+%                 ydata_temp(nonzero_error),...
+%                 ydata_stdev_temp(nonzero_error),...
+%                 ydata_stdev_temp(nonzero_error),...
+%                 xdata_stdev_temp(nonzero_error),...
+%                 xdata_stdev_temp(nonzero_error),...
+%                 marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
+%                 'MarkerSize', markersize,...
+%                 'LineWidth', linewidth);
+            
+%                 errorbar(xdata_temp(nonzero_error),...
+%                 ydata_temp(nonzero_error),...
+%                 ydata_stdev_temp(nonzero_error),...
+%                 ydata_stdev_temp(nonzero_error),...
+%                 xdata_stdev_temp(nonzero_error),...
+%                 xdata_stdev_temp(nonzero_error),...
+%                 'o-','MarkerSize', markersize,...
+%                 'MarkerFaceColor',color_palette(color_code_by_voltage(i),:),...
+%                 'Color', color_palette(color_code_by_voltage(i),:),...
+%                 'LineWidth', linewidth);
+            
+                fill([xdata_temp(nonzero_error);flipud(xdata_temp(nonzero_error))],...
+                    [ydata_temp(nonzero_error)-ydata_stdev_temp(nonzero_error);flipud(ydata_temp(nonzero_error)+ydata_stdev_temp(nonzero_error))],...
+                    color_palette(color_code_by_voltage(i),:),'linestyle','-','EdgeColor', color_palette(color_code_by_voltage(i),:),...
+                    'LineWidth', linewidth);
+               
+                
+                
             
             end
             
+            
+            
             if length(zero_error) > 0
                 
+%                 marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
                 plot(xdata_temp(zero_error),...
                 ydata_temp(zero_error),...
-                marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
+                'o-','Color', color_palette(color_code_by_voltage(i),:),...
                 'MarkerSize', markersize,...
-                'LineWidth', linewidth);
+                'LineWidth', 2*linewidth);
             
             end
             
