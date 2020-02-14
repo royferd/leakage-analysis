@@ -205,12 +205,12 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
 % Nb23 legend entries and color code
         
-        voltages = [12.0 13.0 15.0 17.0 19.0 20.0];
+        voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
             '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
         
-        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6];
+        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -442,7 +442,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 %      pbaspect([1.33 1 1])
     ax = gca; % current axes
-    ax.FontSize = 8;
+    ax.FontSize = 9;
     ax.TickDir = 'out'; % make ticks point out
     %title(title_string,'FontSize',20)
     title(title_string,'FontSize',12)
@@ -450,6 +450,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %    ylabel(ylabel_string,'FontSize',16)
     xlabel(xlabel_string,'FontSize',10)
     ylabel(ylabel_string,'FontSize',10)
+    legend_font = 8;
     
     
     if legend_show == 1
@@ -460,7 +461,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
             l.String = legend_names; 
 
-            l.FontSize = 7;
+            l.FontSize = legend_font;
             l.Location = 'northeast outside';  
             
         else if input_style == 2
@@ -468,6 +469,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             colormap(cmap);
             colormap(color_palette);
             c = colorbar
+            c.FontSize = legend_font;
             c.Ticks = linspace(0.5/color_code_by_voltage(end),...
                 (color_code_by_voltage(end)-0.5)/(color_code_by_voltage(end)),...
                 color_code_by_voltage(end));
@@ -613,6 +615,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
                 ydata_temp(zero_error),...
                 'o-','Color', color_palette(color_code_by_voltage(i),:),...
                 'MarkerSize', markersize,...
+                'MarkerFaceColor',color_palette(color_code_by_voltage(i),:),...
                 'LineWidth', 2*linewidth);
             
             end
