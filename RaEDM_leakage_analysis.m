@@ -1,6 +1,6 @@
 % function RaEDM_leakage_analysis(datafile,power_supply)
 
-datafile = '2020-02-17-144755-hv-1.txt'; power_supply = 4;
+datafile = '2020-02-13-144854-hv-1.txt'; power_supply = 4;
 
 % histogram binning settings
 avg_binwidth = 5.0; % pA
@@ -276,6 +276,8 @@ gap_size = zeros(num_files,1);
 time = zeros(num_files,num_rows,1);
 time_raw = zeros(num_files,num_rows,1);
 
+time_between_points = zeros(num_rows,1);
+
 vmon_avg = zeros(num_files,num_rows,1);
 vmon_avg_mag = zeros(num_files,num_rows,1);
 vmon_avg_raw = zeros(num_files,num_rows,1);
@@ -449,7 +451,7 @@ if power_supply == 0
      
         end
         
-        time(i,:) = (time_raw(i,:) - time_raw(i,1))/60.0; %min
+        time(i,:) = (time_raw(i,:) - time_raw(i,1))/60.0; %min        
   
     end
     
@@ -699,6 +701,21 @@ elseif power_supply == 4
     
 end
 
+% % Find average data point acquisition rate
+%    
+% for j = 2:numpoints(1)
+% 
+%     time_between_points(j) = time(1,j) - time(1,j-1);
+% 
+% end
+% 
+% % avg minutes between points
+% avg_time_between_points = mean(time_between_points); 
+% 
+% five_sigma_one_tail = 0.5*(1-0.9999943);
+% 
+% % expected gaussian discharges per hour
+% gaussian_dph = five_sigma_one_tail*60./avg_time_between_points;
 
 if power_supply == 1 || power_supply == 4
     
