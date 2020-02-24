@@ -51,9 +51,9 @@ analysis_folder_name = ''; % latest ti13 analysis
 %     discharge_size_cutoff_bounds = [0 31 -1 1];  
     
 % Nb23 bounds
-    discharge_rate_bounds = [-5 110 0 600];
+    discharge_rate_bounds = [];
     
-    discharge_size_bounds = [-5 110 0 1600];
+    discharge_size_bounds = [];
 
 
 current_time = datetime('now','Format','yyyy-MM-dd-HHmmss');
@@ -117,19 +117,27 @@ for i = 1:2
     median_sigma = zeros(number_rows,1);
     median_cutoff = zeros(number_rows,1);
 
+    dph_sigma_baseline = mean(one_big_data_set(1:number_rows_this_set,3));
+    
+    dph_cutoff_baseline = mean(one_big_data_set(1:number_rows_this_set,6));
+
+    size_sigma_baseline = mean(one_big_data_set(1:number_rows_this_set,5));
+    
+    size_cutoff_baseline = mean(one_big_data_set(1:number_rows_this_set,8));
+
     for j = 1:number_rows
 
-        dph_sigma(j,1) = one_big_data_set(j,3);
+        dph_sigma(j,1) = one_big_data_set(j,3) - dph_sigma_baseline;
 
         dph_sigma(j,2) = one_big_data_set(j,4);
         
-        median_sigma(j) = one_big_data_set(j,5);
+        median_sigma(j) = one_big_data_set(j,5) - size_sigma_baseline;
         
-        dph_cutoff(j,1) = one_big_data_set(j,6);
+        dph_cutoff(j,1) = one_big_data_set(j,6) - dph_cutoff_baseline;
         
         dph_cutoff(j,2) = one_big_data_set(j,7);
         
-        median_cutoff(j) = one_big_data_set(j,8);
+        median_cutoff(j) = one_big_data_set(j,8) - size_cutoff_baseline;
 
     end
     
