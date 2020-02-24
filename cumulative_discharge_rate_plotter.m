@@ -86,6 +86,8 @@ for i = 1:2
     this_set_indices = [];
 
     number_rows = 0;
+    
+    number_rows_first_set = 0;
 
     for j=1:num_files
 
@@ -96,6 +98,12 @@ for i = 1:2
 
         data_set = data_set';
 
+        if j == 1
+            
+            number_rows_first_set = length(data_set(:,1));
+            
+        end
+        
         number_rows_this_set = length(data_set(:,1));
 
         for k = 1:number_rows_this_set
@@ -117,13 +125,13 @@ for i = 1:2
     median_sigma = zeros(number_rows,1);
     median_cutoff = zeros(number_rows,1);
 
-    dph_sigma_baseline = mean(one_big_data_set(1:number_rows_this_set,3));
+    dph_sigma_baseline = mean(one_big_data_set(1:number_rows_first_set,3));
     
-    dph_cutoff_baseline = mean(one_big_data_set(1:number_rows_this_set,6));
+    dph_cutoff_baseline = mean(one_big_data_set(1:number_rows_first_set,6));
 
-    size_sigma_baseline = mean(one_big_data_set(1:number_rows_this_set,5));
+    size_sigma_baseline = mean(one_big_data_set(1:number_rows_first_set,5));
     
-    size_cutoff_baseline = mean(one_big_data_set(1:number_rows_this_set,8));
+    size_cutoff_baseline = mean(one_big_data_set(1:number_rows_first_set,8));
 
     for j = 1:number_rows
 
@@ -170,25 +178,25 @@ for i = 1:2
 %         median_cutoff,zeros(length(median_cutoff),1),this_set_indices);
 
     hv_plot_xy_errors(sprintf('%s 5\\sigma discharge rates (%s)',electrodes,string(plot_polarity_name(i))),...
-        'simulation time (hr)','discharges  per  hour',...
+        'simulation time (hr)','discharges  per  hour - baseline',...
         2,'',1,2,2,fullpath,sprintf('%s-discharge-rates-sigma-%s',electrodes,string(file_polarity_name(i))),...
         discharge_rate_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         dph_sigma(:,1),dph_sigma(:,2),this_set_indices);
     
     hv_plot_xy_errors(sprintf('%s 5\\sigma discharge sizes (%s)',electrodes,string(plot_polarity_name(i))),...
-        'simulation time (hr)','median discharge size (pA)',...
+        'simulation time (hr)','median discharge size - baseline (pA)',...
         2,'',1,2,2,fullpath,sprintf('%s-median-discharges-sigma-%s',electrodes,string(file_polarity_name(i))),...
         discharge_size_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         median_sigma,zeros(length(median_sigma),1),this_set_indices);
     
     hv_plot_xy_errors(sprintf('%s 100 pA cutoff discharge rates (%s)',electrodes,string(plot_polarity_name(i))),...
-        'simulation time (hr)','discharges  per  hour',...
+        'simulation time (hr)','discharges  per  hour - baseline',...
         2,'',1,2,2,fullpath,sprintf('%s-discharge-rates-cutoff-%s',electrodes,string(file_polarity_name(i))),...
         discharge_rate_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         dph_cutoff(:,1),dph_cutoff(:,2),this_set_indices);
     
     hv_plot_xy_errors(sprintf('%s 100 pA cutoff discharge sizes (%s)',electrodes,string(plot_polarity_name(i))),...
-        'simulation time (hr)','median discharge size (pA)',...
+        'simulation time (hr)','median discharge size - baseline (pA)',...
         2,'',1,2,2,fullpath,sprintf('%s-median-discharges-cutoff-%s',electrodes,string(file_polarity_name(i))),...
         discharge_size_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         median_cutoff,zeros(length(median_cutoff),1),this_set_indices);
