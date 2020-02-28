@@ -1,9 +1,9 @@
 % % create a folder to place all saved images in
 
-electrodes = 'Nb56';
+% electrodes = 'Nb56';
 % electrodes = 'Ti13';
 % electrodes = 'Nb78';
-% electrodes = 'Nb23';
+electrodes = 'Nb23';
 
 % sim_dates = '12/13/2018--5/1/2019';
 
@@ -15,13 +15,13 @@ plot_polarity_name = {'+HV', '-HV', '0HV'};
 
 file_polarity_name = {'pos','neg','zero'};
 
-analysis_folder_name_parent = 'nb56-all-simulation-analysis';
+% analysis_folder_name_parent = 'nb56-all-simulation-analysis';
 % analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
 % analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
-% analysis_folder_name_parent = '2020-02-26-nb23-analysis-files';
+analysis_folder_name_parent = '2020-02-26-nb23-analysis-files';
 
-analysis_folder_name = '2019-07-11'; % latest nb56 analysis
-% analysis_folder_name = ''; % latest ti13 analysis
+% analysis_folder_name = '2019-07-11'; % latest nb56 analysis
+analysis_folder_name = ''; % latest ti13 analysis
 
 current_time = datetime('now','Format','yyyy-MM-dd-HHmmss');
 
@@ -40,9 +40,9 @@ formatSpec = '%f %f %f %f %f %f';
 mkdir(fullpath);
 
 % Nb56 bounds    
-    discharge_rate_bounds = [0 35 -100 400];
-    
-    discharge_size_bounds = [0 35 -25 60];
+%     discharge_rate_bounds = [0 35 -100 400];
+%     
+%     discharge_size_bounds = [0 35 -25 60];
 
 % Ti13 bounds
 %     discharge_rate_sigma_bounds = [-5 120 -100 4500];
@@ -66,6 +66,10 @@ mkdir(fullpath);
 %     discharge_rate_bounds = [-5 125 -100 3000];
 %     
 %     discharge_size_bounds = [-5 125 -50 1600];
+
+    discharge_rate_bounds = [-5 125 -100 400];
+    
+    discharge_size_bounds = [];
 
 % for i = 1:length(analysis_file_patterns)
 for i = 1:2
