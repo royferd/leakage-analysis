@@ -194,7 +194,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         legend_names = {'12 kV','13 kV','14 kV','15 kV','16 kV',...
 %             '17 kV','18 kV','19 kV','20 kV'};
         
-%         color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
+        voltages = [12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0];
+        
+        color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
 
 % Nb78 legend entries and color code
 
@@ -205,12 +207,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
 % Nb23 legend entries and color code
         
-        voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
-        legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
-            '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
-            '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
-        
-        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7];
+%         voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
+%         
+%         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
+%             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
+%             '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
+%         
+%         color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -451,6 +454,12 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     xlabel(xlabel_string,'FontSize',10)
     ylabel(ylabel_string,'FontSize',10)
     legend_font = 8;
+    
+    % get axis position, move up the y co-ordinate by just little bit and 
+    % offset the height by the same amount
+    pos = get(gca, 'Position');
+    set(gca, 'Position', [pos(1) pos(2)+0.05 pos(3) pos(4)-0.05]);
+    set(gca,'fontWeight','bold');
     
     
     if legend_show == 1
