@@ -18,7 +18,7 @@ file_polarity_name = {'pos','neg','zero'};
 % analysis_folder_name_parent = 'nb56-all-simulation-analysis';
 % analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
 % analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
-analysis_folder_name_parent = '2020-03-05-nb23-analysis-files';
+analysis_folder_name_parent = '2020-03-12-nb23-analysis-files';
 
 % analysis_folder_name = '2019-07-11'; % latest nb56 analysis
 analysis_folder_name = ''; % latest ti13 analysis
@@ -63,9 +63,9 @@ mkdir(fullpath);
 %     discharge_size_cutoff_bounds = [0 31 -1 1];  
     
 % Nb23 bounds
-    discharge_rate_bounds = [-5 135 -100 3000];
+    discharge_rate_bounds = [-5 140 -100 3000];
     
-    discharge_size_bounds = [-5 135 -50 1600];
+    discharge_size_bounds = [-5 140 -50 1600];
 
 % for i = 1:length(analysis_file_patterns)
 for i = 1:2
