@@ -554,12 +554,12 @@ function [discharge_times,discharge_times_cutoff, ...
         %xlog = sign(x).*log10(abs(x));
         % Just to get axis limits
         %plot(xlog,y,'o')
-        histogram(xdata);
+%         histogram(xdata);
         %ax1=gca;
         %ax1.XScale='log';
         % Get limits
-        lims = xlim;
-        wdth = diff(lims);
+%         lims = xlim;
+%         wdth = diff(lims);
         % Wrap negative data around to positive side
         %xlog(xlog<0) = xlog(xlog<0) + wdth;
 
@@ -579,12 +579,15 @@ function [discharge_times,discharge_times_cutoff, ...
                 
                 save_file_path = fullfile(savepath,sprintf('%s_%d_no_opt.png',plotname,i));
                 
+                save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges_no_opt.png',plotname,i));
+                
             else
 
                 title_string_full =sprintf('%s %d / %d',title_string,i,num_chunk);
                 
                 save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
-            %print (sprintf('%s_%d',plotname,i),'-dpng');
+            
+                save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges.png',plotname,i));
             
             end
             
@@ -667,8 +670,7 @@ function [discharge_times,discharge_times_cutoff, ...
             %set(gca,'XTickLabel',tcklbl)
             
             
-            print(save_file_path,'-dpng');
-            
+            print(save_file_path,'-dpng');    
             
         end
 
