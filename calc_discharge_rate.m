@@ -2,7 +2,13 @@ function [dph,dph_std,median_discharge_size,...
     overall_dph,overall_dph_std,overall_median_discharge_size] = ...
     calc_discharge_rate(discharge_times, discharge_vals, ...
     discharge_stdevs,discharges_per_chunk,time_length_of_chunk,...
-    official_sim_start_time,official_sim_end_time)
+    official_sim_start_time,official_sim_end_time,title_string,plotname,save_figs,savepath)
+
+xlabel_string = 'leakage current (pA)';
+ylabel_string = 'frequency';
+%text box assignments
+inside_plot = [0.1375 0.73 0.5 0.19]; % edges: x y width height
+
 
 start_time = official_sim_start_time;
 
@@ -122,11 +128,20 @@ live_time = 0.0;
                      
                      if i - 1 > start_time_index
                      
-                         avg_discharges_this_hour = ...
-                            length(find(discharge_vals(1,start_time_index:i-1)))*...
-                            60.0/(live_time);
+                         [row,col,vals] = find(discharge_vals(1,start_time_index:i-1));
+                         
+                         avg_discharges_this_hour = length(vals)*60.0/(live_time);
 
                          std_this_hour = sqrt(avg_discharges_this_hour);
+                         
+                         if save_figs == 1
+                             
+                             save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
+                             
+                             plot_discharge_hist(vals,title_string,hour_number,...
+                                 save_file_path,xlabel_string,ylabel_string);
+ 
+                         end
 
                          if isempty(find(discharge_vals(1,start_time_index:i-1),1))
 
@@ -139,6 +154,8 @@ live_time = 0.0;
                              median_discharge_size_this_hour = median(val);
 
                          end
+                         
+                         
                          
                      else
                          
@@ -173,13 +190,21 @@ live_time = 0.0;
 
                     %discharges per hour
                     
-%                     avg_discharges_this_hour = ...
-%                         length(find(discharge_vals(1,start_time_index:i)))*60.0/live_time;
+                    [row,col,vals] = find(discharge_vals(1,start_time_index:i-1));
                     
                     avg_discharges_this_hour = ...
-                        length(find(discharge_vals(1,start_time_index:i-1)))*60.0/live_time;
+                        length(vals)*60.0/live_time;
 
                     std_this_hour = sqrt(avg_discharges_this_hour);
+                    
+                    if save_figs == 1
+                        
+                        save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
+                        
+                        plot_discharge_hist(vals,...
+                            title_string,hour_number,save_file_path,xlabel_string,ylabel_string);
+                        
+                     end
                     
 
                     if isempty(find(discharge_vals(1,start_time_index:i),1))
@@ -253,11 +278,22 @@ live_time = 0.0;
 
              if i - 1 > start_time_index
 
+                 [row,col,vals] = find(discharge_vals(1,start_time_index:i-1));
+                 
                  avg_discharges_this_hour = ...
-                    length(find(discharge_vals(1,start_time_index:i-1)))*...
+                    length(vals)*...
                     60.0/(live_time);
 
                  std_this_hour = sqrt(avg_discharges_this_hour);
+                 
+                 if save_figs == 1
+                     
+                     save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
+                  
+                     plot_discharge_hist(vals,...
+                            title_string,hour_number,save_file_path,xlabel_string,ylabel_string)
+                        
+                 end
 
                  if isempty(find(discharge_vals(1,start_time_index:i-1),1))
 
@@ -302,24 +338,27 @@ live_time = 0.0;
         end
         
         %%%
-            
-%         if time_since_last_hour >= 30.0
-        
+                   
         if time_since_last_hour >= -30.0
-            
-%             extrapolate_last_hour = round(time_since_last_hour/60.);
 
             fraction_last_hour = abs((60.-time_since_last_hour)/60.);
-                        
-%             avg_discharges_this_hour = ...
-%                 length(find(discharge_vals(1,start_time_index:end)))*60/...
-%                 ((extrapolate_last_hour+1)*live_time);
+            
+            [row,col,vals] = find(discharge_vals(1,start_time_index:end));
             
             avg_discharges_this_hour = ...
-                length(find(discharge_vals(1,start_time_index:end)))*60/...
+                length(vals)*60/...
                 ((fraction_last_hour)*live_time);
                         
             std_this_hour = sqrt(avg_discharges_this_hour);
+            
+            if save_figs == 1
+                
+                save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
+                
+                plot_discharge_hist(vals,...
+                            title_string,hour_number,save_file_path,xlabel_string,ylabel_string)
+                        
+             end
 
             if isempty(find(discharge_vals(1,start_time_index:end),1))
 
