@@ -130,9 +130,12 @@ live_time = 0.0;
                      
                          [row,col,vals] = find(discharge_vals(1,start_time_index:i-1));
                          
-                         avg_discharges_this_hour = length(vals)*60.0/(live_time);
+                         
+%                          avg_discharges_this_hour = length(vals)*60.0/(live_time);
+                         avg_discharges_this_hour = ceil(length(vals)*60.0/(live_time));
 
-                         std_this_hour = sqrt(avg_discharges_this_hour);
+%                          std_this_hour = sqrt(avg_discharges_this_hour);
+                         std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
                          
                          if save_figs == 1
                              
@@ -192,11 +195,15 @@ live_time = 0.0;
                     
                     [row,col,vals] = find(discharge_vals(1,start_time_index:i-1));
                     
-                    avg_discharges_this_hour = ...
-                        length(vals)*60.0/live_time;
-
-                    std_this_hour = sqrt(avg_discharges_this_hour);
+%                     avg_discharges_this_hour = ...
+%                         length(vals)*60.0/live_time;
                     
+                    avg_discharges_this_hour = ...
+                        ceil(length(vals)*60.0/live_time);
+
+%                     std_this_hour = sqrt(avg_discharges_this_hour);
+                    std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
+
                     if save_figs == 1
                         
                         save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
@@ -280,12 +287,16 @@ live_time = 0.0;
 
                  [row,col,vals] = find(discharge_vals(1,start_time_index:i-1));
                  
-                 avg_discharges_this_hour = ...
-                    length(vals)*...
-                    60.0/(live_time);
-
-                 std_this_hour = sqrt(avg_discharges_this_hour);
+%                  avg_discharges_this_hour = ...
+%                     length(vals)*60.0/(live_time);
+% 
+%                  std_this_hour = sqrt(avg_discharges_this_hour);
                  
+                 avg_discharges_this_hour = ...
+                    ceil(length(vals)*60.0/(live_time));
+
+                 std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
+
                  if save_figs == 1
                      
                      save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
@@ -345,11 +356,15 @@ live_time = 0.0;
             
             [row,col,vals] = find(discharge_vals(1,start_time_index:end));
             
+%             avg_discharges_this_hour = ...
+%                 length(vals)*60.0/((fraction_last_hour)*live_time);
+%                         
+%             std_this_hour = sqrt(avg_discharges_this_hour);
+            
             avg_discharges_this_hour = ...
-                length(vals)*60/...
-                ((fraction_last_hour)*live_time);
+                ceil(length(vals)*60.0/((fraction_last_hour)*live_time));
                         
-            std_this_hour = sqrt(avg_discharges_this_hour);
+            std_this_hour = ceil(sqrt(length(vals))*60.0/((fraction_last_hour)*live_time));
             
             if save_figs == 1
                 
@@ -371,15 +386,7 @@ live_time = 0.0;
                 median_discharge_size_this_hour = median(val);
 
             end     
-                
-%             median_discharge_size = ...
-%                 [median_discharge_size ones(1,1+fraction_last_hour)*...
-%                 median_discharge_size_this_hour];
-%             
-%             dph = [dph ones(1,fraction_last_hour+1)*avg_discharges_this_hour];
-%             
-%             dph_std = [dph_std ones(1,fraction_last_hour+1)*std_this_hour];
-            
+                            
             median_discharge_size = ...
                 [median_discharge_size median_discharge_size_this_hour];
             
@@ -427,17 +434,27 @@ live_time = 0.0;
 
             if length(dph) > 0
 
-                dph(end) = (dph(end) + (live_time/60.0)*avg_discharges_this_hour)/(1.0+live_time/60.0);
+%                 dph(end) = (dph(end) + (live_time/60.0)*avg_discharges_this_hour)/(1.0+live_time/60.0);
+% 
+%                 dph_std(end) = sqrt(dph(end));
+                
+                dph(end) = ceil((dph(end) + (live_time/60.0)*avg_discharges_this_hour)/(1.0+live_time/60.0));
 
-                dph_std(end) = sqrt(dph(end));
+                dph_std(end) = ceil(sqrt((dph_std(end)*(live_time/60.0))^2 + ...
+                    (std_this_hour*live_time/60)^2)/(1.0+live_time/60.0));
 
                 median_discharge_size(end) = median_discharge_size_this_hour;
                 
             else
                 
-                dph = [dph (live_time/60.0)*avg_discharges_this_hour/(1.0+live_time/60.0)];
+%                 dph = [dph (live_time/60.0)*avg_discharges_this_hour/(1.0+live_time/60.0)];
+% 
+%                 dph_std = [ dph_std sqrt(dph(end))];
+                
+                dph = [dph ceil((live_time/60.0)*avg_discharges_this_hour/(1.0+live_time/60.0))];
 
-                dph_std = [ dph_std sqrt(dph(end))];
+                dph_std = [ dph_std ceil(sqrt((dph_std(end)*(live_time/60.0))^2 + ...
+                    (std_this_hour*live_time/60)^2)/(1.0+live_time/60.0))];
 
                 median_discharge_size = [ median_discharge_size median_discharge_size_this_hour];
                 
