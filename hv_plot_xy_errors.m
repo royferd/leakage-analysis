@@ -207,13 +207,18 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
 % Nb23 legend entries and color code
         
-        voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
-%         
-%         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
-%             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
-%             '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
-%         
-        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
+%         voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
+% %         
+% %         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
+% %             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
+% %             '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
+% %         
+%         color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
+        
+% NET legend entries and color code        
+        voltages = [14.7 22.2 26.2 23.4 10.4 12.4 6.1 3.2 9.0];
+        
+        color_code_by_voltage = [6 7 9 8 4 5 2 1 3];
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -477,17 +482,23 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
             colormap(cmap);
             colormap(color_palette);
-            c = colorbar
+            c = colorbar;
             c.FontSize = legend_font;
-            c.Ticks = linspace(0.5/color_code_by_voltage(end),...
-                (color_code_by_voltage(end)-0.5)/(color_code_by_voltage(end)),...
-                color_code_by_voltage(end));
+            
+            tick_locations = linspace(0.5/max(color_code_by_voltage),...
+                (max(color_code_by_voltage)-0.5)/(max(color_code_by_voltage)),...
+                max(color_code_by_voltage));
+            
+            c.Ticks = tick_locations;
+            
 
             colorbar_ticklabel_string = cell(1,color_code_by_voltage(end));
+            
+            ordered_voltages = sort(voltages);
 
-            for i = 1:color_code_by_voltage(end)
+            for i = 1:max(color_code_by_voltage)
 
-                colorbar_ticklabel_string{i} = sprintf('%.1f kV',voltages(i));
+                colorbar_ticklabel_string{i} = sprintf('%.1f kV',ordered_voltages(i));
 
             end
             
@@ -569,6 +580,15 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
            
             [nonzero_error] = find(ydata_stdev_temp ~= 0.0);
             
+            % for the purpose of drawing the fill plot, we assign a small
+            % width to uncertainties of 0.0. This avoids breaking the
+            % program.
+            if length(nonzero_error) > 0 && length(zero_error) > 0
+                
+                ydata_stdev_temp(zero_error) = 0.5*min(ydata_stdev_temp(nonzero_error));
+                
+            end
+            
             
             % need this to connect the lines of multiple series on the
             % plot!
@@ -581,43 +601,24 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             last_set_ydata_stdev_temp = ydata_stdev_temp(end);
             
             
-            if length(nonzero_error) > 0
-
+            if length(nonzero_error) > 0 && length(zero_error) < length(ydata_stdev_temp)
+            
+%                 fill([xdata_temp(nonzero_error);flipud(xdata_temp(nonzero_error))],...
+%                     [ydata_temp(nonzero_error)-ydata_stdev_temp(nonzero_error);flipud(ydata_temp(nonzero_error)+ydata_stdev_temp(nonzero_error))],...
+%                     color_palette(color_code_by_voltage(i),:),'linestyle','-','EdgeColor', color_palette(color_code_by_voltage(i),:),...
+%                     'LineWidth', linewidth);
                 
-%                 errorbar(xdata_temp(nonzero_error),...
-%                 ydata_temp(nonzero_error),...
-%                 ydata_stdev_temp(nonzero_error),...
-%                 ydata_stdev_temp(nonzero_error),...
-%                 xdata_stdev_temp(nonzero_error),...
-%                 xdata_stdev_temp(nonzero_error),...
-%                 marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
-%                 'MarkerSize', markersize,...
-%                 'LineWidth', linewidth);
-            
-%                 errorbar(xdata_temp(nonzero_error),...
-%                 ydata_temp(nonzero_error),...
-%                 ydata_stdev_temp(nonzero_error),...
-%                 ydata_stdev_temp(nonzero_error),...
-%                 xdata_stdev_temp(nonzero_error),...
-%                 xdata_stdev_temp(nonzero_error),...
-%                 'o-','MarkerSize', markersize,...
-%                 'MarkerFaceColor',color_palette(color_code_by_voltage(i),:),...
-%                 'Color', color_palette(color_code_by_voltage(i),:),...
-%                 'LineWidth', linewidth);
-            
-                fill([xdata_temp(nonzero_error);flipud(xdata_temp(nonzero_error))],...
-                    [ydata_temp(nonzero_error)-ydata_stdev_temp(nonzero_error);flipud(ydata_temp(nonzero_error)+ydata_stdev_temp(nonzero_error))],...
+                fill([xdata_temp;flipud(xdata_temp)],...
+                    [ydata_temp-ydata_stdev_temp;flipud(ydata_temp+ydata_stdev_temp)],...
                     color_palette(color_code_by_voltage(i),:),'linestyle','-','EdgeColor', color_palette(color_code_by_voltage(i),:),...
                     'LineWidth', linewidth);
-               
+ 
+            elseif length(zero_error) == length(ydata_stdev_temp)
                 
-                
-            
-            end
-            
-            
-            
-            if length(zero_error) > 0
+%                 fill([xdata_temp(nonzero_error);flipud(xdata_temp(nonzero_error))],...
+%                     [ydata_temp(nonzero_error)-ydata_stdev_temp(nonzero_error);flipud(ydata_temp(nonzero_error)+ydata_stdev_temp(nonzero_error))],...
+%                     color_palette(color_code_by_voltage(i),:),'linestyle','-','EdgeColor', color_palette(color_code_by_voltage(i),:),...
+%                     'LineWidth', linewidth);
                 
 %                 marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
                 plot(xdata_temp(zero_error),...

@@ -761,10 +761,11 @@ function [lcm1_avg_trash_raw,lcm1_weight_avg_trash_raw,...
     up_chunk_array = up_chunk_array_pass_pass(:,:,2:end);
     trash_chunk_array = trash_chunk_array_pass_pass(:,:,2:end);
     
-    fprintf('file number: %d \n',i);
-    fprintf('number of up chunks (-V) = %d \n', num_up_chunks(i));
-    fprintf('number of  down chunks (+V) = %d \n', num_down_chunks(i));
-    fprintf('number of trash chunks (0V) = %d \n', num_trash_chunks(i));
-    disp('the number of trash chunks should be the sum of up and down chunks')
+%     fprintf('file number: %d \n',i);
+    fprintf('number of up (-V) : down (+V) : trash (0V) chunks = %d : %d : %d \n',...
+        num_up_chunks(i),num_down_chunks(i),num_trash_chunks(i));
+%     fprintf('number of  down chunks (+V) = %d \n', num_down_chunks(i));
+%     fprintf('number of trash chunks (0V) = %d \n', num_trash_chunks(i));
+%     disp('the number of trash chunks should be the sum of up and down chunks')
     
 end
