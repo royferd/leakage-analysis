@@ -2,9 +2,9 @@
 
 % electrodes = 'Nb56';
 % electrodes = 'Ti13';
-% electrodes = 'Nb78';
+electrodes = 'Nb78';
 % electrodes = 'Nb23';
-electrodes = 'NET';
+% electrodes = 'NET';
 
 % sim_dates = '12/13/2018--5/1/2019';
 
@@ -20,7 +20,8 @@ file_polarity_name = {'pos','neg','zero'};
 % analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
 % analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
 % analysis_folder_name_parent = '2020-03-12-nb23-analysis-files';
-analysis_folder_name_parent = '2020-06-17-NET-analysis-files';
+% analysis_folder_name_parent = '2020-06-17-NET-analysis-files';
+analysis_folder_name_parent = '2020-06-24-nb78-all-analysis-again';
 
 % analysis_folder_name = '2019-07-11'; % latest nb56 analysis
 analysis_folder_name = ''; % latest ti13 analysis
@@ -56,13 +57,9 @@ mkdir(fullpath);
 %     discharge_size_cutoff_bounds = [-5 120 -50 2000];
     
 % Nb78 bounds
-%     discharge_rate_sigma_bounds = [0 31 -0.25 10];
-%     
-%     discharge_size_sigma_bounds = [0 31 -0.5 14];
-%     
-%     discharge_rate_cutoff_bounds = [0 31 -1 1];
-%     
-%     discharge_size_cutoff_bounds = [0 31 -1 1];  
+    discharge_rate_bounds = [0 31 -500 3000];
+    
+    discharge_size_bounds = [0 31 -50 450];
     
 % Nb23 bounds
 %     discharge_rate_bounds = [-5 140 -100 3000];
@@ -70,20 +67,14 @@ mkdir(fullpath);
 %     discharge_size_bounds = [-5 140 -50 1600];
     
 % NET bounds
-    discharge_rate_bounds = [0 30 -200 7000];
-    
-    discharge_size_bounds = [0 30 -100 2500];
+%     discharge_rate_bounds = [0 30 -200 7000];
+%     
+%     discharge_size_bounds = [0 30 -100 2500];
 
     
     
     
-%     yname_rate = 'discharge rate - baseline (hr^{-1})';
-%     
-%     yname_size = 'median discharge size - baseline (pA)';
-    
-    yname_rate = 'discharge rate (hr^{-1})';
-    
-    yname_size = 'median discharge size (pA)';
+
     
     
 % for i = 1:length(analysis_file_patterns)
@@ -152,21 +143,33 @@ for i = 1:2
     median_sigma = zeros(number_rows,1);
     median_cutoff = zeros(number_rows,1);
 
-%     dph_sigma_baseline = mean(one_big_data_set(1:number_rows_first_set,3));
-%     
-%     dph_cutoff_baseline = mean(one_big_data_set(1:number_rows_first_set,6));
-% 
-%     size_sigma_baseline = mean(one_big_data_set(1:number_rows_first_set,5));
-%     
-%     size_cutoff_baseline = mean(one_big_data_set(1:number_rows_first_set,8));
+    dph_sigma_baseline = mean(one_big_data_set(1:number_rows_first_set,3));
     
-    dph_sigma_baseline = 0.0;
-    
-    dph_cutoff_baseline = 0.0;
+    dph_cutoff_baseline = mean(one_big_data_set(1:number_rows_first_set,6));
 
-    size_sigma_baseline = 0.0;
+    size_sigma_baseline = mean(one_big_data_set(1:number_rows_first_set,5));
     
-    size_cutoff_baseline = 0.0;
+    size_cutoff_baseline = mean(one_big_data_set(1:number_rows_first_set,8));
+    
+%     dph_sigma_baseline = 0.0;
+%     
+%     dph_cutoff_baseline = 0.0;
+% 
+%     size_sigma_baseline = 0.0;
+%     
+%     size_cutoff_baseline = 0.0;
+
+    %     yname_rate = 'discharge rate - baseline (hr^{-1})';
+%     
+%     yname_size = 'median discharge size - baseline (pA)';
+    
+    yname_rate_sigma = sprintf('discharge rate - %.0f  (hr^{-1})',dph_sigma_baseline);
+    
+    yname_rate_cutoff = sprintf('discharge rate - %.0f  (hr^{-1})',dph_cutoff_baseline);
+    
+    yname_size_sigma = sprintf('median discharge size - %.0f  (pA)',size_sigma_baseline);
+    
+    yname_size_cutoff = sprintf('median discharge size - %.0f  (pA)',size_cutoff_baseline);
 
     for j = 1:number_rows
 
@@ -212,25 +215,25 @@ for i = 1:2
 %         discharge_size_bounds,1:number_rows,zeros(length(1:number_rows),1),...
 %         median_cutoff,zeros(length(median_cutoff),1),this_set_indices);
 
-    hv_plot_xy_errors(pname_sig_rate,'conditioning time (hr)',yname_rate,...
+    hv_plot_xy_errors(pname_sig_rate,'conditioning time (hr)',yname_rate_sigma,...
         2,'',1,2,2,fullpath,...
         sprintf('%s-discharge-rates-sigma-%s',electrodes,string(file_polarity_name(i))),...
         discharge_rate_bounds,linspace(1,number_rows,number_rows),...
         linspace(0,0,number_rows),dph_sigma(:,1),dph_sigma(:,2),this_set_indices);
     
-    hv_plot_xy_errors(pname_sig_size,'conditioning time (hr)',yname_size,...
+    hv_plot_xy_errors(pname_sig_size,'conditioning time (hr)',yname_size_sigma,...
         2,'',1,2,2,fullpath,sprintf('%s-median-discharges-sigma-%s',electrodes,...
         string(file_polarity_name(i))),...
         discharge_size_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         median_sigma,zeros(length(median_sigma),1),this_set_indices);
     
-    hv_plot_xy_errors(pname_cut_rate,'conditioning time (hr)',yname_rate,...
+    hv_plot_xy_errors(pname_cut_rate,'conditioning time (hr)',yname_rate_cutoff,...
         2,'',1,2,2,fullpath,sprintf('%s-discharge-rates-cutoff-%s',electrodes,...
         string(file_polarity_name(i))),...
         discharge_rate_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         dph_cutoff(:,1),dph_cutoff(:,2),this_set_indices);
     
-    hv_plot_xy_errors(pname_cut_size,'conditioning time (hr)',yname_size,...
+    hv_plot_xy_errors(pname_cut_size,'conditioning time (hr)',yname_size_cutoff,...
         2,'',1,2,2,fullpath,sprintf('%s-median-discharges-cutoff-%s',electrodes,...
         string(file_polarity_name(i))),...
         discharge_size_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...

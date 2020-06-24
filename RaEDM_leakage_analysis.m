@@ -1,6 +1,6 @@
 % function RaEDM_leakage_analysis(datafile,power_supply)
 
-datafile = '2019-07-18-140330-hv-1.txt'; power_supply = 4;
+datafile = '2018-11-14-163806-hv-1.txt'; power_supply = 4;
 
 % histogram binning settings
 avg_binwidth = 5.0; % pA
@@ -642,58 +642,109 @@ elseif power_supply == 4
            end
            
         end
-
-        for j =1:numpoints(i)
+        
+        time_raw(i,1:numpoints) = data(i,1:numpoints,1);
+        
+        vmon_avg_raw_mag(i,1:numpoints) = data(i,1:numpoints,3);
            
-            time_raw(i,j) = data(i,j,1);
+            imon_avg_raw(i,1:numpoints) = data(i,1:numpoints,4);
            
-            vmon_avg_raw_mag(i,j) = data(i,j,3);
+            lcm1_avg_raw(i,1:numpoints) = data(i,1:numpoints,5);
            
-            imon_avg_raw(i,j) = data(i,j,4);
-           
-            lcm1_avg_raw(i,j) = data(i,j,5);
-           
-            pressure_avg_raw(i,j) = data(i,j,7);
+            pressure_avg_raw(i,1:numpoints) = data(i,1:numpoints,7);
           
             % ~20 mV Low (positive), ~ 3.4 V high (negative)
-            polarity_avg_raw(i,j) = data(i,j,8); 
+            polarity_avg_raw(i,1:numpoints) = data(i,1:numpoints,8); 
          
             %don't think reduced sqrt is true for fast data
-            vmon_avg_stdev_raw(i,j) = data(i,j,11)/sqrt(sample_size_setting); 
+            vmon_avg_stdev_raw(i,1:numpoints) = data(i,1:numpoints,11)/sqrt(sample_size_setting); 
         
-            vmon_weight_raw(i,j) = abs((vmon_avg_stdev_raw(i,j))^(-2));
+            vmon_weight_raw(i,1:numpoints) = abs((vmon_avg_stdev_raw(i,1:numpoints)).^(-2));
             
-            imon_avg_stdev_raw(i,j) = data(i,j,12)/sqrt(sample_size_setting);
+            imon_avg_stdev_raw(i,1:numpoints) = data(i,1:numpoints,12)/sqrt(sample_size_setting);
             
-            imon_weight_raw(i,j) = abs((imon_avg_stdev_raw(i,j))^(-2));
+            imon_weight_raw(i,1:numpoints) = abs((imon_avg_stdev_raw(i,1:numpoints)).^(-2));
             
-            lcm1_avg_stdev_raw(i,j) = data(i,j,13)/sqrt(sample_size_setting);
+            lcm1_avg_stdev_raw(i,1:numpoints) = data(i,1:numpoints,13)/sqrt(sample_size_setting);
             
-            pressure_avg_stdev_raw(i,j) = data(i,j,15);
+            pressure_avg_stdev_raw(i,1:numpoints) = data(i,1:numpoints,15);
+            
+            if length(data(i,1,:)) > 18
+            
+                vmon_avg_pkpk_raw(i,1:numpoints) = data(i,1:numpoints,19)/sqrt(sample_size_setting); 
+            
+                imon_avg_pkpk_raw(i,1:numpoints) = data(i,1:numpoints,20)/sqrt(sample_size_setting);            
+            
+                lcm1_avg_pkpk_raw(i,1:numpoints) = data(i,1:numpoints,21)/sqrt(sample_size_setting);
+            
+                pressure_avg_pkpk_raw(i,1:numpoints) = data(i,1:numpoints,23);
+            
+            end
             
             
-            vmon_avg_pkpk_raw(i,j) = data(i,j,19)/sqrt(sample_size_setting); 
+            lcm1_weight_raw(i,1:numpoints) = abs(1./(lcm1_avg_stdev_raw(i,1:numpoints).^2));
             
-            imon_avg_pkpk_raw(i,j) = data(i,j,20)/sqrt(sample_size_setting);            
+            lcm1_avg_wt_raw(i,1:numpoints) = lcm1_avg_raw(i,1:numpoints).*lcm1_weight_raw(i,1:numpoints);
             
-            lcm1_avg_pkpk_raw(i,j) = data(i,j,21)/sqrt(sample_size_setting);
+            ohm_avg_raw(i,1:numpoints) = vmon_avg(i,1:numpoints)./imon_avg(i,1:numpoints)*1e3; % Mohm
             
-            pressure_avg_pkpk_raw(i,j) = data(i,j,23);
+            vmon_avg_wt_raw_mag(i,1:numpoints) = vmon_avg_raw_mag(i,1:numpoints).*vmon_weight_raw(i,1:numpoints);
             
+            imon_avg_wt_raw(i,1:numpoints) = imon_avg_raw(i,1:numpoints).*imon_weight_raw(i,1:numpoints);
             
-            lcm1_weight_raw(i,j) = abs(1/(lcm1_avg_stdev_raw(i,j)^2));
-            
-            lcm1_avg_wt_raw(i,j) = lcm1_avg_raw(i,j)*lcm1_weight_raw(i,j);
-            
-            ohm_avg_raw(i,j) = vmon_avg(i,j)/imon_avg(i,j)*1e3; % Mohm
-            
-            vmon_avg_wt_raw_mag(i,j) = vmon_avg_raw_mag(i,j)*vmon_weight_raw(i,j);
-            
-            imon_avg_wt_raw(i,j) = imon_avg_raw(i,j)*imon_weight_raw(i,j);
-            
-            field_avg_raw(i,j) = vmon_avg_raw_mag(i,j)/gap_size(i); % (raw vmon / cm)
-            
-        end
+            field_avg_raw(i,1:numpoints) = vmon_avg_raw_mag(i,1:numpoints)/gap_size(i); % (raw vmon / cm)
+
+%         for j =1:numpoints(i)
+%            
+%             time_raw(i,j) = data(i,j,1);
+%            
+%             vmon_avg_raw_mag(i,j) = data(i,j,3);
+%            
+%             imon_avg_raw(i,j) = data(i,j,4);
+%            
+%             lcm1_avg_raw(i,j) = data(i,j,5);
+%            
+%             pressure_avg_raw(i,j) = data(i,j,7);
+%           
+%             % ~20 mV Low (positive), ~ 3.4 V high (negative)
+%             polarity_avg_raw(i,j) = data(i,j,8); 
+%          
+%             %don't think reduced sqrt is true for fast data
+%             vmon_avg_stdev_raw(i,j) = data(i,j,11)/sqrt(sample_size_setting); 
+%         
+%             vmon_weight_raw(i,j) = abs((vmon_avg_stdev_raw(i,j))^(-2));
+%             
+%             imon_avg_stdev_raw(i,j) = data(i,j,12)/sqrt(sample_size_setting);
+%             
+%             imon_weight_raw(i,j) = abs((imon_avg_stdev_raw(i,j))^(-2));
+%             
+%             lcm1_avg_stdev_raw(i,j) = data(i,j,13)/sqrt(sample_size_setting);
+%             
+%             pressure_avg_stdev_raw(i,j) = data(i,j,15);
+%             
+%             
+%             vmon_avg_pkpk_raw(i,j) = data(i,j,19)/sqrt(sample_size_setting); 
+%             
+%             imon_avg_pkpk_raw(i,j) = data(i,j,20)/sqrt(sample_size_setting);            
+%             
+%             lcm1_avg_pkpk_raw(i,j) = data(i,j,21)/sqrt(sample_size_setting);
+%             
+%             pressure_avg_pkpk_raw(i,j) = data(i,j,23);
+%             
+%             
+%             lcm1_weight_raw(i,j) = abs(1/(lcm1_avg_stdev_raw(i,j)^2));
+%             
+%             lcm1_avg_wt_raw(i,j) = lcm1_avg_raw(i,j)*lcm1_weight_raw(i,j);
+%             
+%             ohm_avg_raw(i,j) = vmon_avg(i,j)/imon_avg(i,j)*1e3; % Mohm
+%             
+%             vmon_avg_wt_raw_mag(i,j) = vmon_avg_raw_mag(i,j)*vmon_weight_raw(i,j);
+%             
+%             imon_avg_wt_raw(i,j) = imon_avg_raw(i,j)*imon_weight_raw(i,j);
+%             
+%             field_avg_raw(i,j) = vmon_avg_raw_mag(i,j)/gap_size(i); % (raw vmon / cm)
+%             
+%         end
         
     time(i,:) = (time_raw(i,:) - time_raw(i,1))/60.0; %min
     
