@@ -202,8 +202,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 %         legend_names = {'12 kV','13.0 kV','14.0 kV','14.0 kV','15 kV',...
 %             '16 kV','17.0 kV','17.0 kV','17.0 kV','17.5 kV','18.0 kV'};
-%         
-%         color_code_by_voltage = [1 2 3 3 4 5 6 6 6 7 8];
+        
+        voltages = [12.0 12.9 13.9 13.9 14.9 15.9 17.0 16.9 17.0 17.5 17.9];
+        
+        color_code_by_voltage = [1 2 3 3 4 5 7 6 7 8 9];
         
 % Nb23 legend entries and color code
         
@@ -216,9 +218,11 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
         
 % NET legend entries and color code        
-        voltages = [14.7 22.2 26.2 23.4 10.4 12.4 6.1 3.2 9.0];
+%         voltages = [14.7 22.2 26.2 23.4 10.4 12.4 6.1 3.2 9.0];
+%         
+%         color_code_by_voltage = [6 7 9 8 4 5 2 1 3];
         
-        color_code_by_voltage = [6 7 9 8 4 5 2 1 3];
+        
         
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
@@ -494,10 +498,28 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
             colorbar_ticklabel_string = cell(1,color_code_by_voltage(end));
             
-            ordered_voltages = sort(voltages);
+            unique_voltages = [];
+            
+            for i =1:length(voltages)
+                
+                duplicates = (unique_voltages == voltages(i));
+                
+                if sum(duplicates) == 0
+                
+                    unique_voltages(end+1) = voltages(i);
+                    
+                end
+                    
+            end
+            
+            
+            ordered_voltages = sort(unique_voltages);
+            
+            
 
             for i = 1:max(color_code_by_voltage)
-
+                
+                
                 colorbar_ticklabel_string{i} = sprintf('%.1f kV',ordered_voltages(i));
 
             end
