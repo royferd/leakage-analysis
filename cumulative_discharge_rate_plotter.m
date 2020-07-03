@@ -7,8 +7,8 @@ program = which('cumulative_discharge_rate_plotter','-all');
 % electrodes = 'Nb56';
 % electrodes = 'Ti13';
 % electrodes = 'Nb78';
-electrodes = 'Nb23';
-% electrodes = 'NET';
+% electrodes = 'Nb23';
+electrodes = 'NET';
 
 % sim_dates = '12/13/2018--5/1/2019';
 
@@ -30,8 +30,8 @@ file_polarity_name = {'pos','neg','zero'};
 % analysis_folder_name_parent = '2020-07-02-Nb78-analysis';
 % analysis_folder_name_parent = '2020-07-02-Nb56-analysis';
 % analysis_folder_name_parent = '2020-07-02-Ti13-analysis';
-% analysis_folder_name_parent = '2020-07-02-NET-analysis';
-analysis_folder_name_parent = '2020-07-02-Nb23-analysis';
+analysis_folder_name_parent = '2020-07-02-NET-analysis';
+% analysis_folder_name_parent = '2020-07-02-Nb23-analysis';
 
 % analysis_folder_name = '2019-07-11'; % latest nb56 analysis
 analysis_folder_name = ''; % latest ti13 analysis
@@ -83,9 +83,9 @@ mkdir(fullpath);
 %     discharge_size_bounds = [];
     
 % Nb23 bounds
-    discharge_rate_bounds = [-5 130 -200 3500];
-    
-    discharge_size_bounds = [-5 130 -100 2000];
+%     discharge_rate_bounds = [-5 130 -200 3500];
+%     
+%     discharge_size_bounds = [-5 130 -100 2000];
     
 %     discharge_rate_bounds = [];
 %     
@@ -94,9 +94,9 @@ mkdir(fullpath);
     
 % NET bounds
 
-%     discharge_rate_bounds = [0 30 -200 7000];
-%     
-%     discharge_size_bounds = [0 30 -100 2500];
+    discharge_rate_bounds = [0 30 -200 7000];
+    
+    discharge_size_bounds = [0 30 -100 2500];
     
 %     discharge_rate_bounds = [];
 %     
