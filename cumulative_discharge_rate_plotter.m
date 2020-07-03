@@ -1,9 +1,13 @@
+clearvars 
+close all
+
+program = which('cumulative_discharge_rate_plotter','-all');
 % % create a folder to place all saved images in
 
 % electrodes = 'Nb56';
 % electrodes = 'Ti13';
-electrodes = 'Nb78';
-% electrodes = 'Nb23';
+% electrodes = 'Nb78';
+electrodes = 'Nb23';
 % electrodes = 'NET';
 
 % sim_dates = '12/13/2018--5/1/2019';
@@ -21,7 +25,13 @@ file_polarity_name = {'pos','neg','zero'};
 % analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
 % analysis_folder_name_parent = '2020-03-12-nb23-analysis-files';
 % analysis_folder_name_parent = '2020-06-17-NET-analysis-files';
-analysis_folder_name_parent = '2020-06-24-nb78-all-analysis-again';
+% analysis_folder_name_parent = '2020-06-24-nb78-all-analysis-again';
+
+% analysis_folder_name_parent = '2020-07-02-Nb78-analysis';
+% analysis_folder_name_parent = '2020-07-02-Nb56-analysis';
+% analysis_folder_name_parent = '2020-07-02-Ti13-analysis';
+% analysis_folder_name_parent = '2020-07-02-NET-analysis';
+analysis_folder_name_parent = '2020-07-02-Nb23-analysis';
 
 % analysis_folder_name = '2019-07-11'; % latest nb56 analysis
 analysis_folder_name = ''; % latest ti13 analysis
@@ -43,33 +53,54 @@ formatSpec = '%f %f %f %f %f %f';
 mkdir(fullpath);
 
 % Nb56 bounds    
-%     discharge_rate_bounds = [0 35 -100 400];
+%     discharge_rate_bounds = [0 35 -100 350];
 %     
-%     discharge_size_bounds = [0 35 -25 60];
+%     discharge_size_bounds = [0 35 -30 70];
+    
+%     discharge_rate_bounds = [];
+%     
+%     discharge_size_bounds = [];
+
 
 % Ti13 bounds
-%     discharge_rate_sigma_bounds = [-5 120 -100 4500];
+%     discharge_rate_bounds = [-5 120 -1000 8000];
 %     
-%     discharge_size_sigma_bounds = [-5 120 -25 700];
+%     discharge_size_bounds = [-5 120 -500 200];
+    
+%     discharge_rate_bounds = [];
 %     
-%     discharge_rate_cutoff_bounds = [-5 120 -100 4500];
-%     
-%     discharge_size_cutoff_bounds = [-5 120 -50 2000];
+%     discharge_size_bounds = [];
+    
+
     
 % Nb78 bounds
-    discharge_rate_bounds = [0 31 -500 3000];
+%     discharge_rate_bounds = [0 31 -500 3000];
+%     
+%     discharge_size_bounds = [0 31 -50 450];
     
-    discharge_size_bounds = [0 31 -50 450];
+%     discharge_rate_bounds = [];
+%     
+%     discharge_size_bounds = [];
     
 % Nb23 bounds
-%     discharge_rate_bounds = [-5 140 -100 3000];
+    discharge_rate_bounds = [-5 130 -200 3500];
+    
+    discharge_size_bounds = [-5 130 -100 2000];
+    
+%     discharge_rate_bounds = [];
 %     
-%     discharge_size_bounds = [-5 140 -50 1600];
+%     discharge_size_bounds = [];
+
     
 % NET bounds
+
 %     discharge_rate_bounds = [0 30 -200 7000];
 %     
 %     discharge_size_bounds = [0 30 -100 2500];
+    
+%     discharge_rate_bounds = [];
+%     
+%     discharge_size_bounds = [];
 
     
     
@@ -238,13 +269,43 @@ for i = 1:2
         string(file_polarity_name(i))),...
         discharge_size_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         median_cutoff,zeros(length(median_cutoff),1),this_set_indices);
+    
+    % create a file with the discharge sizes, rates, and voltages
+    text_parameters_path = fullfile(fullpath,sprintf('%s-conditioning-timeline-%s-polarity.txt',...
+        current_time,string(file_polarity_name(i))));
+
+    fileID = fopen(text_parameters_path,'w');
+    fprintf(fileID,'%s cumulative conditioning timeline for %s \n',string(plot_polarity_name(i)),electrodes);
+    fprintf(fileID,'analysis ran at: %s \n',current_time);
+    fprintf(fileID,'analysis ran by %s \n\n', program{:});
+
+    fprintf(fileID,'hour # \t discharges per hour \t median discharge size (pA)\n\n');
+
+    fprintf(fileID,'******************** 5 sigma data ******************** \n\n');
+    for j = 1:number_rows
+
+        fprintf(fileID,'%d: \t %.1f +/- %.1f \t %.1f \n',j,one_big_data_set(j,3),...
+            one_big_data_set(j,4),one_big_data_set(j,5));
+
+    end
+
+    fprintf(fileID,'\n');
+
+    fprintf(fileID,'******************** cutoff data ******************** \n\n');
+
+    for j = 1:number_rows
+
+        fprintf(fileID,'%d: \t %.1f +/- %.1f \t %.1f \n',j,one_big_data_set(j,6),...
+            one_big_data_set(j,7),one_big_data_set(j,8));
+
+    end
+
+    fprintf(fileID,'\n');
+    fprintf(fileID,'dph 5sigma baseline = %.1f discharges / hr\n',dph_sigma_baseline);
+    fprintf(fileID,'median size 5sigma baseline = %.1f pA\n',size_sigma_baseline);
+    fprintf(fileID,'dph cutoff baseline = %.1f discharges / hr\n',dph_cutoff_baseline);
+    fprintf(fileID,'median size cutoff baseline = %.1f pA\n',size_cutoff_baseline);
+
+    fclose(fileID);
+    
 end
-
-% row 3 = dph (5 sigma)
-% row 4 = dph_std (5 sigma)
-% row 5 = median discharge size (5 sigma)
-% row 6 = dph (cutoff)
-% row 7 = dph_std (cutoff)
-% row 8 = median discharge size (cutoff)
-
-% value, stdev
