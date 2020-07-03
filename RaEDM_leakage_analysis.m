@@ -1,21 +1,15 @@
 % function RaEDM_leakage_analysis(datafile,power_supply)
 
-datafile = '2019-04-11-171358-hv-1.txt'; power_supply = 4;
+datafile = '2018-12-13-144501-hv-1.txt'; power_supply = 4;
 
 % histogram binning settings
 avg_binwidth = 5.0; % pA
-
-% avg_binwidth = 50.0; % 2/5/2019 data setting
 
 stdev_binwidth = 1.0; % pA (good for 200 nA LCM scale)
 
 % stdev_binwidth = 4.0; % pA (good for 2 uA LCM scale)
 
-% stdev_binwidth = 10.0; % 2/5/2019 data setting
-
 stdev_summed_binwidth = 0.25; % pA
-
-% stdev_summed_binwidth = 2.0;
 
 clearvars -except masterlist binsize datafile power_supply avg_binwidth stdev_binwidth stdev_summed_binwidth
 close all
@@ -124,8 +118,6 @@ else
     
 end
                   
-%if power_supply == 0 || power_supply == 1
-% if power_supply == 0 || power_supply == 1 || power_supply == 3
 if power_supply == 0 || power_supply == 1 || power_supply == 3
 
     for i = 1:num_files
@@ -693,58 +685,6 @@ elseif power_supply == 4
             imon_avg_wt_raw(i,1:numpoints) = imon_avg_raw(i,1:numpoints).*imon_weight_raw(i,1:numpoints);
             
             field_avg_raw(i,1:numpoints) = vmon_avg_raw_mag(i,1:numpoints)/gap_size(i); % (raw vmon / cm)
-
-%         for j =1:numpoints(i)
-%            
-%             time_raw(i,j) = data(i,j,1);
-%            
-%             vmon_avg_raw_mag(i,j) = data(i,j,3);
-%            
-%             imon_avg_raw(i,j) = data(i,j,4);
-%            
-%             lcm1_avg_raw(i,j) = data(i,j,5);
-%            
-%             pressure_avg_raw(i,j) = data(i,j,7);
-%           
-%             % ~20 mV Low (positive), ~ 3.4 V high (negative)
-%             polarity_avg_raw(i,j) = data(i,j,8); 
-%          
-%             %don't think reduced sqrt is true for fast data
-%             vmon_avg_stdev_raw(i,j) = data(i,j,11)/sqrt(sample_size_setting); 
-%         
-%             vmon_weight_raw(i,j) = abs((vmon_avg_stdev_raw(i,j))^(-2));
-%             
-%             imon_avg_stdev_raw(i,j) = data(i,j,12)/sqrt(sample_size_setting);
-%             
-%             imon_weight_raw(i,j) = abs((imon_avg_stdev_raw(i,j))^(-2));
-%             
-%             lcm1_avg_stdev_raw(i,j) = data(i,j,13)/sqrt(sample_size_setting);
-%             
-%             pressure_avg_stdev_raw(i,j) = data(i,j,15);
-%             
-%             
-%             vmon_avg_pkpk_raw(i,j) = data(i,j,19)/sqrt(sample_size_setting); 
-%             
-%             imon_avg_pkpk_raw(i,j) = data(i,j,20)/sqrt(sample_size_setting);            
-%             
-%             lcm1_avg_pkpk_raw(i,j) = data(i,j,21)/sqrt(sample_size_setting);
-%             
-%             pressure_avg_pkpk_raw(i,j) = data(i,j,23);
-%             
-%             
-%             lcm1_weight_raw(i,j) = abs(1/(lcm1_avg_stdev_raw(i,j)^2));
-%             
-%             lcm1_avg_wt_raw(i,j) = lcm1_avg_raw(i,j)*lcm1_weight_raw(i,j);
-%             
-%             ohm_avg_raw(i,j) = vmon_avg(i,j)/imon_avg(i,j)*1e3; % Mohm
-%             
-%             vmon_avg_wt_raw_mag(i,j) = vmon_avg_raw_mag(i,j)*vmon_weight_raw(i,j);
-%             
-%             imon_avg_wt_raw(i,j) = imon_avg_raw(i,j)*imon_weight_raw(i,j);
-%             
-%             field_avg_raw(i,j) = vmon_avg_raw_mag(i,j)/gap_size(i); % (raw vmon / cm)
-%             
-%         end
         
     time(i,:) = (time_raw(i,:) - time_raw(i,1))/60.0; %min
     
@@ -1747,7 +1687,7 @@ one_big_zero_chunk_array(1,2,1) = zero_chunk_array(1,2,num_zero_chunks);
     lcm1_avg_zero_stdev_stdev_chunk,1,...
     one_big_zero_chunk_array,stdev_summed_binwidth,3,abs(lcm1_avg_scale),1,discharge_cutoff,sprintf('stdevs at %.0f kV chunk ',...
     vmon_avg_zero_avg),...
-    'zero_voltage_stdev_steady_state_summed',0,fullpath);
+    'zero_voltage_stdev_steady_state_summed',1,fullpath);
 
 [zero_stdev_dph_sum,zero_stdev_dph_std_sum,zero_stdev_median_discharge_size_sum,...
     overall_zero_stdev_dph_sum,overall_zero_stdev_dph_std_sum,...
@@ -1809,7 +1749,8 @@ one_big_zero_chunk_array(1,2,1) = zero_chunk_array(1,2,num_zero_chunks);
     find_discharges_final(lcm1_avg_ramp_down_stdev_raw,...
     lcm1_weight_avg_ramp_down_raw,time_ramp_down,lcm1_avg_ramp_down_total_stdev,...
     lcm1_avg_ramp_down_stdev_stdev_chunk,1,...
-    one_big_down_chunk_array,stdev_summed_binwidth,3,abs(lcm1_avg_scale),1,discharge_cutoff,sprintf('stdevs at %.0f kV chunk ',...
+    one_big_down_chunk_array,stdev_summed_binwidth,3,abs(lcm1_avg_scale),1,...
+    discharge_cutoff,sprintf('stdevs at %.0f kV chunk ',...
     vmon_avg_ramp_down_avg),...
     'pos_voltage_stdev_steady_state_summed',1,fullpath);
 
@@ -1875,7 +1816,7 @@ one_big_zero_chunk_array(1,2,1) = zero_chunk_array(1,2,num_zero_chunks);
     lcm1_avg_ramp_up_stdev_stdev_chunk,1,...
     one_big_up_chunk_array,stdev_summed_binwidth,3,abs(lcm1_avg_scale),1,discharge_cutoff,sprintf('stdevs at %.0f kV chunk ',...
     vmon_avg_ramp_up_avg),...
-    'neg_voltage_stdev_steady_state_summed',0,fullpath);
+    'neg_voltage_stdev_steady_state_summed',1,fullpath);
 
 [ramp_up_stdev_dph_sum,ramp_up_stdev_dph_std_sum,ramp_up_stdev_median_discharge_size_sum,...
     overall_ramp_up_stdev_dph_sum,overall_ramp_up_stdev_dph_std_sum,...
@@ -2471,13 +2412,14 @@ fileID = fopen(discharge_rate_pos_path,'w');
 
 for j = 1:length(ramp_down_stdev_dph)
    
-    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f\n',...
+    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f \t %f\n',...
         ramp_down_stdev_dph(j),...
         ramp_down_stdev_dph_std(j),...
         ramp_down_stdev_median_discharge_size(j),...
         ramp_down_stdev_dph_cutoff(j),...
         ramp_down_stdev_dph_std_cutoff(j),...
-        ramp_down_stdev_median_discharge_size_cutoff(j));
+        ramp_down_stdev_median_discharge_size_cutoff(j),...
+        vmon_avg_ramp_down_avg);
     
 end
 
@@ -2489,13 +2431,14 @@ fileID = fopen(discharge_rate_neg_path,'w');
 
 for j = 1:length(ramp_up_stdev_dph)
    
-    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f\n',...
+    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f \t %f\n',...
         ramp_up_stdev_dph(j),...
         ramp_up_stdev_dph_std(j),...
         ramp_up_stdev_median_discharge_size(j),...
         ramp_up_stdev_dph_cutoff(j),...
         ramp_up_stdev_dph_std_cutoff(j),...
-        ramp_up_stdev_median_discharge_size_cutoff(j));
+        ramp_up_stdev_median_discharge_size_cutoff(j),...
+        vmon_avg_ramp_up_avg);
     
 end
 
@@ -2505,13 +2448,14 @@ fileID = fopen(discharge_rate_zero_path,'w');
 
 for j = 1:length(zero_stdev_dph)
    
-    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f\n',...
+    fprintf(fileID,'%f \t %f \t %f \t %f \t %f \t %f \t %f\n',...
         zero_stdev_dph(j),...
         zero_stdev_dph_std(j),...
         zero_stdev_median_discharge_size(j),...
         zero_stdev_dph_cutoff(j),...
         zero_stdev_dph_std_cutoff(j),...
-        zero_stdev_median_discharge_size_cutoff(j));
+        zero_stdev_median_discharge_size_cutoff(j),...
+        vmon_avg_zero_avg);
     
 end
 

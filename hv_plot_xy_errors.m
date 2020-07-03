@@ -186,6 +186,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %             '20.5 kV','20.5 kV','21.9 kV','21.9 kV','21.9 kV',...
 %             '23.3 kV','24.8 kV','26.2 kV','26.2 kV','26.2 kV',...
 %             '+6.2 kV','27.6 kV','27.6 kV','29.1 kV','14.7 kV'};
+
+%         voltages = [14.9 17.8 19.4 17.8 0.7 9.8 17.8 17.8 16.1 17.9 19.5 20.5 ...
+%             20.5 21.9 21.9 21.9 23.3 24.8 26.2 26.2 26.2 26.2 27.6 27.6 29.1 14.7];
+%         
 %         
 %         color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
 
@@ -194,7 +198,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         legend_names = {'12 kV','13 kV','14 kV','15 kV','16 kV',...
 %             '17 kV','18 kV','19 kV','20 kV'};
         
-%         voltages = [12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 20.0];
+%         voltages = [12.0 13.0 13.9 14.9 15.9 16.9 17.9 18.9 19.9];
 %         
 %         color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
 
@@ -203,19 +207,20 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         legend_names = {'12 kV','13.0 kV','14.0 kV','14.0 kV','15 kV',...
 %             '16 kV','17.0 kV','17.0 kV','17.0 kV','17.5 kV','18.0 kV'};
         
-        voltages = [12.0 12.9 13.9 13.9 14.9 15.9 17.0 16.9 17.0 17.5 17.9];
-        
-        color_code_by_voltage = [1 2 3 3 4 5 7 6 7 8 9];
+%         voltages = [12.0 12.9 13.9 13.9 14.9 15.9 17.0 16.9 17.0 17.5 17.9];
+%         
+%         color_code_by_voltage = [1 2 3 3 4 5 7 6 7 8 9];
         
 % Nb23 legend entries and color code
         
-%         voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
+
 % %         
 % %         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
 % %             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
 % %             '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
-% %         
-%         color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
+% %       
+        voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
+        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
         
 % NET legend entries and color code        
 %         voltages = [14.7 22.2 26.2 23.4 10.4 12.4 6.1 3.2 9.0];
@@ -223,7 +228,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 %         color_code_by_voltage = [6 7 9 8 4 5 2 1 3];
         
         
-        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
         xrange = max(xdata_1) - min(xdata_1);
         yrange = max(ydata_1) - min(ydata_1);
         

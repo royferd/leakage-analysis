@@ -23,6 +23,8 @@ function [dph,dph_std,median_discharge_size,...
     % discharge and the actual end of the simulation
 
     discharge_times = [discharge_times [end_time ; length(time_length_of_chunk)] ];
+    
+    discharge_time_chunk_check_ahead = [discharge_times [end_time; length(time_length_of_chunk)+1] ];
 
     discharge_vals = [discharge_vals [0 ; length(time_length_of_chunk)] ];
 
@@ -30,15 +32,13 @@ function [dph,dph_std,median_discharge_size,...
 
     first_discharge_time = discharge_times(1,1);
 
-    % leftover_time = 0.0;
-
-    leftover_time = -official_sim_start_time;
-
     hour_number = 1;
 
     live_time = 0.0;
 
     start_time_index = 1;
+    
+    first_discharge_index = 1;
     
     dph = [];
     overall_dph = 0;
@@ -97,30 +97,50 @@ function [dph,dph_std,median_discharge_size,...
     
         for i =1:length(discharge_times(1,:))
             
-            time_since_last_hour = discharge_times(1,i) + ...
-                leftover_time - 60.0*hour_number; 
+            time_since_last_hour = discharge_times(1,i) -official_sim_start_time - 60.0*hour_number; 
             
             % if time_since_last_hour > 0, than over an hour has elapsed
             % since the first discharge in this sequence of discharges, and
             % we compute a new discharge rate
             
-            if time_since_last_hour < 0.0
-                
-                % time between this discharge and discharge from last dph value
+            % time between this discharge and discharge from last dph value
 
-                if i==start_time_index % if it's the first discharge
+            if i==first_discharge_index % if it's the first discharge
 
-                    live_time = live_time + ...
-                        sum(time_length_of_chunk(discharge_times(2,i)));
+                live_time = live_time + ...
+                    sum(time_length_of_chunk(discharge_times(2,i)));
+%                 fprintf('first discharge, %i\n',discharge_times(2,i))
 
-                elseif discharge_times(2,i) ~= discharge_times(2,i-1)
+            elseif discharge_times(2,i) ~= discharge_times(2,i-1)
 
-                    live_time = live_time + ...
-                        sum(time_length_of_chunk(discharge_times(2,i-1)+1:discharge_times(2,i)));
+                live_time = live_time + ...
+                    sum(time_length_of_chunk(discharge_times(2,i-1)+1:discharge_times(2,i)));
+%                 disp(discharge_times(2,i))
 
-                end
+            end
             
-            elseif time_since_last_hour > 0.0
+%             if time_since_last_hour < 0.0
+                
+%                 % time between this discharge and discharge from last dph value
+% 
+%                 if i==first_discharge_index % if it's the first discharge
+% 
+%                     live_time = live_time + ...
+%                         sum(time_length_of_chunk(discharge_times(2,i)));
+%                     fprintf('first discharge, %i\n',discharge_times(2,i))
+% 
+%                 elseif discharge_times(2,i) ~= discharge_times(2,i-1)
+% 
+%                     live_time = live_time + ...
+%                         sum(time_length_of_chunk(discharge_times(2,i-1)+1:discharge_times(2,i)));
+%                     disp(discharge_times(2,i))
+% 
+%                 end
+            
+%             elseif time_since_last_hour > 0.0 && (discharge_times(2,i) < discharge_times(2,i+1))
+            if time_since_last_hour > 0.0 && (discharge_times(2,i) < discharge_time_chunk_check_ahead(2,i+1))
+                
+                first_discharge_index = i+1;
                 
                 if length(live_time_list) < length(time_length_of_chunk)  
                     
@@ -160,15 +180,6 @@ function [dph,dph_std,median_discharge_size,...
 
 %                          std_this_hour = sqrt(avg_discharges_this_hour);
                          std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
-                         
-%                          if save_figs == 1
-%                              
-%                              save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
-%                              
-%                              plot_discharge_hist(vals,title_string,hour_number,...
-%                                  save_file_path,xlabel_string,ylabel_string);
-%  
-%                          end
 
                          if isempty(find(discharge_vals(1,start_time_index:i-1),1))
 
@@ -292,18 +303,9 @@ function [dph,dph_std,median_discharge_size,...
                     avg_discharges_this_hour = ...
                         ceil(length(vals)*60.0/live_time);
 
+%                     disp(live_time)
 %                     std_this_hour = sqrt(avg_discharges_this_hour);
                     std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
-
-%                     if save_figs == 1
-%                         
-%                         save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
-%                         
-%                         plot_discharge_hist(vals,...
-%                             title_string,hour_number,save_file_path,xlabel_string,ylabel_string);
-%                         
-%                      end
-                    
 
                     if isempty(find(discharge_vals(1,start_time_index:i),1))
                         
@@ -394,16 +396,8 @@ function [dph,dph_std,median_discharge_size,...
                  avg_discharges_this_hour = ...
                     ceil(length(vals)*60.0/(live_time));
 
+                
                  std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
-
-%                  if save_figs == 1
-%                      
-%                      save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
-%                   
-%                      plot_discharge_hist(vals,...
-%                             title_string,hour_number,save_file_path,xlabel_string,ylabel_string)
-%                         
-%                  end
 
                  if isempty(find(discharge_vals(1,start_time_index:i-1),1))
 
@@ -448,14 +442,16 @@ function [dph,dph_std,median_discharge_size,...
         end
         
         %%%
-                   
+               
+        % if more than a half hour passes, add another point.
+        
         if time_since_last_hour >= -30.0
 
-            fraction_last_hour = abs((60.-time_since_last_hour)/60.);
+%             fraction_last_hour = abs((60.-abs(time_since_last_hour))/60.);
             
             % scale the live time to what it would have been if we went for
             % a complete last hour
-            live_time = live_time/fraction_last_hour;
+%             live_time = live_time/fraction_last_hour;
             
             if length(live_time_list) < length(time_length_of_chunk)  
             
@@ -476,18 +472,11 @@ function [dph,dph_std,median_discharge_size,...
             
             avg_discharges_this_hour = ...
                 ceil(length(vals)*60.0/live_time);
-                        
+            
+%             disp(live_time)
+            
             std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
             
-%             if save_figs == 1
-%                 
-%                 save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
-%                 
-%                 plot_discharge_hist(vals,...
-%                             title_string,hour_number,save_file_path,xlabel_string,ylabel_string)
-%                         
-%              end
-
             if isempty(find(discharge_vals(1,start_time_index:end),1))
 
                 median_discharge_size_this_hour = 0.0;
@@ -515,8 +504,6 @@ function [dph,dph_std,median_discharge_size,...
         % time, just roll it into the last point and re-average that 
         % discharge rate
         else
-          
-
             
             % check if median_discharge_size is populated
             if isempty(find(median_discharge_size,1))   
@@ -527,9 +514,22 @@ function [dph,dph_std,median_discharge_size,...
 
                 else
 
-                    [row, col, vals] = find(discharge_vals(1,start_time_index:end));
+%                     [row, col, vals] = find(discharge_vals(1,start_time_index:end));
+                    [row, col, last_vals] = find(discharge_vals(1,start_time_index:end));
+                    
+%                     disp(length(vals))
+                    vals = [vals last_vals];
+%                     disp(length(vals))
 
                     median_discharge_size_this_hour = median(vals);
+                    
+                    vals_list = [vals_list vals];
+                         
+                    if length(vals_per_hour) < length(time_length_of_chunk)
+
+                       vals_per_hour(end) = length(vals);
+
+                    end
 
                 end
                 
@@ -541,34 +541,67 @@ function [dph,dph_std,median_discharge_size,...
 
                     else
 
-                        [row, col, vals] = ...
+%                         [row, col, vals] = ...
+%                             find([median_discharge_size(end) discharge_vals(1,start_time_index:end)]);
+                        
+                        [row, col, last_vals] = ...
                             find([median_discharge_size(end) discharge_vals(1,start_time_index:end)]);
+                        
+%                         disp(length(vals))
+                        vals = [vals last_vals];
+%                         disp(length(vals))
 
                         median_discharge_size_this_hour = median(vals);
+                        
+                        vals_list = [vals_list vals];
+                         
+                        if length(vals_per_hour) < length(time_length_of_chunk)
+
+                           vals_per_hour(end) = length(vals);
+
+                        end
 
                     end
                     
             end
+            
+            previous_live_time = live_time_list(end);            
+            
+            live_time = live_time + previous_live_time;
+            
+%             disp(live_time)
+            
+            avg_discharges_this_hour = ceil(length(vals)*60.0/(live_time));
+            
+            std_this_hour = ceil(sqrt(length(vals))*60.0/live_time);
 
             if length(dph) > 0
-                
-                previous_live_time = live_time_list(end);
 
-                dph(end) = ceil((dph(end)*previous_live_time/60. + ...
-                    (live_time/60.0)*avg_discharges_this_hour)/((previous_live_time+live_time)/60.0));
-
-                dph_std(end) = ceil(sqrt( (dph_std(end)*(previous_live_time/60.0))^2 + ...
-                    (std_this_hour*live_time/60.)^2 )/((previous_live_time+live_time)/60.0));
+%                 dph(end) = ceil((dph(end)*previous_live_time/60. + ...
+%                     (live_time/60.0)*avg_discharges_this_hour)/((previous_live_time+live_time)/60.0));
+% 
+%                 dph_std(end) = ceil(sqrt( (dph_std(end)*(previous_live_time/60.0))^2 + ...
+%                     (std_this_hour*live_time/60.)^2 )/((previous_live_time+live_time)/60.0));
 
                 median_discharge_size(end) = median_discharge_size_this_hour;
+                
+                
+                
+                dph(end) = avg_discharges_this_hour;
+                
+                dph_std(end) = std_this_hour;
                 
             else
                 
                 if length(dph) < length(time_length_of_chunk)  
                     
-                    dph = [dph ceil(avg_discharges_this_hour/(live_time/60.0))];
+%                     dph = [dph ceil(avg_discharges_this_hour/(live_time/60.0))];
+% 
+%                     dph_std = [ dph_std ceil(sqrt(length(vals))/(live_time/60.0))];
+                    
+                    dph = [dph avg_discharges_this_hour];
 
-                    dph_std = [ dph_std ceil(sqrt(length(vals))/(live_time/60.0))];
+                    dph_std = [dph_std std_this_hour];
 
                     median_discharge_size = [ median_discharge_size median_discharge_size_this_hour];
                 
