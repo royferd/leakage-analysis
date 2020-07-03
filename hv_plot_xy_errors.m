@@ -219,13 +219,13 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 % %             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
 % %             '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
 % %       
-        voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
-        color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
+%         voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
+%         color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
         
 % NET legend entries and color code        
-%         voltages = [14.7 22.2 26.2 23.4 10.4 12.4 6.1 3.2 9.0];
-%         
-%         color_code_by_voltage = [6 7 9 8 4 5 2 1 3];
+        voltages = [14.7 22.2 26.2 23.4 10.4 12.4 6.1 3.2 9.0];
+        
+        color_code_by_voltage = [6 7 9 8 4 5 2 1 3];
         
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
