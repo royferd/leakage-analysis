@@ -2,7 +2,8 @@ function [discharge_times,discharge_times_cutoff, ...
     discharge_vals, discharge_vals_cutoff,...
     discharge_stdevs,discharge_stdevs_cutoff,...
     discharges_per_chunk,discharges_per_chunk_cutoff,...
-    time_length_of_chunk,num_not_optimized] = ...
+    time_length_of_chunk,start_stop_chunk_times,num_not_optimized,...
+    gaus_avg_list,gaus_stdev_list] = ...
     find_discharges_final(data_raw,...
     data_weight_raw,time,x_avg_per_chunk,...
     x_stdev_per_chunk,num_chunk,chunk_array,bval,minimize,...
@@ -28,7 +29,13 @@ function [discharge_times,discharge_times_cutoff, ...
     xstd_history = [];
     xamp_history = [];
     
+    gaus_avg_list = [];
+    gaus_stdev_list = [];
+    
     time_length_of_chunk = zeros(1,num_chunk);
+    
+    % 2-column vector storing the start and stop times of each chunk.
+    start_stop_chunk_times = [];
     
     num_not_optimized = 0;
 
@@ -77,6 +84,8 @@ function [discharge_times,discharge_times_cutoff, ...
         xdata_stdev = zeros(1,in_this_chunk);
 
         time_this_chunk = zeros(1,in_this_chunk);
+        
+        
 
         for j = (chunk_array(:,1,i)+1)+trim:chunk_array(:,2,i) - trim
 
@@ -492,6 +501,8 @@ function [discharge_times,discharge_times_cutoff, ...
         
         time_length_of_chunk(i) = time_this_chunk(end) - time_this_chunk(1);
         
+        start_stop_chunk_times = [start_stop_chunk_times; [time_this_chunk(1),time_this_chunk(end)]];
+        
         if not_optimized == 0
             
             xavg_history = [xavg_history gaus_avg];
@@ -510,6 +521,10 @@ function [discharge_times,discharge_times_cutoff, ...
             
         end       
 
+    gaus_avg_list = [gaus_avg_list gaus_avg];
+    
+    gaus_stdev_list = [gaus_stdev_list gaus_stdev/sqrt(in_this_chunk)];
+        
     end 
     
     if num_not_optimized > 0
