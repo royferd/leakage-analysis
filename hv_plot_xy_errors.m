@@ -485,9 +485,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             l.String = legend_names; 
 
             l.FontSize = legend_font;
-            l.Location = 'northeast outside';  
+%             l.Location = 'northeast outside';  
+            l.Location = 'northwest'; 
             
-        else if input_style == 2
+        elseif input_style == 2
         
             colormap(cmap);
             colormap(color_palette);
