@@ -1,5 +1,5 @@
 function f = hv_plot_xy_errors(plot_title,x_axis_title,y_axis_title,...
-    input_style,annote,legend_show,legend_names,...
+    input_style,annote,legend_show,legend_names,colorbar_values,...
     save_fig,savepath,plotname,bounds,...
     xdata_1,xdata_stdev_1,ydata_1,ydata_stdev_1,varargin)
 
@@ -23,7 +23,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 %}
 
-
+    voltages = abs(colorbar_values);
+    
     legend_string = '';
 % Determine how many datasets to plot. 
     num_total_args = nargin;
@@ -178,54 +179,41 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
         num_series = length(this_set_indices);
         
+
+       
+
+        if length(colorbar_values) > 0
+            
+            ordered_voltages = sort(voltages);
+            ordered_color_code_by_voltage = [1];
+            color_code_by_voltage = [];
+
+            color_ht = 1;
+
+            for j = 2:length(ordered_voltages)
+
+                if ordered_voltages(j) > ordered_voltages(j-1)
+
+                    color_ht = color_ht + 1;
+
+                end
+
+                ordered_color_code_by_voltage = [ordered_color_code_by_voltage color_ht];
+
+            end
+
+
+            for j = 1:length(voltages)
+
+                this_color_ht_index = find(ordered_voltages == voltages(j),1);
+
+                color_code_by_voltage = ...
+                    [color_code_by_voltage ordered_color_code_by_voltage(this_color_ht_index)];
+
+            end
+        end
         
 
-% Ti13 legend entries and color code        
-%         legend_names = {'14.9 kV','17.8 kV','19.4 kV','17.8','0.7 kV','9.8 kV',...
-%             '17.8 kV','17.8 kV','16.1 kV','17.9 kV','19.5 kV',...
-%             '20.5 kV','20.5 kV','21.9 kV','21.9 kV','21.9 kV',...
-%             '23.3 kV','24.8 kV','26.2 kV','26.2 kV','26.2 kV',...
-%             '+6.2 kV','27.6 kV','27.6 kV','29.1 kV','14.7 kV'};
-
-%         voltages = [14.9 17.8 19.4 17.8 0.7 9.8 17.8 17.8 16.1 17.9 19.5 20.5 ...
-%             20.5 21.9 21.9 21.9 23.3 24.8 26.2 26.2 26.2 26.2 27.6 27.6 29.1 14.7];
-%         
-%         
-%         color_code_by_voltage = [4 6 8 6 1 2 6 6 5 7 9 10 10 11 11 11 12 13 14 14 14 14 15 15 16 3];
-
-% Nb56 legend entries and color code
-
-%         legend_names = {'12 kV','13 kV','14 kV','15 kV','16 kV',...
-%             '17 kV','18 kV','19 kV','20 kV'};
-        
-%         voltages = [12.0 13.0 13.9 14.9 15.9 16.9 17.9 18.9 19.9];
-%         
-%         color_code_by_voltage = [1 2 3 4 5 6 7 8 9];
-
-% Nb78 legend entries and color code
-
-%         legend_names = {'12 kV','13.0 kV','14.0 kV','14.0 kV','15 kV',...
-%             '16 kV','17.0 kV','17.0 kV','17.0 kV','17.5 kV','18.0 kV'};
-        
-%         voltages = [12.0 12.9 13.9 13.9 14.9 15.9 17.0 16.9 17.0 17.5 17.9];
-%         
-%         color_code_by_voltage = [1 2 3 3 4 5 7 6 7 8 9];
-        
-% Nb23 legend entries and color code
-        
-
-% %         
-% %         legend_names = {'12 kV','13 kV','13 kV','13 kV','15 kV','15 kV',...
-% %             '15 kV','17 kV','17 kV','17 kV','19 kV','19 kV','19 kV',...
-% %             '19 kV','19 kV','20 kV','20 kV','20 kV','20 kV', '20 kV', '20 kV'};
-% %       
-%         voltages = [12.0 13.0 15.0 17.0 19.0 20.0 22.0];
-%         color_code_by_voltage = [1 2 2 2 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 6 6 7 7 7 7 7 7 7];
-        
-% NET legend entries and color code        
-        voltages = [14.7 22.2 26.2 23.4 10.4 12.4 6.1 3.2 9.0];
-        
-        color_code_by_voltage = [6 7 9 8 4 5 2 1 3];
         
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
@@ -363,6 +351,11 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
     a_third = ceil(num_colors /3);
     
+%     a_fourth = ceil(num_colors/4);
+%     extra = 4 - mod(num_colors + num_colors,4)
+%     a_third = num_colors + 1 - mod(num_colors,4);
+    
+    
     middle_ish = floor((num_colors+0.5*a_third)/2);
     
     jet_set = jet(num_colors+a_third);
@@ -384,9 +377,18 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         
         color_palette = red_blue_green_rgb;
         
-    else 
+    elseif num_series == 4
+        
+        jet_sub = jet(5);
+        
+        color_palette = [[0. 0. 1.];jet_sub(1,:);jet_sub(5,:);[1. 0 0]];
+        
+        
+        
+    else
         
         color_palette = jet_subset;
+%         color_palette = [jet(num_colors);
         
     end
     
@@ -400,7 +402,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 
 %     fig.PaperPosition = [0 0 5.33 2.5]; % 2 x 2 grid
-    fig.PaperPosition = [0 0 5.33 3.50];
+%     fig.PaperPosition = [0 0 5.33 3.50];
+    fig.PaperPosition = [0 0 4.67 2.67];
     
     if length(bounds) == 4
         
@@ -697,7 +700,14 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         if save_fig == 2
         
             save_file_path = fullfile(savepath,sprintf('%s.emf',plotname));
-            print (save_file_path,'-dmeta');
+            print (save_file_path,'-dmeta','-r600');
+            
+            % PDF and EPS looks like shit in MATLAB.
+%             save_file_path = fullfile(savepath,sprintf('%s.pdf',plotname));
+%             print (fig,save_file_path,'-dpdf');
+%             
+%             save_file_path = fullfile(savepath,sprintf('%s.eps',plotname));
+%             print (save_file_path);
             
         end
         
