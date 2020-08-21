@@ -182,6 +182,7 @@ for i = 1:2
     dph_cutoff = zeros(number_rows,2);
     median_sigma = zeros(number_rows,1);
     median_cutoff = zeros(number_rows,1);
+    voltage_by_hour = zeros(number_rows,1);
     
 
     dph_sigma_baseline = mean(one_big_data_set(1:number_rows_first_set,3));
@@ -225,6 +226,8 @@ for i = 1:2
         dph_cutoff(j,2) = one_big_data_set(j,7);
         
         median_cutoff(j) = one_big_data_set(j,8) - size_cutoff_baseline;
+        
+        voltage_by_hour(j) = round(one_big_data_set(j,9),1);
         
 %         this_voltage = one_big_data_set(j,9)
 %         this_voltage = sprintf('%.1f',one_big_data_set(j,9));
@@ -277,8 +280,8 @@ for i = 1:2
     fprintf(fileID,'******************** 5 sigma data ******************** \n\n');
     for j = 1:number_rows
 
-        fprintf(fileID,'%d: \t %.1f +/- %.1f \t %.1f \n',j,one_big_data_set(j,3),...
-            one_big_data_set(j,4),one_big_data_set(j,5));
+        fprintf(fileID,'%d: \t %.1f +/- %.1f \t %.1f \t %.1f\n',j,one_big_data_set(j,3),...
+            one_big_data_set(j,4),one_big_data_set(j,5),voltage_by_hour(j));
 
     end
 
@@ -288,8 +291,8 @@ for i = 1:2
 
     for j = 1:number_rows
 
-        fprintf(fileID,'%d: \t %.1f +/- %.1f \t %.1f %.1f \n',j,one_big_data_set(j,6),...
-            one_big_data_set(j,7),one_big_data_set(j,8),round(one_big_data_set(j,9),1));
+        fprintf(fileID,'%d: \t %.1f +/- %.1f \t %.1f \t %.1f\n',j,one_big_data_set(j,6),...
+            one_big_data_set(j,7),one_big_data_set(j,8),voltage_by_hour(j));
 
     end
 
