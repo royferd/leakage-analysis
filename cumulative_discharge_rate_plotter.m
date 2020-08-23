@@ -5,8 +5,8 @@ program = which('cumulative_discharge_rate_plotter','-all');
 % % create a folder to place all saved images in
 
 % electrodes = 'Nb56';
-% electrodes = 'Ti13';
-electrodes = 'Nb78';
+electrodes = 'Ti13';
+% electrodes = 'Nb78';
 % electrodes = 'Nb23';
 % electrodes = 'NET';
 
@@ -37,8 +37,8 @@ file_polarity_name = {'pos','neg','zero'};
 
 % analysis_folder_name_parent ='2020-08-16-nb56-analysis';
 % analysis_folder_name_parent ='2020-08-16-Nb23-analysis';
-% analysis_folder_name_parent ='2020-08-16-Ti13-analysis';
-analysis_folder_name_parent ='2020-08-16-Nb78-analysis';
+analysis_folder_name_parent ='2020-08-16-Ti13-analysis';
+% analysis_folder_name_parent ='2020-08-16-Nb78-analysis';
 
 analysis_folder_name = ''; % latest ti13 analysis
 
@@ -72,9 +72,9 @@ if electrodes == 'Nb56'
     
 elseif electrodes == 'Ti13'
     
-    discharge_rate_bounds = [-5 120 -1000 8000];
+    discharge_rate_bounds = [-5 115 -1000 8000];
     
-    discharge_size_bounds = [-5 120 -500 200];
+    discharge_size_bounds = [-5 115 -150 300];
 
 elseif electrodes == 'Nb78'
     
@@ -96,6 +96,9 @@ elseif electrodes == 'NET'
     
 end    
 
+% discharge_rate_bounds = [];
+%     
+% discharge_size_bounds = [];
     
 all_voltage = [];
 
@@ -205,13 +208,21 @@ for i = 1:2
 %     
 %     yname_size = 'median discharge size - baseline (pA)';
     
-    yname_rate_sigma = sprintf('discharge rate - %.0f  (hr^{-1})',dph_sigma_baseline);
+%     yname_rate_sigma = sprintf('rate - %.0f  (hr^{-1})',dph_sigma_baseline);
+%     
+%     yname_rate_cutoff = sprintf('rate - %.0f  (hr^{-1})',dph_cutoff_baseline);
+%     
+%     yname_size_sigma = sprintf('size - %.0f  (pA)',size_sigma_baseline);
+%     
+%     yname_size_cutoff = sprintf('size - %.0f  (pA)',size_cutoff_baseline);
     
-    yname_rate_cutoff = sprintf('discharge rate - %.0f  (hr^{-1})',dph_cutoff_baseline);
+    yname_rate_sigma = sprintf('rate - baseline  (hr^{-1})');
     
-    yname_size_sigma = sprintf('median discharge size - %.0f  (pA)',size_sigma_baseline);
+    yname_rate_cutoff = sprintf('rate - baseline  (hr^{-1})');
     
-    yname_size_cutoff = sprintf('median discharge size - %.0f  (pA)',size_cutoff_baseline);
+    yname_size_sigma = sprintf('size - baseline  (pA)');
+    
+    yname_size_cutoff = sprintf('size - baseline  (pA)');
 
     for j = 1:number_rows
 
@@ -242,25 +253,25 @@ for i = 1:2
     cd(current_directory);
 
     hv_plot_xy_errors(pname_sig_rate,'conditioning time (hr)',yname_rate_sigma,...
-        2,'',1,2,voltage,2,fullpath,...
+        2,sprintf('baseline = %.0f hr^{-1}',dph_sigma_baseline),1,2,voltage,2,fullpath,...
         sprintf('%s-discharge-rates-sigma-%s',electrodes,string(file_polarity_name(i))),...
         discharge_rate_bounds,linspace(1,number_rows,number_rows),...
         linspace(0,0,number_rows),dph_sigma(:,1),dph_sigma(:,2),this_set_indices);
     
     hv_plot_xy_errors(pname_sig_size,'conditioning time (hr)',yname_size_sigma,...
-        2,'',1,2,voltage,2,fullpath,sprintf('%s-median-discharges-sigma-%s',electrodes,...
+        2,sprintf('baseline = %.0f pA',size_sigma_baseline),1,2,voltage,2,fullpath,sprintf('%s-median-discharges-sigma-%s',electrodes,...
         string(file_polarity_name(i))),...
         discharge_size_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         median_sigma,zeros(length(median_sigma),1),this_set_indices);
     
     hv_plot_xy_errors(pname_cut_rate,'conditioning time (hr)',yname_rate_cutoff,...
-        2,'',1,2,voltage,2,fullpath,sprintf('%s-discharge-rates-cutoff-%s',electrodes,...
+        2,sprintf('baseline = %.0f hr^{-1}',dph_cutoff_baseline),1,2,voltage,2,fullpath,sprintf('%s-discharge-rates-cutoff-%s',electrodes,...
         string(file_polarity_name(i))),...
         discharge_rate_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         dph_cutoff(:,1),dph_cutoff(:,2),this_set_indices);
     
     hv_plot_xy_errors(pname_cut_size,'conditioning time (hr)',yname_size_cutoff,...
-        2,'',1,2,voltage,2,fullpath,sprintf('%s-median-discharges-cutoff-%s',electrodes,...
+        2,sprintf('baseline = %.0f pA',size_cutoff_baseline),1,2,voltage,2,fullpath,sprintf('%s-median-discharges-cutoff-%s',electrodes,...
         string(file_polarity_name(i))),...
         discharge_size_bounds,linspace(1,number_rows,number_rows),linspace(0,0,number_rows),...
         median_cutoff,zeros(length(median_cutoff),1),this_set_indices);

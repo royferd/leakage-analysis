@@ -267,7 +267,9 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     num_sets = 1;
     
     %text box assignments
-    inside_plot = [0.4 0.73 0.31 0.19]; % edges: x y width height
+    inside_plot = [0.15 0.73 0.31 0.19]; % edges: x y width height
+    insidex = 0.4;
+    insidey = 0.73;
     outside_plot = [0.73 0.45 0.21 0.21];
 
     grid_box = zeros(num_sets,4);
@@ -395,6 +397,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 
     figure1 = figure('Units','normalized');
+%     figure1 = figure();
     
     fig = gcf;
     fig.PaperUnits = 'inches';
@@ -426,10 +429,16 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             var_xdata = eval(sprintf('xdata_%i',i));
             var_ydata = eval(sprintf('ydata_%i',i));
             
+            % for linear axis plotting
             plot(var_xdata(1),var_ydata(1),...
             marker_pattern(i),'Color', color_palette(i,:),...
             'MarkerSize', markersize, 'LineWidth', linewidth);
         
+% for logy plotting
+%             plot(var_xdata(1),abs(var_ydata(1)),...
+%             marker_pattern(i),'Color', color_palette(i,:),...
+%             'MarkerSize', markersize, 'LineWidth', linewidth);
+
         end
      
     elseif input_style == 2
@@ -441,11 +450,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
         for i = 1:length(this_set_indices)
         
             hold on;
-%             plot(xdata_1(this_set_indices(i,1)),...
-%                 ydata_1(this_set_indices(i,1)),...
-%                 marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
-%                 'MarkerSize',markersize,...
-%                 'LineWidth', linewidth);
             
             plot(xdata_1(this_set_indices(i,1)),...
                 ydata_1(this_set_indices(i,1)),...
@@ -464,13 +468,11 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     ax = gca; % current axes
     ax.FontSize = 9;
     ax.TickDir = 'out'; % make ticks point out
-    %title(title_string,'FontSize',20)
-    title(title_string,'FontSize',12)
-%    xlabel(xlabel_string,'FontSize',16)
-%    ylabel(ylabel_string,'FontSize',16)
+    
+    title(title_string,'FontSize',11)
     xlabel(xlabel_string,'FontSize',10)
     ylabel(ylabel_string,'FontSize',10)
-    legend_font = 8;
+    legend_font = 9;
     
     % get axis position, move up the y co-ordinate by just little bit and 
     % offset the height by the same amount
@@ -545,6 +547,11 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
         for i = 1:overplot+1
             
+            marker_pattern(i)
+            color_palette(i,:)
+            markersize
+            linewidth
+            
             hold on;
             
             var_xdata = eval(sprintf('xdata_%i',i));
@@ -568,22 +575,22 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
             if length(zero_error) > 0
 
+                % for linear scale plotting
                 plot(var_xdata(zero_error),var_ydata(zero_error),...
                     marker_pattern(i),'Color', color_palette(i,:),...
                     'MarkerSize', markersize, 'LineWidth', linewidth);
+                
+% for logy plotting
+%                 plot(var_xdata(zero_error),abs(var_ydata(zero_error)),...
+%                     marker_pattern(i),'Color', color_palette(i,:),...
+%                     'MarkerSize', markersize, 'LineWidth', linewidth);
+%                 set(gca, 'YScale', 'log')
 
             end
          
         end
      
     elseif input_style == 2
-        
-        % option for adding a solid black line to connect the data points.
-%         hold on;
-%         
-%         plot(xdata_1(this_set_indices(1,1):this_set_indices(end,2)),...
-%                 ydata_1(this_set_indices(1,1):this_set_indices(end,2)),...
-%                 '-k','LineWidth', 0.5);
         
         last_set_xdata_temp = [];
         
@@ -634,10 +641,6 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             
             if length(nonzero_error) > 0 && length(zero_error) < length(ydata_stdev_temp)
             
-%                 fill([xdata_temp(nonzero_error);flipud(xdata_temp(nonzero_error))],...
-%                     [ydata_temp(nonzero_error)-ydata_stdev_temp(nonzero_error);flipud(ydata_temp(nonzero_error)+ydata_stdev_temp(nonzero_error))],...
-%                     color_palette(color_code_by_voltage(i),:),'linestyle','-','EdgeColor', color_palette(color_code_by_voltage(i),:),...
-%                     'LineWidth', linewidth);
                 
                 fill([xdata_temp;flipud(xdata_temp)],...
                     [ydata_temp-ydata_stdev_temp;flipud(ydata_temp+ydata_stdev_temp)],...
@@ -646,12 +649,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
  
             elseif length(zero_error) == length(ydata_stdev_temp)
                 
-%                 fill([xdata_temp(nonzero_error);flipud(xdata_temp(nonzero_error))],...
-%                     [ydata_temp(nonzero_error)-ydata_stdev_temp(nonzero_error);flipud(ydata_temp(nonzero_error)+ydata_stdev_temp(nonzero_error))],...
-%                     color_palette(color_code_by_voltage(i),:),'linestyle','-','EdgeColor', color_palette(color_code_by_voltage(i),:),...
-%                     'LineWidth', linewidth);
-                
-%                 marker_pattern(i),'Color', color_palette(color_code_by_voltage(i),:),...
+
                 plot(xdata_temp(zero_error),...
                 ydata_temp(zero_error),...
                 'o-','Color', color_palette(color_code_by_voltage(i),:),...
@@ -669,29 +667,14 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     
 
     if (length(annote) > 0)
-        annotation(figure1,'textbox',outside_plot,'String',annote_string,...
-            'FontSize',10,'BackgroundColor',[1 1 1]);
+        annotation(figure1,'textbox',inside_plot,'String',annote_string,...
+            'FontSize',9,'BackgroundColor','none','Edgecolor','none');
+       
     end
     
     if save_fig >= 1
         
-%         fig = gcf;
-%         fig.PaperUnits = 'inches';
-%         fig.PaperPosition = [0 0 12 9]; 
 
-%         title(title_string,'FontSize',16);
-%         
-%         xlabel(xlabel_string,'FontSize',14);
-%         
-%         ylabel(ylabel_string,'FontSize',14);
-    
-%         if legend_show == 1
-%             
-%             l.FontSize = 10;   
-% 
-%         end
-
-%          axis([0 120 0 1000]);
         ax.Box = 'on';
         
         save_file_path = fullfile(savepath,sprintf('%s.png',plotname));
@@ -702,7 +685,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
             save_file_path = fullfile(savepath,sprintf('%s.emf',plotname));
             print (save_file_path,'-dmeta','-r600');
             
-            % PDF and EPS looks like shit in MATLAB.
+            % PDF and EPS looks bad in MATLAB.
 %             save_file_path = fullfile(savepath,sprintf('%s.pdf',plotname));
 %             print (fig,save_file_path,'-dpdf');
 %             
