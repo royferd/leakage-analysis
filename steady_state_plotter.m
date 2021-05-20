@@ -5,7 +5,7 @@ program = which('steady_state_plotter','-all');
 
 analysis_file_pattern = '*steady-state-vs-voltage*.txt';
 
-analysis_folder_name_parent ='2020-08-17-steady-state-analysis';
+analysis_folder_name_parent ='2020-09-11-steady-state-analysis';
 
 analysis_folder_name = ''; % latest ti13 analysis
 
@@ -134,10 +134,7 @@ labels = {'Nb56','Nb78','Ti13','Nb23'};
 hv_plot_xy_errors(sprintf('steady-state leakage current'),'voltage (kV)','leakage current (pA)',...
 1,'',1,labels,[],...
 2,fullpath,'steady-state-vs-voltage-global',[-30,30,-20,10],...
-nb56_voltage,zeros(1,length(nb56_voltage)),nb56_steady_state_leakage,zeros(1,length(nb56_voltage)),...
-nb78_voltage,zeros(1,length(nb78_voltage)),nb78_steady_state_leakage,zeros(1,length(nb78_voltage)),...
-ti13_voltage,zeros(1,length(ti13_voltage)),ti13_steady_state_leakage,zeros(1,length(ti13_voltage)),...
-nb23_voltage,zeros(1,length(nb23_voltage)),nb23_steady_state_leakage,zeros(1,length(nb23_voltage)));
+nb56_voltage,zeros(1,length(nb56_voltage)),nb56_steady_state_leakage,zeros(1,length(nb56_voltage)));
 
 
     
