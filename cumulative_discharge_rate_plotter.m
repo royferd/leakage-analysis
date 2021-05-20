@@ -4,8 +4,8 @@ close all
 program = which('cumulative_discharge_rate_plotter','-all');
 % % create a folder to place all saved images in
 
-% electrodes = 'Nb56';
-electrodes = 'Ti13';
+ electrodes = 'Nb56';
+%electrodes = 'Ti13';
 % electrodes = 'Nb78';
 % electrodes = 'Nb23';
 % electrodes = 'NET';
@@ -20,25 +20,7 @@ plot_polarity_name = {'+HV', '-HV', '0HV'};
 
 file_polarity_name = {'pos','neg','zero'};
 
-% analysis_folder_name_parent = 'nb56-all-simulation-analysis';
-% analysis_folder_name_parent = '2019-07-11-all-ti13-sim-analysis-files';
-% analysis_folder_name_parent = '2019-07-11-nb78-all-simulation-analysis';
-% analysis_folder_name_parent = '2020-03-12-nb23-analysis-files';
-% analysis_folder_name_parent = '2020-06-17-NET-analysis-files';
-% analysis_folder_name_parent = '2020-06-24-nb78-all-analysis-again';
-
-% analysis_folder_name_parent = '2020-07-02-Nb78-analysis';
-% analysis_folder_name_parent = '2020-07-02-Nb56-analysis';
-% analysis_folder_name_parent = '2020-07-02-Ti13-analysis';
-% analysis_folder_name_parent = '2020-07-02-NET-analysis';
-% analysis_folder_name_parent = '2020-07-02-Nb23-analysis';
-
-% analysis_folder_name_parent = '2019-07-11'; % latest nb56 analysis
-
-% analysis_folder_name_parent ='2020-08-16-nb56-analysis';
-% analysis_folder_name_parent ='2020-08-16-Nb23-analysis';
-analysis_folder_name_parent ='2020-08-16-Ti13-analysis';
-% analysis_folder_name_parent ='2020-08-16-Nb78-analysis';
+analysis_folder_name_parent = '2020-09-10-nb56-analysis';
 
 analysis_folder_name = ''; % latest ti13 analysis
 
