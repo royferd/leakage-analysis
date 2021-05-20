@@ -547,10 +547,10 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
         for i = 1:overplot+1
             
-            marker_pattern(i)
-            color_palette(i,:)
-            markersize
-            linewidth
+            %marker_pattern(i)
+            %color_palette(i,:)
+            %markersize
+            %linewidth
             
             hold on;
             
