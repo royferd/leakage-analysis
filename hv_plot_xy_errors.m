@@ -395,8 +395,15 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
     end
     
 
-
-    figure1 = figure('Units','normalized');
+    if save_fig == 1
+        
+        figure1 = figure('Units','normalized','visible','off');
+    
+    else
+        
+        figure1 = figure('Units','normalized');
+        
+    end
 %     figure1 = figure();
     
     fig = gcf;
