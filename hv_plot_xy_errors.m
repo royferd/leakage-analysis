@@ -413,7 +413,8 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 %     fig.PaperPosition = [0 0 5.33 2.5]; % 2 x 2 grid
 %     fig.PaperPosition = [0 0 5.33 3.50];
-    fig.PaperPosition = [0 0 4.67 2.67];
+    %fig.PaperPosition = [0 0 4.67 2.67];
+    fig.PaperPosition = [0 0 5.5 3.];
     
     if length(bounds) == 4
         
@@ -473,13 +474,15 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
 %      pbaspect([1.33 1 1])
     ax = gca; % current axes
-    ax.FontSize = 9;
+    
+    smallest_font = 11;
+    ax.FontSize = smallest_font;
     ax.TickDir = 'out'; % make ticks point out
     
-    title(title_string,'FontSize',11)
-    xlabel(xlabel_string,'FontSize',10)
-    ylabel(ylabel_string,'FontSize',10)
-    legend_font = 9;
+    title(title_string,'FontSize',smallest_font+1)
+    xlabel(xlabel_string,'FontSize',smallest_font+1)
+    ylabel(ylabel_string,'FontSize',smallest_font+1)
+    legend_font = smallest_font;
     
     % get axis position, move up the y co-ordinate by just little bit and 
     % offset the height by the same amount
@@ -498,7 +501,7 @@ matter)can be ignored by setting x_data-stdev_i to an array of zeros.
 
             l.FontSize = legend_font;
 %             l.Location = 'northeast outside';  
-            l.Location = 'northwest'; 
+%            l.Location = 'northwest'; 
             
         elseif input_style == 2
         
