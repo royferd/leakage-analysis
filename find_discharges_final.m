@@ -394,31 +394,51 @@ function [discharge_times,discharge_times_cutoff, ...
                 
                 title_string_full =sprintf('%s %d / %d (not optimized)',title_string,i,num_chunk);
                 
-                save_file_path = fullfile(savepath,sprintf('%s_%d_no_opt.png',plotname,i));
+              %  save_file_path = fullfile(savepath,sprintf('%s_%d_no_opt.png',plotname,i));
                 
-                save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges_no_opt.png',plotname,i));
+               % save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges_no_opt.png',plotname,i));
+                
+                save_file_path = fullfile(savepath,sprintf('%s_%d_no_opt',plotname,i));
+                
+                save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges_no_opt',plotname,i));
                 
             else
 
                 title_string_full =sprintf('%s %d / %d',title_string,i,num_chunk);
                 
-                save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
+                %save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
+                save_file_path = fullfile(savepath,sprintf('%s_%d',plotname,i));
+                %save_file_path = fullfile(savepath,sprintf('%s_%d.emf',plotname,i));
             
-                save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges.png',plotname,i));
+                %save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges.png',plotname,i));
+                save_file_path_discharge = fullfile(savepath,sprintf('%s_%d_discharges',plotname,i));
             
+                
             end
             
-            figure1 = figure('visible','off');              
+            figure1 = figure('visible','off');    
             
-            h2 = histogram(xdata,'BinWidth',current_bval); hold on;
+            fig = gcf;
+            fig.PaperUnits = 'inches';
+        %    fig.PaperPosition = [0 0 8 6];
+
+
+        %     fig.PaperPosition = [0 0 5.33 2.5]; % 2 x 2 grid
+        %     fig.PaperPosition = [0 0 5.33 3.50];
+            %fig.PaperPosition = [0 0 4.67 2.67];
+            fig.PaperPosition = [0 0 5.5 3.];
+            
+            h2 = histogram(xdata,'BinWidth',current_bval,'FaceColor',[0.3010 0.7450 0.9330]); hold on;
             max_h2 = max(h2.Values);
             
             % find the biggest value on the histogram so we can scale correctly
             graph_max = max([max_count max_h2 gaus_a]);
+            
+            smallest_font_size = 13;
 
             annotation('textbox',inside_plot,'String',...
                 sprintf('%.1f \\pm %.1f pA',gaus_avg,gaus_stdev),...
-                'FontSize',16,'BackgroundColor',[1 1 1],'FitBoxToText','on');
+                'FontSize',smallest_font_size,'BackgroundColor',[1 1 1],'FitBoxToText','on');
             
             plot(gaus_fit(:,1),gaus_fit(:,2),'r-','LineWidth',2.0);
 
@@ -434,7 +454,8 @@ function [discharge_times,discharge_times_cutoff, ...
 
             ax = gca;
             ax.TickDir = 'out'; % make ticks point out
-            ax.FontSize = 14;
+            
+            ax.FontSize = smallest_font_size;
             outerpos = ax.OuterPosition;
             ti = ax.TightInset;
             
@@ -445,10 +466,11 @@ function [discharge_times,discharge_times_cutoff, ...
             
             ax.OuterPosition = [left bottom ax_width ax_height];
             
-            title(title_string_full,'FontSize',16)
-            xlabel(xlabel_string,'FontSize',16)
-            ylabel(ylabel_string,'FontSize',16)            
+            title(title_string_full,'FontSize',smallest_font_size)
+            xlabel(xlabel_string,'FontSize',smallest_font_size)
+            ylabel(ylabel_string,'FontSize',smallest_font_size)            
             
+            %print (save_file_path,'-dmeta','-r600');
             print(save_file_path,'-dpng');    
             
         end

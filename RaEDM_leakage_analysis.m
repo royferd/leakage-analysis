@@ -1,7 +1,7 @@
-function RaEDM_leakage_analysis(datafile,power_supply)
+%function RaEDM_leakage_analysis(datafile,power_supply)
 
-%datafile = '2017-10-23-175202-hv-1.txt'; power_supply = 1;
-%datafile = '2020-03-12-144554-hv-1.txt';power_supply =4; %last Nb23 run
+%datafile = '2017-10-23-175202-hv-1.txt'; power_supply = 1; %last Nb56 run
+datafile = '2020-03-12-144554-hv-1.txt';power_supply =4; %last Nb23 run
 %datafile = '2019-11-26-171435-hv-1.txt';power_supply =4; %first Nb23 run
 
 % histogram binning settings
