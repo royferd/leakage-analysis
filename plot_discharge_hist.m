@@ -23,9 +23,9 @@ function plot_discharge_hist(discharge_vals,...
 
     neg_values_this_hour = [abs(discharge_vals_this_hour(neg_indices))];
 
-    title_string_full =sprintf('%s hr %d (%d discharges)',title_string,hour_number,...
-        length([pos_values_this_hour neg_values_this_hour]));
-
+%     title_string_full =sprintf('%s hr %d (%d discharges)',title_string,hour_number,...
+%         length([pos_values_this_hour neg_values_this_hour]));
+    title_string_full =sprintf('%s (hr %d)',title_string,hour_number);
 
 
     figure2 = figure('visible','off'); 
@@ -86,7 +86,8 @@ function plot_discharge_hist(discharge_vals,...
             edges_base_two,'LineWidth',1.5,'FaceAlpha',0.3,'FaceColor','blue',...
             'EdgeColor','blue'); hold on;
 
-        legend_string{end+1} = '+discharge';
+        %legend_string{end+1} = '+discharge';
+        legend_string{end+1} = sprintf('+ve (%d)',length(pos_values_this_hour));
 
     end
 
@@ -96,11 +97,13 @@ function plot_discharge_hist(discharge_vals,...
             edges_base_two,'LineWidth',1.5,'FaceAlpha',0.3,'FaceColor','red',...
             'EdgeColor','red'); hold on;
 
-        legend_string{end+1} = '-discharge';
+        %legend_string{end+1} = '-discharge';
+        legend_string{end+1} = sprintf('-ve (%d)',length(neg_values_this_hour));
 
     end
 
     
+    fontsize = 12;
 
     if isempty(legend_string) == 0
         
@@ -108,16 +111,25 @@ function plot_discharge_hist(discharge_vals,...
 
         l.String = legend_string;
 
-        l.FontSize = 9;
+        l.FontSize = fontsize;
   %  l.Location = 'northeast outside';  
 
     end
 
+    fig = gcf;
+    fig.PaperUnits = 'inches';
+%    fig.PaperPosition = [0 0 8 6];
 
+
+%     fig.PaperPosition = [0 0 5.33 2.5]; % 2 x 2 grid
+%     fig.PaperPosition = [0 0 5.33 3.50];
+    %fig.PaperPosition = [0 0 4.67 2.67];
+    fig.PaperPosition = [0 0 3.5 3.5];
+    
 
     ax = gca;
     ax.TickDir = 'out'; % make ticks point out
-    ax.FontSize = 12;
+    ax.FontSize = fontsize;
     ax.XScale='log';
     ax.YScale='log';
     outerpos = ax.OuterPosition;
@@ -136,10 +148,11 @@ function plot_discharge_hist(discharge_vals,...
 
     ax.OuterPosition = [left bottom ax_width ax_height];
 
-    title(title_string_full,'FontSize',14)
+    title(title_string_full,'FontSize',fontsize+1)
     
-    xlabel(xlabel_string,'FontSize',14)
+    xlabel(xlabel_string,'FontSize',fontsize+1)
 
-    ylabel(sprintf('frequency / %.0f \\times 2^{n} pA',bin_width_two),'FontSize',14)
+    ylabel(sprintf('discharges / %.0f \\times 2^{n} pA',bin_width_two),'FontSize',fontsize+1)
 
     print(save_file_path,'-dpng');
+    print(sprintf('%s.svg',save_file_path),'-dsvg');

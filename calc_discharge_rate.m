@@ -627,7 +627,8 @@ function [dph,dph_std,median_discharge_size,...
             
             if length(dph) > 1
                 
-                save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,1));
+                %save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,1));
+                save_file_path = fullfile(savepath,sprintf('%s_%d',plotname,1));
 
                 if vals_per_hour(1) > 0
                     
@@ -644,7 +645,8 @@ function [dph,dph_std,median_discharge_size,...
                         
                 for i = 2:length(dph)
 
-                    save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
+                    %save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,i));
+                    save_file_path = fullfile(savepath,sprintf('%s_%d',plotname,i));
                     
                     if vals_per_hour(i) > 0
                         
@@ -664,7 +666,8 @@ function [dph,dph_std,median_discharge_size,...
                 
             elseif length(dph) == 1    
                 
-                save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
+                %save_file_path = fullfile(savepath,sprintf('%s_%d.png',plotname,hour_number));
+                save_file_path = fullfile(savepath,sprintf('%s_%d',plotname,hour_number));
 
                 plot_discharge_hist(vals_list,...
                             title_string,hour_number,save_file_path,xlabel_string,ylabel_string)
