@@ -416,47 +416,49 @@ function [discharge_times,discharge_times_cutoff, ...
                 
             end
             
+            smallest_font_size = 13;
+            
             figure1 = figure('visible','off');    
             
             fig = gcf;
             fig.PaperUnits = 'inches';
-        %    fig.PaperPosition = [0 0 8 6];
-
-
-        %     fig.PaperPosition = [0 0 5.33 2.5]; % 2 x 2 grid
-        %     fig.PaperPosition = [0 0 5.33 3.50];
-            %fig.PaperPosition = [0 0 4.67 2.67];
             fig.PaperPosition = [0 0 5.5 3.];
+            plotstyle = 'linear';
+%             plotstyle = 'linlog';
+            
+            if plotstyle == 'linear'
             
             h2 = histogram(xdata,'BinWidth',current_bval,'FaceColor',[0.3010 0.7450 0.9330]); hold on;
+            
+            plot(gaus_fit(:,1),gaus_fit(:,2),'r-','LineWidth',2.0);
+            
             max_h2 = max(h2.Values);
             
             % find the biggest value on the histogram so we can scale correctly
             graph_max = max([max_count max_h2 gaus_a]);
             
-            smallest_font_size = 13;
-
-            annotation('textbox',inside_plot,'String',...
-                sprintf('%.1f \\pm %.1f pA',gaus_avg,gaus_stdev),...
-                'FontSize',smallest_font_size,'BackgroundColor',[1 1 1],'FitBoxToText','on');
-            
-            plot(gaus_fit(:,1),gaus_fit(:,2),'r-','LineWidth',2.0);
-
+            % round_to rounds the x axis bounds
+            round_to = 20;
             if ((gaus_avg - 6*gaus_stdev)/5.0 > 1.0)
                 
-                axis ([ min([subset_xdata(1) 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0)]) max([5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) subset_xdata(end)]) 0 5.*ceil(1.1*(graph_max)/5.)]);
+%                 axis ([ min([subset_xdata(1) 5.0*floor((gaus_avg - 6*gaus_stdev)/5.0)]) max([5.0*ceil((gaus_avg + 6*gaus_stdev)/5.0) subset_xdata(end)]) 0 5.*ceil(1.1*(graph_max)/5.)]);
+                axis ([ round_to*min(floor([subset_xdata(1)/round_to (gaus_avg - 6*gaus_stdev)/round_to]))  round_to*ceil(ordered_xdata(end)/round_to) 0 5.*ceil(1.1*(graph_max)/5.)]);
 
             else               
                 
                 axis ([ min([subset_xdata(1) floor(gaus_avg - 6*gaus_stdev)]) max([ceil(gaus_avg + 6*gaus_stdev) subset_xdata(end)]) 0 5.*ceil(1.1*(graph_max)/5.)]);
 
             end
-
+            
+            
             ax = gca;
             ax.TickDir = 'out'; % make ticks point out
             
             ax.FontSize = smallest_font_size;
             outerpos = ax.OuterPosition;
+            
+%            ax.XScale='log';
+            
             ti = ax.TightInset;
             
             left = outerpos(1);
@@ -465,13 +467,70 @@ function [discharge_times,discharge_times_cutoff, ...
             ax_height = outerpos(4) - 0.25*ti(2);
             
             ax.OuterPosition = [left bottom ax_width ax_height];
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% try to split into linear and log
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% section
+
+            elseif plotstyle == 'linlog'
+
+                ax1 = subplot(121); %the linear part of the axis
+                h2 = histogram(xdata(xdata<=gaus_fit(end,1)),'BinWidth',...
+                    current_bval,'FaceColor',[0.3010 0.7450 0.9330]); hold on;
+                max_h2 = max(h2.Values); hold on;
+
+                % find the biggest value on the histogram so we can scale correctly
+                graph_max = max([max_count max_h2 gaus_a]);
+
+                plot(gaus_fit(:,1),gaus_fit(:,2),'r-','LineWidth',2.0);
+
+                ax2 = subplot(122); %log part of the axis
+                histogram(xdata(xdata>gaus_fit(end,1)),'BinWidth',...
+                    current_bval,'FaceColor',[0.9330 0.3010 0.7450]); hold on;
+
+
+                set(ax1,'units','normalized','position',[0.1 0.1 0.4 0.8]);
+                set(ax2,'units','normalized','position',[0.5 0.1 0.4 0.8]);
+
+                set(ax2,'xscale','log','xlim',[gaus_fit(end,1) max(xdata)],'yticklabel','');
+                %set([ax1 ax2],'ylim',[-1.5 1.5],'ytick',-1.5:0.5:1.5,'box','off');
+                set([ax1 ax2],'ylim',[0 5.*ceil(1.1*(graph_max)/5.)]);
+
+                set(ax2,'yticklabel','');
+                uistack(ax1,'top');
+    %             grid(ax2,'on');
+
+                ax1.TickDir = 'out'; % make ticks point out
+
+                ax1.FontSize = smallest_font_size;
+
+                ax2.TickDir = 'out'; % make ticks point out
+
+                ax2.FontSize = smallest_font_size;
+                
+            end
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%             annotation('textbox',inside_plot,'String',...
+%                 sprintf('%.1f \\pm %.1f pA',gaus_avg,gaus_stdev),...
+%                 'FontSize',smallest_font_size,'BackgroundColor',[1 1 1],'FitBoxToText','on');
+            annotation('textbox',inside_plot,'String',...
+                sprintf('%.1f \\pm %.1f pA\nN = %i + %i',gaus_avg,gaus_stdev,length(xdata)-count_discharges,count_discharges),...
+                'FontSize',smallest_font_size,'BackgroundColor','none',...
+                'FitBoxToText','on','EdgeColor','none');
+
             
             title(title_string_full,'FontSize',smallest_font_size)
             xlabel(xlabel_string,'FontSize',smallest_font_size)
             ylabel(ylabel_string,'FontSize',smallest_font_size)            
             
+            
             %print (save_file_path,'-dmeta','-r600');
             print(save_file_path,'-dpng');    
+            %print(sprintf('%s.svg',save_file_path),'-dsvg')
             
         end
 
@@ -548,6 +607,8 @@ function [discharge_times,discharge_times_cutoff, ...
     gaus_stdev_list = [gaus_stdev_list gaus_stdev/sqrt(in_this_chunk)];
         
     end 
+%     discharges_per_chunk
+%     fprintf('%i discharges this chunk',discharges_per_chunk(end));
     
     if num_not_optimized > 0
         
